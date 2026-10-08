@@ -21,7 +21,7 @@ import * as engine from '../../engine/engine';
 import { gc } from '../../runtime/py';
 import { os } from '../../runtime/prelude';
 import * as phase0 from './phase0';
-import * as pygame from '../../runtime/prelude';
+import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import { sys } from '../../runtime/py';
 import * as text from '../../engine/textutil';

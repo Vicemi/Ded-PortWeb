@@ -19,7 +19,7 @@ import * as help from './help';
 import * as merits from './merits';
 import { open_browser } from '../../runtime/external';
 import * as phase0 from './phase0';
-import * as pygame from '../../runtime/prelude';
+import { pygame } from '../../runtime/prelude';
 import * as serialization from '../data/serialization';
 import { string } from '../../runtime/py';
 import * as text from '../../engine/textutil';

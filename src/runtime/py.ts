@@ -569,6 +569,9 @@ export const uuid = {
 };
 
 // ---- the files of the game (characters, scores, settings): a small virtual file system saved in localStorage
+/** names of the files that ship with the game (data/...): the assets module registers them */
+let packaged: ((path: string) => boolean) | null = null;
+export function setPackagedFiles(f: (path: string) => boolean): void { packaged = f; }
 const FS_PREFIX = 'ded.fs:';
 const memfs = new Map<string, string>();
 function fsGet(p: string): string | null {
@@ -608,8 +611,8 @@ export const os = {
   sep: '/',
   path: {
     join: (...p: string[]): string => p.filter((x) => x !== '').join('/'),
-    exists: (p: string): boolean => fsGet(p) !== null,
-    isfile: (p: string): boolean => fsGet(p) !== null,
+    exists: (p: string): boolean => fsGet(p) !== null || !!packaged?.(p),
+    isfile: (p: string): boolean => fsGet(p) !== null || !!packaged?.(p),
     isdir: (_p: string): boolean => true,
     dirname: (p: string): string => p.slice(0, Math.max(0, p.lastIndexOf('/'))),
     basename: (p: string): string => p.slice(p.lastIndexOf('/') + 1),

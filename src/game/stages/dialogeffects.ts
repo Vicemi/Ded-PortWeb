@@ -2,7 +2,7 @@
 // Generated from the original game code (see MODLOG.md). Do not edit by hand.
 import * as py from '../../runtime/py';
 import * as dialogeffects from './dialogeffects';
-import * as pygame from '../../runtime/prelude';
+import { pygame } from '../../runtime/prelude';
 import * as $self from './dialogeffects';
 
 export let GAME: any = null;

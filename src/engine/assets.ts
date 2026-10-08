@@ -4,7 +4,8 @@ import { decodeImage } from './codecs';
 import { Font, type FontEntry } from './font';
 import { Surface, transform, type Rect } from './pygame';
 import { mixer, Sound, Channel } from './sounds';
-import { os, open } from '../runtime/py';
+import { os, open, setPackagedFiles } from '../runtime/py';
+setPackagedFiles((p) => p.startsWith('data/') && p.slice(5) in store.data);
 
 export let SOUND_VOLUME = 1;
 const NL = String.fromCharCode(10);

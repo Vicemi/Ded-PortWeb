@@ -4,6 +4,7 @@ import { initAssets } from '../src/engine/assets';
 import { K, event, input, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, KEYDOWN, KEYUP, setClock } from '../src/engine/pygame';
 import { createGame } from '../src/game/main';
 import type { Game } from '../src/engine/engine';
+import { lazy } from '../src/runtime/py';
 
 export interface Dev {
   game: Game;
@@ -19,6 +20,8 @@ export interface Dev {
   now(): number;
   save(name: string): void;
   K: typeof K;
+  /** a generated game module by path, e.g. mod('game/stages/phase0').Phase0Stage */
+  mod(path: string): any;
 }
 
 export async function start(assetBase: string, save: (name: string, buf: Buffer) => void): Promise<Dev> {
@@ -38,6 +41,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
   };
   const dev: Dev = {
     game, canvas, K,
+    mod: (path) => lazy(path),
     go,
     move(x, y, frames = 3) { post(MOUSEMOTION, x, y); go(frames); },
     down(x, y) { dev.move(x, y, 3); input.buttons[0] = 1; post(MOUSEMOTION, x, y); post(MOUSEBUTTONDOWN, x, y); go(2); },
