@@ -89,6 +89,8 @@ export class Sound {
 }
 
 interface Voice { sound: Sound; src: AudioBufferSourceNode; at: number; offset: number; loops: number; maxtime: number; end: number }
+/** extra options of a playback */
+export interface PlayOptions { rate?: number; loopStart?: number }
 
 export class Channel {
   private gain: GainNode | null = null;
@@ -126,8 +128,18 @@ export class Channel {
   }
   set_endevent(type?: number): void { this.endEvent = type ?? null; }
 
-  play(sound: Sound, loops = 0, maxtime = 0, fade_ms = 0): void {
+  /** playback speed (the engine sound of the race follows the speed of the car) */
+  private rate = 1;
+  set_rate(r: number): void {
+    this.rate = r;
+    if (this.cur && this.m.ctx) this.cur.src.playbackRate.setTargetAtTime(r, this.m.ctx.currentTime, 0.03);
+  }
+  private loopStart = 0;
+
+  play(sound: Sound, loops = 0, maxtime = 0, fade_ms = 0, opts: PlayOptions = {}): void {
     this.stop();
+    this.rate = opts.rate ?? 1;
+    this.loopStart = opts.loopStart ?? 0;
     const ctx = this.m.ctx;
     if (!ctx || !this.gain) {
       // before the first user gesture only the music is remembered (a sound effect that would be heard late is dropped)
@@ -157,6 +169,8 @@ export class Channel {
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.loop = loops !== 0;
+    if (this.loopStart > 0 && loops < 0) { src.loopStart = this.loopStart; src.loopEnd = buf.duration; }
+    src.playbackRate.value = this.rate;
     src.connect(this.gain!);
     let dur = loops < 0 ? Infinity : buf.duration * (loops + 1) - offset;
     if (maxtime > 0) dur = Math.min(dur, maxtime / 1000);

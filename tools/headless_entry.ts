@@ -16,6 +16,8 @@ export interface Dev {
   move(x: number, y: number, frames?: number): void;
   key(code: number, frames?: number, unicode?: string, mod?: number): void;
   type(text: string): void;
+  /** keep a key pressed (or release it) without generating a key event */
+  hold(code: number, down: boolean): void;
   stage(): string;
   now(): number;
   save(name: string): void;
@@ -51,6 +53,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
       input.pressed.add(code); input.mods = mod; event.post({ type: KEYDOWN, key: code, mod, unicode }); go(2);
       input.pressed.delete(code); input.mods = 0; event.post({ type: KEYUP, key: code, mod, unicode: '' }); go(frames);
     },
+    hold(code, down) { if (down) input.pressed.add(code); else input.pressed.delete(code); },
     type(text) { for (const ch of text) dev.key(ch.toLowerCase().charCodeAt(0), 2, ch); },
     stage() { return (game as any).stage?.constructor?.name ?? '?'; },
     now() { return t; },

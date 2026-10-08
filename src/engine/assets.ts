@@ -17,19 +17,22 @@ interface Store {
   data: Record<string, { kind: string; text: string }>;
   fonts: Record<string, FontEntry>;
   atlas: Surface | null;
+  racer: any;
 }
-const store: Store = { pak: null, index: {}, data: {}, fonts: {}, atlas: null };
+const store: Store = { pak: null, index: {}, data: {}, fonts: {}, atlas: null, racer: null };
+/** the data files of the car chase (camera, car, thief, traffic, gui and the maps), parsed from the original YAML */
+export function racerData(): any { return store.racer; }
 const decoded = new Map<string, WeakRef<Surface>>();
 const registry = typeof FinalizationRegistry !== 'undefined' ? new FinalizationRegistry<string>((k) => { const r = decoded.get(k); if (r && !r.deref()) decoded.delete(k); }) : null;
 
 /** Downloads the packed game files. `base` = URL of public/assets. */
 export async function initAssets(base: string, onProgress?: (fraction: number) => void): Promise<void> {
   const get = async <T,>(file: string): Promise<T> => (await fetch(`${base}/${file}`)).json() as Promise<T>;
-  const [index, data, fonts, sounds] = await Promise.all([
+  const [index, data, fonts, sounds, racer] = await Promise.all([
     get<Record<string, [number, number]>>('images.json'), get<Store['data']>('data.json'),
-    get<Record<string, FontEntry>>('fonts.json'), get<Record<string, number>>('sounds.json'),
+    get<Record<string, FontEntry>>('fonts.json'), get<Record<string, number>>('sounds.json'), get<any>('racer.json'),
   ]);
-  store.index = index; store.data = data; store.fonts = fonts;
+  store.index = index; store.data = data; store.fonts = fonts; store.racer = racer;
   mixer.init(`${base}/sounds`, sounds);
   // the atlas of the glyphs (decoded here: <img>.decode() can stall in background tabs)
   const png = decodeImage('fonts.png', new Uint8Array(await (await fetch(`${base}/fonts.png`)).arrayBuffer()));

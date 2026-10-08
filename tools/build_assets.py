@@ -45,6 +45,17 @@ def data():
     print('data', len(out), 'files')
 
 
+def racer():
+    import yaml
+    def load(n):
+        t = open(GAME + '/data/' + n, encoding='latin-1').read().replace('	', ' ')
+        return yaml.safe_load(t)
+    out = {k: load(k + '.yaml') for k in ('camera', 'car', 'thief', 'traffic', 'gui')}
+    out['maps'] = {'beach': load('p3_map_beach.yaml'), 'field': load('p3_map_field.yaml')}
+    json.dump(out, open(OUT + '/racer.json', 'w'), separators=(',', ':'))
+    print('racer data written')
+
+
 def sounds():
     import pygame
     pygame.mixer.init(44100, -16, 2, 512)
@@ -67,4 +78,5 @@ if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     images()
     data()
+    racer()
     sounds()

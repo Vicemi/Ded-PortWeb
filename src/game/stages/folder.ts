@@ -571,7 +571,7 @@ export class Folder extends Item {
     cp = this.stage.game.datastore.user_character_progress;
     if (!py.truthy(cp.identikit_help)) {
       this.obsure_folder_close();
-      this.stage.show_help_dialog(101, 1000);
+      this.stage.show_help_dialog(101, 1000, undefined, py.bind(this, "clarify_folder_close"));
       cp.identikit_help = true;
     }
     return null;
