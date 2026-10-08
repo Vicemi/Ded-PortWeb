@@ -136,5 +136,44 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
       state.error = String(e);
     }
   })();
+  if (import.meta.env.DEV) installDevTools(ctl);
   return ctl;
+}
+
+/** helpers for driving the game from the browser console while developing (not part of the production build) */
+function installDevTools(ctl: Controller): void {
+  const w = window as unknown as Record<string, unknown>;
+  const dev = {
+    go(n: number): string {
+      try { ctl.step(n); return 'ok'; } catch (e) { const er = e as Error; return ['ERR ' + er.message, ...(er.stack ?? '').split(String.fromCharCode(10)).slice(0, 8)].join(String.fromCharCode(10)); }
+    },
+    click(x: number, y: number, frames = 20): string {
+      ctl.pointer('move', x, y); let r = dev.go(3); if (r !== 'ok') return r;
+      ctl.pointer('down', x, y); r = dev.go(2); if (r !== 'ok') return r;
+      ctl.pointer('up', x, y); return dev.go(frames);
+    },
+    move(x: number, y: number, frames = 5): string { ctl.pointer('move', x, y); return dev.go(frames); },
+    key(code: number, frames = 3): string { ctl.key(code, true); let r = dev.go(2); if (r !== 'ok') return r; ctl.key(code, false); r = dev.go(frames); return r; },
+    async shot(name: string): Promise<string> {
+      const c = ctl.game!.window.canvas;
+      await fetch('http://localhost:4399/' + name, { method: 'POST', body: c.toDataURL('image/png') });
+      return 'sent ' + name;
+    },
+    /** from the opening screens to the main menu */
+    boot(): string {
+      for (let i = 0; i < 7; i++) { const r = dev.key(27, 120); if (r !== 'ok') return r; }
+      return dev.go(300);
+    },
+    /** main menu -> new detective "Ana" (Durazno) -> the case report screen */
+    newGame(): string {
+      let r = dev.boot();
+      dev.click(300, 330, 150);
+      for (const ch of 'Ana') { ctl.key(ch.toLowerCase().charCodeAt(0), true, ch); dev.go(2); ctl.key(ch.toLowerCase().charCodeAt(0), false); dev.go(2); }
+      dev.go(20); dev.click(340, 138, 40); dev.click(300, 139, 60); dev.click(248, 384, 150);
+      r += dev.go(300);
+      return r;
+    },
+    stageName(): string { return (ctl.game as unknown as { stage: { constructor: { name: string } } }).stage?.constructor?.name ?? '?'; },
+  };
+  w.__dev = dev;
 }

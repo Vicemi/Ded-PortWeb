@@ -3,10 +3,11 @@
 import * as py from '../../runtime/py';
 import * as dialogeffects from './dialogeffects';
 import * as pygame from '../../runtime/prelude';
+import * as $self from './dialogeffects';
 
 export let GAME: any = null;
 export function set_game(game: any): any {
-  dialogeffects.GAME = game;
+  dialogeffects.$set("GAME", game);
   return null;
 }
 export function blinds_down(dirty_rects: any): any {
@@ -35,4 +36,10 @@ export function __progressive_update(top: any = true, frames: any = 15): any {
     }
   }
   return null;
+}
+py.register("game/stages/dialogeffects", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "GAME": GAME = v; break;
+  }
 }

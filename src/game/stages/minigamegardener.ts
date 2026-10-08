@@ -16,6 +16,7 @@ import { pygame as $pg } from '../../runtime/prelude'; const delay = (ms: number
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
+import * as $self from './minigamegardener';
 const $d1: any = [];
 
 export let GRID_ORIGIN: any = [308, 206];
@@ -769,7 +770,7 @@ export class GoodJobAnimation {
     py.m(this.grid_goodjob_layer, "add", this.color_item);
     py.m(this.grid_goodjob_layer, "add", this.white_item);
     from_size = [py.int((py.float(this.color_image.get_width()) * 0.82)), py.int((py.float(this.color_image.get_height()) * 0.82))];
-    animations.start_resize(this.color_item, this.color_image, from_size, this.color_image.get_size(), 230, 1, this._GoodJobAnimation__resize_callback);
+    animations.start_resize(this.color_item, this.color_image, from_size, this.color_image.get_size(), 230, 1, py.bind(this, "_GoodJobAnimation__resize_callback"));
     to_size = [py.int((py.float(this.white_image.get_width()) * 0.82)), py.int((py.float(this.white_image.get_height()) * 0.82))];
     animations.start_resize(this.white_item, this.white_image, from_size, this.white_image.get_size(), 230, 1);
     this.white_item.set_alpha(200);
@@ -777,7 +778,7 @@ export class GoodJobAnimation {
     return null;
   }
   _GoodJobAnimation__resize_callback(item: any): any {
-    animations.wait(this.stage, 100, this._GoodJobAnimation__wait_callback);
+    animations.wait(this.stage, 100, py.bind(this, "_GoodJobAnimation__wait_callback"));
     return null;
   }
   _GoodJobAnimation__wait_callback(): any {
@@ -786,5 +787,17 @@ export class GoodJobAnimation {
       animations.fade_out_item(this.color_item, true, 560);
     }
     return null;
+  }
+}
+py.register("game/stages/minigamegardener", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "GRID_CELL_HEIGHT": GRID_CELL_HEIGHT = v; break;
+    case "GRID_CELL_WIDTH": GRID_CELL_WIDTH = v; break;
+    case "GRID_ORIGIN": GRID_ORIGIN = v; break;
+    case "GRID_SIZE": GRID_SIZE = v; break;
+    case "ITEM_STATES": ITEM_STATES = v; break;
+    case "ITEM_TAGS": ITEM_TAGS = v; break;
+    case "PLACE_HOLDER_TAGS": PLACE_HOLDER_TAGS = v; break;
   }
 }

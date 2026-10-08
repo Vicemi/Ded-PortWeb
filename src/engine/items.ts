@@ -6,6 +6,13 @@ import { Rect, Surface, draw as pgdraw, type Color } from './pygame';
 import { hittest_text, render_text } from './textrender';
 import type { AdditionalFonts } from './textlayout';
 import type { Stage } from './stage';
+import { PyDict } from '../runtime/py';
+
+/** the games passes the extra fonts of a text as a dict (or None) */
+function fontMap(f: unknown): AdditionalFonts {
+  if (f instanceof PyDict) { const o: AdditionalFonts = {}; for (const [k, v] of f.items()) o[k] = v; return o; }
+  return (f ?? {}) as AdditionalFonts;
+}
 
 // ------------------------------------------------------------------------------------------------------------------------------ events
 export const ItemEvent = { CLICK: 0, DBLCLICK: 1, MOUSE_ENTER: 2, MOUSE_LEAVE: 3, MOUSE_MOVE: 4, GOT_FOCUS: 5, LOST_FOCUS: 6, STATE_CHANGED: 7 } as const;
@@ -399,7 +406,7 @@ export class ItemText extends Item {
     super(left, top, 0, 0);
     this._text_width = width; this._text_height = height;
     this.h_align = h_align; this.v_align = v_align;
-    this.font = font; this.additional_fonts = additional_fonts;
+    this.font = font; this.additional_fonts = fontMap(additional_fonts);
     this.line_height = line_height === 0 ? Math.max(1, font.get_linesize()) : line_height;
     this.color = color; this.background = background;
     this.text = text;
@@ -644,7 +651,7 @@ export class ItemRect extends Item {
   constructor(left: number, top: number, width: number, height: number, font: Font | null = null, line_height = 0, text = '', color: Color = [0, 0, 0],
     background: Color | null = [0, 0, 0], border: Color | null = null, text_h_align = 1, additional_fonts: AdditionalFonts = {}) {
     super(left, top, width, height);
-    this.font = font; this.additional_fonts = additional_fonts;
+    this.font = font; this.additional_fonts = fontMap(additional_fonts);
     this.line_height = line_height === 0 && font ? font.get_linesize() : line_height;
     this.color = color; this.background = background; this.border = border; this.text_h_align = text_h_align;
     this.text = text;

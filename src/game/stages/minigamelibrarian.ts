@@ -16,6 +16,7 @@ import { pygame as $pg } from '../../runtime/prelude'; const delay = (ms: number
 const randint = py.random.randint;
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
+import * as $self from './minigamelibrarian';
 
 export class MinigameLibrarian extends Minigame {
   constructor(stage: any, phase1content: any, witness: any) {
@@ -743,11 +744,11 @@ export class ResultAnimation {
   start(): any {
     py.m(this.result_layer, "add", this.color_item);
     py.m(this.result_layer, "add", this.white_item);
-    animations.fade_out_item(this.white_item, true, 167, this._ResultAnimation__fade_out_callback);
+    animations.fade_out_item(this.white_item, true, 167, py.bind(this, "_ResultAnimation__fade_out_callback"));
     return null;
   }
   _ResultAnimation__fade_out_callback(item: any): any {
-    animations.wait(this.stage, 167, this._ResultAnimation__wait_callback);
+    animations.wait(this.stage, 167, py.bind(this, "_ResultAnimation__wait_callback"));
     return null;
   }
   _ResultAnimation__wait_callback(): any {
@@ -758,3 +759,4 @@ export class ResultAnimation {
     return null;
   }
 }
+py.register("game/stages/minigamelibrarian", $self);

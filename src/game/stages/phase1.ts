@@ -8,10 +8,11 @@ import { ItemMask } from '../../runtime/prelude';
 import { ItemText } from '../../runtime/prelude';
 import { Layer } from '../../runtime/prelude';
 import { Phase0Stage } from './phase0';
+const Statement: any = py.lazyName("game/data/datamodel", "Statement");
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
 import * as datastore from '../data/datastore';
-import * as endgame from './endgame';
+const endgame: any = py.lazy("game/stages/endgame");
 import * as janitor from './janitor';
 import { math } from '../../runtime/py';
 import * as minigamebricklayer from './minigamebricklayer';
@@ -25,6 +26,7 @@ import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
 import * as web from '../../runtime/web';
 import * as witness from './witness';
+import * as $self from './phase1';
 
 export class Phase1Content extends phase0.PhaseContent {
   constructor() {
@@ -135,7 +137,7 @@ export class Phase1Content extends phase0.PhaseContent {
     return null;
   }
   show_arrived_location_end_game(blind_background: any = true): any {
-    let endgame, ending: any;
+    let ending: any;
     if (py.truthy(this.stage.during_night)) {
       animations.wait(this.stage, 50, py.bind(this, "show_arrived_location_end_game"));
     } else {
@@ -382,9 +384,8 @@ export class Phase1Content extends phase0.PhaseContent {
     return null;
   }
   check_thief_location_assignement(): any {
-    let Statement: any;
     if (((this.minigames_resolved === 2) && !py.truthy(this.witness_pin.witness.witness_statement.location_statement))) {
-      this.witness_pin.witness.witness_statement.location_statement = Statement(generate_thief_location_statement(this.target_pin.city));
+      this.witness_pin.witness.witness_statement.location_statement = new Statement(generate_thief_location_statement(this.target_pin.city));
     }
     return null;
   }
@@ -1001,3 +1002,4 @@ export function generate_thief_location_statement(city: any): any {
   }
   return py.add(py.add(py.add(py.add("Mencion\xf3 que se estaba hospedando en\n", article), "&#c144,22,22!&#f:bold!"), city_name), "&#f!&#c!.");
 }
+py.register("game/stages/phase1", $self);

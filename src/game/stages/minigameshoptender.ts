@@ -13,6 +13,7 @@ import { pygame as $pg } from '../../runtime/prelude'; const delay = (ms: number
 const randint = py.random.randint;
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
+import * as $self from './minigameshoptender';
 
 export class MinigameShoptender extends Minigame {
   constructor(stage: any, phase1content: any, witness: any) {
@@ -499,3 +500,4 @@ export class MinigameShoptender extends Minigame {
     return new ItemImage(459, 44, shoptender_happy_image, null);
   }
 }
+py.register("game/stages/minigameshoptender", $self);

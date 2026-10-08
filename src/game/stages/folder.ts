@@ -14,6 +14,7 @@ import * as assets from '../../engine/assets';
 import * as datastore from '../data/datastore';
 import { random } from '../../runtime/py';
 import * as witness from './witness';
+import * as $self from './folder';
 
 export let CASE: any = 1;
 export let CASE_EXTENDED: any = 2;
@@ -1159,4 +1160,15 @@ export class Folder extends Item {
       return;
     }
   };
+}
+(Folder as any).prototype.FolderThief = (Folder as any).FolderThief;
+(Folder as any).prototype.FolderWitness = (Folder as any).FolderWitness;
+py.register("game/stages/folder", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "CASE": CASE = v; break;
+    case "CASE_EXTENDED": CASE_EXTENDED = v; break;
+    case "IDENTIKIT": IDENTIKIT = v; break;
+    case "WITNESS": WITNESS = v; break;
+  }
 }

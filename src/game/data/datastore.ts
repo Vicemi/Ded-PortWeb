@@ -10,6 +10,7 @@ import * as stats from '../../runtime/stats';
 import { sys } from '../../runtime/prelude';
 import { uuid } from '../../runtime/py';
 import * as version from '../../runtime/version';
+import * as $self from './datastore';
 
 export let BASE_REQUEST_URL: any = "http://ws.trojanchicken.com/ded/uy/";
 export let UPDATE_URL: any = py.add(BASE_REQUEST_URL, "update");
@@ -1851,5 +1852,76 @@ export class Datastore {
     py.m(matrix, "append", [2, 3, 2, 4, 2, 2, 3, 5, 5, 4, 2, 3, 1, 5, 2, 4, 3, 0, 3]);
     py.m(matrix, "append", [5, 3, 1, 4, 4, 4, 3, 2, 2, 3, 6, 5, 4, 2, 5, 3, 5, 3, 0]);
     return matrix;
+  }
+}
+py.register("game/data/datastore", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "APARICIO_SARAVIA": APARICIO_SARAVIA = v; break;
+    case "AQUATIC": AQUATIC = v; break;
+    case "ARMAS": ARMAS = v; break;
+    case "ARTE": ARTE = v; break;
+    case "ARTIGAS": ARTIGAS = v; break;
+    case "BASE_REQUEST_URL": BASE_REQUEST_URL = v; break;
+    case "BIRD": BIRD = v; break;
+    case "BLANES": BLANES = v; break;
+    case "BLONDE": BLONDE = v; break;
+    case "BRUNETTE": BRUNETTE = v; break;
+    case "CANELONES": CANELONES = v; break;
+    case "CARNIVORE": CARNIVORE = v; break;
+    case "CERRO_LARGO": CERRO_LARGO = v; break;
+    case "COLONIA": COLONIA = v; break;
+    case "DURAZNO": DURAZNO = v; break;
+    case "ERRORS_URL": ERRORS_URL = v; break;
+    case "EUSEBIO_GIMENEZ": EUSEBIO_GIMENEZ = v; break;
+    case "FABINI": FABINI = v; break;
+    case "FEMALE": FEMALE = v; break;
+    case "FISH": FISH = v; break;
+    case "FLORES": FLORES = v; break;
+    case "FLORIDA": FLORIDA = v; break;
+    case "FLY": FLY = v; break;
+    case "FOSILES": FOSILES = v; break;
+    case "GARDEL": GARDEL = v; break;
+    case "GAUCHO": GAUCHO = v; break;
+    case "GENERICO": GENERICO = v; break;
+    case "GLASSES": GLASSES = v; break;
+    case "GREY_HAIRED": GREY_HAIRED = v; break;
+    case "HERBIVORE": HERBIVORE = v; break;
+    case "INDIGENA": INDIGENA = v; break;
+    case "LAVALLEJA": LAVALLEJA = v; break;
+    case "MALDONADO": MALDONADO = v; break;
+    case "MALE": MALE = v; break;
+    case "MAMMAL": MAMMAL = v; break;
+    case "MOLE": MOLE = v; break;
+    case "MONEDAS": MONEDAS = v; break;
+    case "MONTEVIDEO": MONTEVIDEO = v; break;
+    case "PAYSANDU": PAYSANDU = v; break;
+    case "PET": PET = v; break;
+    case "REDHEAD": REDHEAD = v; break;
+    case "REPTILE": REPTILE = v; break;
+    case "RIO_NEGRO": RIO_NEGRO = v; break;
+    case "RIVERA": RIVERA = v; break;
+    case "ROCHA": ROCHA = v; break;
+    case "SALTO": SALTO = v; break;
+    case "SAN_JOSE": SAN_JOSE = v; break;
+    case "SCAR": SCAR = v; break;
+    case "SCORE_IV": SCORE_IV = v; break;
+    case "SCORE_KEY": SCORE_KEY = v; break;
+    case "SHORT": SHORT = v; break;
+    case "SOLARI": SOLARI = v; break;
+    case "SORIANO": SORIANO = v; break;
+    case "SPORT": SPORT = v; break;
+    case "STATS_URL": STATS_URL = v; break;
+    case "SWIM": SWIM = v; break;
+    case "TACUAREMBO": TACUAREMBO = v; break;
+    case "TALL": TALL = v; break;
+    case "TATOO": TATOO = v; break;
+    case "TERRESTRIAL": TERRESTRIAL = v; break;
+    case "THIEF_CAR_COLORS": THIEF_CAR_COLORS = v; break;
+    case "TORRES_GARCIA": TORRES_GARCIA = v; break;
+    case "TREINTA_Y_TRES": TREINTA_Y_TRES = v; break;
+    case "UPDATE_URL": UPDATE_URL = v; break;
+    case "VERSION": VERSION = v; break;
+    case "WALK": WALK = v; break;
   }
 }

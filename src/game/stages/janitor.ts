@@ -11,6 +11,7 @@ import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
+import * as $self from './janitor';
 
 export let HIDEOUT_DIALOG: any = 1;
 export let QUESTION_DIALOG: any = 2;
@@ -279,5 +280,13 @@ export class Janitor {
       return true;
     }
     return null;
+  }
+}
+py.register("game/stages/janitor", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "HIDEOUT_DIALOG": HIDEOUT_DIALOG = v; break;
+    case "QUESTION_DIALOG": QUESTION_DIALOG = v; break;
+    case "WRONGDOOR_DIALOG": WRONGDOOR_DIALOG = v; break;
   }
 }

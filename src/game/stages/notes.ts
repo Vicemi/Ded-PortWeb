@@ -13,6 +13,7 @@ import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
+import * as $self from './notes';
 
 export let LETTER_ROLLOVER_TIMER_KEY: any = "show_note_letter_rollover";
 export class Notes extends Item {
@@ -600,5 +601,11 @@ export class Notes extends Item {
   }
   disable_notes(): any {
     return null;
+  }
+}
+py.register("game/stages/notes", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "LETTER_ROLLOVER_TIMER_KEY": LETTER_ROLLOVER_TIMER_KEY = v; break;
   }
 }

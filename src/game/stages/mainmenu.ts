@@ -24,6 +24,7 @@ import * as serialization from '../data/serialization';
 import { string } from '../../runtime/py';
 import * as text from '../../engine/textutil';
 import * as web from '../../runtime/web';
+import * as $self from './mainmenu';
 
 export let STATE_ROLLOVER_TIMER_KEY: any = "show_create_char_state_rollover";
 export class MainMenu {
@@ -449,7 +450,7 @@ export class MainMenu {
     return this.remove_accents_and_upper(dep.name);
   }
   remove_accents_and_upper(text: any): any {
-    return py.m(text.translate(this.accents_translate_table), "upper");
+    return py.m(py.m(text, "translate", this.accents_translate_table), "upper");
   }
   swapdetective_item_enter(item: any, args: any): any {
     this.set_swapdetective_rollover_over(item);
@@ -1373,5 +1374,11 @@ export class MainMenu {
       }
     }
     return null;
+  }
+}
+py.register("game/stages/mainmenu", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "STATE_ROLLOVER_TIMER_KEY": STATE_ROLLOVER_TIMER_KEY = v; break;
   }
 }

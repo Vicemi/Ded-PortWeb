@@ -9,6 +9,9 @@ import * as help from './help';
 import * as phase0 from './phase0';
 import { platform } from '../../runtime/py';
 import { pygame } from '../../runtime/prelude';
+// unresolved from-import racer start
+// unresolved module traceback
+import * as $self from './phase3';
 
 export function get_time_of_day(hour: any): any {
   if ((hour < 16)) {
@@ -30,7 +33,7 @@ export class Phase3Content extends phase0.PhaseContent {
     return null;
   }
   add_above_info_layers(): any {
-    let background, background_layer, start, traceback: any;
+    let background, background_layer, start: any;
     background_layer = new Layer();
     this.stage.add_layer(background_layer);
     background = new ItemRect(0, 0, 600, 450);
@@ -110,3 +113,4 @@ export function get_avatar_path(char_info: any): any {
   name = py.add(name, py.add(py.fmt("%03d", char_info.avatar), "_carchase.jpg"));
   return name;
 }
+py.register("game/stages/phase3", $self);

@@ -9,6 +9,7 @@ import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import * as datamodel from '../data/datamodel';
 import * as text from '../../engine/textutil';
+import * as $self from './characterid';
 
 export class CharacterId {
   constructor(rollover_sound: any = null) {
@@ -183,3 +184,4 @@ export function apply_name_text_casing(name: any): any {
   }
   return new_name;
 }
+py.register("game/stages/characterid", $self);

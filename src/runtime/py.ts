@@ -39,6 +39,10 @@ export function truthy(x: any): boolean {
   return true;
 }
 
+/** `a and b` / `a or b` returning the operands */
+export function and(a: any, f: () => any): any { return truthy(a) ? f() : a; }
+export function or(a: any, f: () => any): any { return truthy(a) ? a : f(); }
+
 export function eq(a: any, b: any): boolean {
   if (a === b) return true;
   if (a === null || a === undefined) return b === null || b === undefined;
@@ -234,6 +238,14 @@ export function* range(a: number, b?: number, step = 1): Generator<number> {
   if (b !== undefined) { s = a; e = b; }
   if (step > 0) for (let i = s; i < e; i += step) yield i; else for (let i = s; i > e; i += step) yield i;
 }
+/** xrange(): a lazy sequence */
+export class PyRange {
+  constructor(public start: number, public stop: number, public step = 1) {}
+  __len__(): number { return Math.max(0, Math.ceil((this.stop - this.start) / this.step)); }
+  __getitem__(i: number): number { const n = this.__len__(); const k = i < 0 ? n + i : i; if (k < 0 || k >= n) throw new IndexError('xrange object index out of range'); return this.start + k * this.step; }
+  [Symbol.iterator](): Iterator<number> { return range(this.start, this.stop, this.step); }
+}
+export function xrange(a: number, b?: number, step = 1): PyRange { return b === undefined ? new PyRange(0, a, step) : new PyRange(a, b, step); }
 /** range() as a list (Python 2) */
 export function rangeList(a: number, b?: number, step = 1): number[] { return Array.from(range(a, b, step)); }
 
@@ -413,7 +425,7 @@ const LIST_METHODS: Record<string, (l: any[], ...a: any[]) => any> = {
   remove: (l, x) => { for (let i = 0; i < l.length; i++) if (eq(l[i], x)) { l.splice(i, 1); return; } throw new ValueError('list.remove(x): x not in list'); },
   pop: (l, i) => { if (l.length === 0) throw new IndexError('pop from empty list'); if (i === undefined) return l.pop(); const k = i < 0 ? l.length + i : i; if (k < 0 || k >= l.length) throw new IndexError('pop index out of range'); return l.splice(k, 1)[0]; },
   insert: (l, i, x) => { const k = i < 0 ? Math.max(0, l.length + i) : Math.min(i, l.length); l.splice(k, 0, x); },
-  sort: (l, f) => { l.sort(f ?? cmp); },
+  sort: (l, f, key) => { if (key) l.sort((a, b) => cmp(key(a), key(b))); else l.sort(f ?? cmp); },
   reverse: (l) => { l.reverse(); },
   __contains__: (l, x) => contains(l, x),
   __len__: (l) => l.length,
@@ -507,7 +519,7 @@ export const random = {
     const n = Math.ceil((b - a) / step);
     return a + step * Math.floor(rng() * n);
   },
-  choice(seq: any): any { const l = Array.isArray(seq) || typeof seq === 'string' ? seq : Array.from(iter(seq)); if (len(l) === 0) throw new IndexError('list index out of range'); return l[Math.floor(rng() * l.length)]; },
+  choice(seq: any): any { if (seq instanceof PyRange) return seq.__getitem__(Math.floor(rng() * seq.__len__())); const l = Array.isArray(seq) || typeof seq === 'string' ? seq : Array.from(iter(seq)); if (len(l) === 0) throw new IndexError('list index out of range'); return l[Math.floor(rng() * l.length)]; },
   shuffle(l: any[]): void { for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } },
   sample(seq: any, k: number): any[] { const l = Array.from(iter(seq)); random.shuffle(l); return l.slice(0, k); },
 };
@@ -617,3 +629,20 @@ export const os = {
   getcwd: (): string => '',
 };
 export const builtins = { Exception, IOError, ValueError, KeyError, IndexError, AttributeError, ZeroDivisionError, SystemExit, StopIteration, OSError, AssertionError, NameError };
+
+// ----------------------------------------------------------------------------------------------------------------------------- lazy module imports
+// The Python code imported some modules inside functions to break import cycles; the generated modules register themselves here so those imports
+// resolve when the function runs.
+const registry = new Map<string, any>();
+export function register(path: string, ns: any): void { registry.set(path, ns); }
+export function lazy(path: string): any {
+  return new Proxy({}, { get: (_t, k) => { const m = registry.get(path); if (!m) throw new Error('module not loaded: ' + path); return m[k as string]; } });
+}
+export function lazyName(path: string, name: string): any {
+  const target = function () { /* proxy target */ };
+  return new Proxy(target, {
+    apply: (_t, _this, args) => { const m = registry.get(path); if (!m) throw new Error('module not loaded: ' + path); return m[name](...args); },
+    construct: (_t, args) => { const m = registry.get(path); if (!m) throw new Error('module not loaded: ' + path); return new m[name](...args); },
+    get: (_t, k) => { const m = registry.get(path); return m?.[name]?.[k as string]; },
+  });
+}

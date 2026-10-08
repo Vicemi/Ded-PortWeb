@@ -5,6 +5,31 @@ import { Stats } from '../runtime/stats';
 import * as datastore from './data/datastore';
 import * as statcodes from './data/statcodes';
 import * as presentation from './stages/presentation';
+// the stages register themselves for the imports the original did inside functions
+import './stages/case';
+import './stages/characterid';
+import './stages/dialogeffects';
+import './stages/endgame';
+import './stages/folder';
+import './stages/help';
+import './stages/janitor';
+import './stages/logotc';
+import './stages/mainmenu';
+import './stages/map';
+import './stages/merits';
+import './stages/minigame';
+import './stages/minigamebricklayer';
+import './stages/minigamegardener';
+import './stages/minigamelibrarian';
+import './stages/minigameshoptender';
+import './stages/notes';
+import './stages/phase0';
+import './stages/phase1';
+import './stages/phase2';
+import './stages/phase3';
+import './stages/presentation';
+import './stages/startscreen';
+import './stages/witness';
 
 /** The original checked a server for new versions; the web version is always the latest */
 class UpdateManager {

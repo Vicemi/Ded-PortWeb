@@ -8,6 +8,7 @@ import { Stage } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
 import * as startscreen from './startscreen';
+import * as $self from './logotc';
 
 export class LogoTCStage extends Stage {
   constructor(game: any) {
@@ -47,3 +48,4 @@ export class LogoTCStage extends Stage {
     return null;
   }
 }
+py.register("game/stages/logotc", $self);

@@ -11,6 +11,7 @@ import { Stage } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
 import * as map from './map';
+import * as $self from './case';
 
 export class CaseStage extends Stage {
   constructor(game: any) {
@@ -80,3 +81,4 @@ export class CaseStage extends Stage {
     return null;
   }
 }
+py.register("game/stages/case", $self);

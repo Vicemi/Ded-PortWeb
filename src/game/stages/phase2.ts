@@ -25,6 +25,7 @@ import * as pygame from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import { sys } from '../../runtime/py';
 import * as text from '../../engine/textutil';
+import * as $self from './phase2';
 const $d1: any = [];
 
 export class ItemTag {
@@ -1331,5 +1332,13 @@ export class PlaceHolderInfo {
     this.index = index;
     this.items = items;
     return;
+  }
+}
+py.register("game/stages/phase2", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "ITEM_STATES": ITEM_STATES = v; break;
+    case "ITEM_TAGS": ITEM_TAGS = v; break;
+    case "PLACE_HOLDER_TAGS": PLACE_HOLDER_TAGS = v; break;
   }
 }

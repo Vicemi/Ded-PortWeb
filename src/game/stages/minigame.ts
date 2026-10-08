@@ -11,9 +11,11 @@ import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import { pygame as $pg } from '../../runtime/prelude'; const delay = (ms: number) => $pg.time.delay(ms);
+const minigamebricklayer: any = py.lazy("game/stages/minigamebricklayer");
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
+import * as $self from './minigame';
 
 export let WRONG_PLACE_DIALOG: any = 0;
 export let OPENING_DIALOG: any = 1;
@@ -441,7 +443,7 @@ export class Minigame {
     return null;
   }
   show_witness_dialog(transition: any = false, blind_witness: any = false): any {
-    let additional_fonts, box_text3, ignore_layers, image, minigamebricklayer, request_line_count, rollover_image, text2, text3, x: any;
+    let additional_fonts, box_text3, ignore_layers, image, request_line_count, rollover_image, text2, text3, x: any;
     this.layer.empty();
     this.stage.prepare_dialog(this.character_layer, false, true);
     this.stage.show_dialog(this.layer, py.bind(this, "handle_event"));
@@ -814,4 +816,22 @@ export function calculate_score_increment(score_increment: any, final_value: any
   increment = increment - py.mod(increment, 10);
   increment = increment + 8;
   return increment;
+}
+py.register("game/stages/minigame", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "OPENING_DIALOG": OPENING_DIALOG = v; break;
+    case "SCORE_DELAY": SCORE_DELAY = v; break;
+    case "SCORE_DIALOG": SCORE_DIALOG = v; break;
+    case "SCORE_END_SOUND_DELAY": SCORE_END_SOUND_DELAY = v; break;
+    case "SCORE_INCREMENT": SCORE_INCREMENT = v; break;
+    case "WITNESS_AID": WITNESS_AID = v; break;
+    case "WITNESS_AID_2": WITNESS_AID_2 = v; break;
+    case "WITNESS_GOODBYE": WITNESS_GOODBYE = v; break;
+    case "WITNESS_HELP": WITNESS_HELP = v; break;
+    case "WITNESS_MINIGAME": WITNESS_MINIGAME = v; break;
+    case "WITNESS_REQUEST": WITNESS_REQUEST = v; break;
+    case "WITNESS_THANKS": WITNESS_THANKS = v; break;
+    case "WRONG_PLACE_DIALOG": WRONG_PLACE_DIALOG = v; break;
+  }
 }

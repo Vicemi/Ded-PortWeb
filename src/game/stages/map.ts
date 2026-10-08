@@ -9,9 +9,12 @@ import { ItemText } from '../../runtime/prelude';
 import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
+const get_travel_turns: any = py.lazyName("game/data/serialization", "get_travel_turns");
 import * as map from './map';
 import { math } from '../../runtime/py';
+const phase0: any = py.lazy("game/stages/phase0");
 import { random } from '../../runtime/py';
+import * as $self from './map';
 
 export let car_angle: any = 135;
 export class Map extends Item {
@@ -188,7 +191,7 @@ export class Map extends Item {
     return null;
   }
   department_masks_click(item: any, args: any): any {
-    let case_, dep_data, get_travel_turns, travel_turns: any;
+    let case_, dep_data, travel_turns: any;
     if ((this.traveling_to == null)) {
       dep_data = this.get_department(args);
       if ((dep_data != null)) {
@@ -300,7 +303,7 @@ export class Map extends Item {
     animations.remove_move_marks(this.car);
     animations.stop_image_sequence(this.car);
     [rotation_images, new_angle] = this.get_car_rotation_images();
-    map.car_angle = new_angle;
+    map.$set("car_angle", new_angle);
     if (py.truthy(this.show_rotation_animation)) {
       animations.start_image_sequence(this.car, rotation_images, 15, 0, py.bind(this, "rotate_car_callback"));
     } else {
@@ -436,7 +439,7 @@ export class Map extends Item {
     return null;
   }
   go_to_phase1(): any {
-    let game, phase0: any;
+    let game: any;
     if (py.truthy(this.from_phase0)) {
       this.stage.set_phase(1, true);
     } else {
@@ -494,5 +497,11 @@ export class MapDepartment {
     this.center_y = center_y;
     this.inactive = true;
     return;
+  }
+}
+py.register("game/stages/map", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "car_angle": car_angle = v; break;
   }
 }

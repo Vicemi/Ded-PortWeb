@@ -9,6 +9,7 @@ import { K_ESCAPE } from '../../runtime/prelude';
 import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
+import * as $self from './witness';
 
 export class Witness {
   constructor(stage: any) {
@@ -93,3 +94,4 @@ export class Witness {
     return null;
   }
 }
+py.register("game/stages/witness", $self);

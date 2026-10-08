@@ -4,8 +4,11 @@ import { decodeImage } from './codecs';
 import { Font, type FontEntry } from './font';
 import { Surface, transform, type Rect } from './pygame';
 import { mixer, Sound, Channel } from './sounds';
+import { os, open } from '../runtime/py';
 
 export let SOUND_VOLUME = 1;
+const NL = String.fromCharCode(10);
+const CR_END = new RegExp(String.fromCharCode(13) + '$');
 
 interface Store {
   pak: Uint8Array | null;
@@ -27,13 +30,9 @@ export async function initAssets(base: string, onProgress?: (fraction: number) =
   ]);
   store.index = index; store.data = data; store.fonts = fonts;
   mixer.init(`${base}/sounds`, sounds);
-  // the atlas of the glyphs
-  const img = new Image();
-  img.src = `${base}/fonts.png`;
-  await img.decode();
-  const atlas = new Surface(img.width, img.height, true);
-  atlas.ctx.drawImage(img, 0, 0);
-  store.atlas = atlas;
+  // the atlas of the glyphs (decoded here: <img>.decode() can stall in background tabs)
+  const png = decodeImage('fonts.png', new Uint8Array(await (await fetch(`${base}/fonts.png`)).arrayBuffer()));
+  store.atlas = Surface.fromRGBA(png.w, png.h, png.data, true);
   // the images: one file, with progress
   const r = await fetch(`${base}/images.pak`);
   const total = Number(r.headers.get('content-length')) || 16_000_000;
@@ -53,15 +52,25 @@ export async function initAssets(base: string, onProgress?: (fraction: number) =
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------- data
-/** load_data: the lines of a data file, each one split in its fields. `compressed` files are the `DAT!` ones (already inflated by the packer). */
-export function load_data(file_name: string, field_sep = ';', throw_exception = true, _compressed = true, _from_dynamic_path = false): string[][] {
-  const f = store.data[file_name];
-  if (!f) {
+/** load_data: the lines of a data file, each one split in its fields. `compressed` files are the `DAT!` ones (already inflated by the packer).
+ *  Files the game wrote itself (characters, scores...) live in the virtual file system and are looked up first when `from_dynamic_path` is set. */
+export function load_data(file_name: string, field_sep = ';', throw_exception = true, _compressed = true, from_dynamic_path = false): string[][] {
+  let text: string | null = null;
+  if (from_dynamic_path) text = readUserFile(file_name);
+  if (text === null) {
+    const f = store.data[file_name];
+    if (f) text = f.text;
+  }
+  if (text === null) {
     if (throw_exception) throw new Error(`Cannot load data file: data/${file_name}`);
     return [];
   }
-  const lines = f.text.split('\n');
-  return lines.map((l) => l.replace(/\r$/, '').split(field_sep));
+  return text.split(NL).map((l) => l.replace(CR_END, '').split(field_sep));
+}
+/** save_data: writes a data file (rows of fields) into the browser's storage */
+export function save_data(file_name: string, data: unknown[][], field_sep = ';', _compress = true): void {
+  const content = data.map((fields) => fields.map((f) => String(f)).join(field_sep)).join(NL);
+  writeUserFile(file_name, content);
 }
 /** raw text of a data file (the YAML files) */
 export function load_text(file_name: string): string {
@@ -135,3 +144,19 @@ export class Image_ {
 export { Image_ as Image };
 
 export function setSoundVolume(v: number): void { SOUND_VOLUME = v; }
+
+// ---------------------------------------------------------------------------------------------------------------------------------- user files
+const userPath = (name: string): string => 'data/' + name;
+function readUserFile(name: string): string | null {
+  const p = userPath(name);
+  if (!os.path.exists(p)) return null;
+  const f = open(p, 'r');
+  const t = f.read();
+  f.close();
+  return t;
+}
+function writeUserFile(name: string, content: string): void {
+  const f = open(userPath(name), 'w');
+  f.write(content);
+  f.close();
+}

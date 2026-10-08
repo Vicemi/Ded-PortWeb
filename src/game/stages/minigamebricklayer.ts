@@ -11,6 +11,7 @@ import * as assets from '../../engine/assets';
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
+import * as $self from './minigamebricklayer';
 
 export class MinigameBricklayer extends Minigame {
   constructor(stage: any, phase1content: any, witness: any) {
@@ -586,3 +587,4 @@ export class Picture {
     return;
   }
 }
+py.register("game/stages/minigamebricklayer", $self);

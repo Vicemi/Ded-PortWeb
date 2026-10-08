@@ -13,6 +13,7 @@ import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
 import * as case_ from './case';
 import * as mainmenu from './mainmenu';
+import * as $self from './startscreen';
 
 export class StartScreenStage extends Stage {
   constructor(game: any, initial_mainmenu: any = false) {
@@ -128,3 +129,4 @@ export class StartScreenStage extends Stage {
     return null;
   }
 }
+py.register("game/stages/startscreen", $self);

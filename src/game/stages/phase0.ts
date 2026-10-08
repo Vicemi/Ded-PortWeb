@@ -16,12 +16,18 @@ import * as endgame from './endgame';
 import * as folder from './folder';
 import { gc } from '../../runtime/prelude';
 import * as help from './help';
+const mainmenu: any = py.lazy("game/stages/mainmenu");
 import * as map from './map';
 import * as merits from './merits';
 import * as notes from './notes';
+const phase1: any = py.lazy("game/stages/phase1");
+const phase2: any = py.lazy("game/stages/phase2");
+const phase3: any = py.lazy("game/stages/phase3");
 import { pygame } from '../../runtime/prelude';
 import * as statcodes from '../data/statcodes';
+import { sys } from '../../runtime/py';
 import * as text from '../../engine/textutil';
+import * as $self from './phase0';
 
 export let GRID_ORIGIN: any = [300, 105];
 export let GRID_CELL_WIDTH: any = 24;
@@ -29,7 +35,7 @@ export let GRID_CELL_HEIGHT: any = 12;
 export let GRID_SIZE: any = [22, 22];
 export class Phase0Stage extends StageIso {
   constructor(game: any, initial_phase: any, save_state: any = true) {
-    let character_progress, department, sys: any;
+    let character_progress, department: any;
     super(game, null, null, null);
     this.seting_timer = false;
     this.checking_ending = false;
@@ -112,7 +118,7 @@ export class Phase0Stage extends StageIso {
       this.stop_timer("load_phase");
       if (py.truthy(this.initialized)) {
         loading_image = py.add(py.add("p0_loading_slides_00", py.str(phase)), ".jpg");
-        this.game.show_loading(this._Phase0Stage__show_loading_callback, loading_image);
+        this.game.show_loading(py.bind(this, "_Phase0Stage__show_loading_callback"), loading_image);
       }
     }
     return null;
@@ -888,7 +894,7 @@ export class Phase0Stage extends StageIso {
     return null;
   }
   start_map_help_animation(): any {
-    this.start_timer("start_map_animation", 30, this._Phase0Stage__start_map_help_animation_preinvoke_timer, true);
+    this.start_timer("start_map_animation", 30, py.bind(this, "_Phase0Stage__start_map_help_animation_preinvoke_timer"), true);
     return null;
   }
   _Phase0Stage__start_map_help_animation_preinvoke_timer(key: any, data: any): any {
@@ -913,18 +919,18 @@ export class Phase0Stage extends StageIso {
     if ((this.map_animation_times <= 8)) {
       this.map_icon.set_lefttop(375, 397);
       duration = py.add(60, (py.fdiv(py.float(this.map_animation_dy), 30) * 250));
-      animations.start_move(this.map_icon, 375, (397 - this.map_animation_dy), duration, [0.2, 0.5, 1], null, this._Phase0Stage__map_help_animation_down);
+      animations.start_move(this.map_icon, 375, (397 - this.map_animation_dy), duration, [0.2, 0.5, 1], null, py.bind(this, "_Phase0Stage__map_help_animation_down"));
     }
     return null;
   }
   _Phase0Stage__map_help_animation_down(item: any = null): any {
     let delay: any;
     delay = py.add(40, (py.fdiv(py.float(this.map_animation_dy), 30) * 160));
-    animations.start_move(this.map_icon, 375, 397, delay, [0.7, 0.5, 1], null, this._Phase0Stage__map_help_animation_up);
+    animations.start_move(this.map_icon, 375, 397, delay, [0.7, 0.5, 1], null, py.bind(this, "_Phase0Stage__map_help_animation_up"));
     return null;
   }
   start_notes_help_animation(delay: any = 0): any {
-    this.start_timer("start_notes_animation", 30, this._Phase0Stage__start_notes_help_animation_preinvoke_timer, [delay], true);
+    this.start_timer("start_notes_animation", 30, py.bind(this, "_Phase0Stage__start_notes_help_animation_preinvoke_timer"), [delay], true);
     return null;
   }
   _Phase0Stage__start_notes_help_animation_preinvoke_timer(key: any, data: any): any {
@@ -937,7 +943,7 @@ export class Phase0Stage extends StageIso {
       }
       if ((delay !== 0)) {
         this.animation_times = 0;
-        animations.wait_locked(this, delay, this._Phase0Stage__start_notes_help_animation_wait);
+        animations.wait_locked(this, delay, py.bind(this, "_Phase0Stage__start_notes_help_animation_wait"));
       } else {
         this.notes_animation_times = 0;
         this.notes_animation_dy = 30;
@@ -963,14 +969,14 @@ export class Phase0Stage extends StageIso {
     if ((this.notes_animation_times <= 8)) {
       this.notes_icon.set_lefttop(520, 394);
       duration = py.add(60, (py.fdiv(py.float(this.notes_animation_dy), 30) * 250));
-      animations.start_move(this.notes_icon, 520, (394 - this.notes_animation_dy), duration, [0.2, 0.5, 1], null, this._Phase0Stage__notes_help_animation_down);
+      animations.start_move(this.notes_icon, 520, (394 - this.notes_animation_dy), duration, [0.2, 0.5, 1], null, py.bind(this, "_Phase0Stage__notes_help_animation_down"));
     }
     return null;
   }
   _Phase0Stage__notes_help_animation_down(item: any = null): any {
     let delay: any;
     delay = py.add(40, (py.fdiv(py.float(this.notes_animation_dy), 30) * 160));
-    animations.start_move(this.notes_icon, 520, 394, delay, [0.7, 0.5, 1], null, this._Phase0Stage__notes_help_animation_up);
+    animations.start_move(this.notes_icon, 520, 394, delay, [0.7, 0.5, 1], null, py.bind(this, "_Phase0Stage__notes_help_animation_up"));
     return null;
   }
   lock_folder_help(): any {
@@ -985,7 +991,7 @@ export class Phase0Stage extends StageIso {
     return null;
   }
   start_folder_help_animation(delay: any = 0): any {
-    this.start_timer("start_folder_animation", 30, this._Phase0Stage__start_folder_help_animation_preinvoke_timer, [delay], true);
+    this.start_timer("start_folder_animation", 30, py.bind(this, "_Phase0Stage__start_folder_help_animation_preinvoke_timer"), [delay], true);
     return null;
   }
   _Phase0Stage__start_folder_help_animation_preinvoke_timer(key: any, data: any): any {
@@ -1003,7 +1009,7 @@ export class Phase0Stage extends StageIso {
       }
       if ((delay !== 0)) {
         this.animation_times = 0;
-        animations.wait_locked(this, delay, this._Phase0Stage__start_folder_help_animation_wait);
+        animations.wait_locked(this, delay, py.bind(this, "_Phase0Stage__start_folder_help_animation_wait"));
       } else {
         this.folder_animation_times = 0;
         this.folder_animation_dy = 30;
@@ -1029,14 +1035,14 @@ export class Phase0Stage extends StageIso {
     if ((this.folder_animation_times <= 8)) {
       this.folder_icon.set_lefttop(445, 398);
       duration = py.add(60, (py.fdiv(py.float(this.folder_animation_dy), 30) * 250));
-      animations.start_move(this.folder_icon, 445, (398 - this.folder_animation_dy), duration, [0.2, 0.5, 1], null, this._Phase0Stage__folder_help_animation_down);
+      animations.start_move(this.folder_icon, 445, (398 - this.folder_animation_dy), duration, [0.2, 0.5, 1], null, py.bind(this, "_Phase0Stage__folder_help_animation_down"));
     }
     return null;
   }
   _Phase0Stage__folder_help_animation_down(item: any = null): any {
     let delay: any;
     delay = py.add(40, (py.fdiv(py.float(this.folder_animation_dy), 30) * 160));
-    animations.start_move(this.folder_icon, 445, 398, delay, [0.7, 0.5, 1], null, this._Phase0Stage__folder_help_animation_up);
+    animations.start_move(this.folder_icon, 445, 398, delay, [0.7, 0.5, 1], null, py.bind(this, "_Phase0Stage__folder_help_animation_up"));
     return null;
   }
   _Phase0Stage__check_timer_moving(): any {
@@ -1045,25 +1051,25 @@ export class Phase0Stage extends StageIso {
     return py.or((this.timer_days < days), () => py.and(py.eq(this.timer_days, days), () => (this.timer_hour < hour)));
   }
   _Phase0Stage__show_loading_callback(layer: any): any {
-    this.start_timer("load_phase", 0, this._Phase0Stage__load_phase_callback);
+    this.start_timer("load_phase", 0, py.bind(this, "_Phase0Stage__load_phase_callback"));
     return null;
   }
   _Phase0Stage__hide_loading_callback(layer: any = null, inital_phase: any = false): any {
-    this.set_time_left(0, this._Phase0Stage__loading_set_time_callback);
+    this.set_time_left(0, py.bind(this, "_Phase0Stage__loading_set_time_callback"));
     return null;
   }
   _Phase0Stage__loading_set_time_callback(): any {
     this.loading_phase = false;
     this.seting_timer = true;
     if ((!py.truthy(this.minigame_started) && (this.phase_number !== 3))) {
-      animations.wait_locked(this, 50, this._Phase0Stage__show_dialog_step_callback);
+      animations.wait_locked(this, 50, py.bind(this, "_Phase0Stage__show_dialog_step_callback"));
     }
     return null;
   }
   _Phase0Stage__show_dialog_step_callback(): any {
     let case_, cp: any;
     if (py.truthy(this.during_night_or_applying_blind())) {
-      animations.wait(this, 50, this._Phase0Stage__show_dialog_step_callback);
+      animations.wait(this, 50, py.bind(this, "_Phase0Stage__show_dialog_step_callback"));
     } else {
       this.seting_timer = false;
       if ((this.phase_number === 1)) {
@@ -1096,7 +1102,7 @@ export class Phase0Stage extends StageIso {
     return null;
   }
   _Phase0Stage__load_phase(phase: any): any {
-    let initial_phase, phase1, phase2, phase3: any;
+    let initial_phase: any;
     this.loading_phase = true;
     if (!py.truthy(this.initialized)) {
       this.initialize_stage();
@@ -1153,9 +1159,9 @@ export class Phase0Stage extends StageIso {
     this.minigame = null;
     this.game.stats.start_time_event(py.add(statcodes.PHASE_PREFIX, py.str(this.phase_number)));
     if ((this.phase_number === 3)) {
-      this._Phase0Stage__hide_loading_callback;
+      py.bind(this, "_Phase0Stage__hide_loading_callback");
     } else {
-      this.game.hide_loading(this._Phase0Stage__hide_loading_callback);
+      this.game.hide_loading(py.bind(this, "_Phase0Stage__hide_loading_callback"));
     }
     return null;
   }
@@ -1175,7 +1181,6 @@ export class Phase0Stage extends StageIso {
     return null;
   }
   check_ending(): any {
-    let phase1: any;
     this.checking_ending = true;
     if (!py.truthy(this.loading_phase)) {
       if (py.truthy(this.during_night_or_applying_blind())) {
@@ -1224,7 +1229,7 @@ export class Phase0Stage extends StageIso {
     return null;
   }
   show_mainmenu(): any {
-    let main, mainmenu: any;
+    let main: any;
     if (!py.truthy(this.showing_mainmenu)) {
       this.pause_music(450);
       main = new mainmenu.MainMenu(this);
@@ -1342,32 +1347,32 @@ export class Phase0Stage extends StageIso {
           notes = this.game.datastore.user_character_progress.notes;
           for (note of py.iter(this.game.datastore.list_history_facts)) {
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_rivers)) {
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_lagoons)) {
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_hills)) {
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_locations)) {
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_writers)) {
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
         } else if ((py.eq(mod, (pygame.KMOD_LSHIFT | pygame.KMOD_LCTRL)) && py.eq(e.key, pygame.K_m))) {
@@ -1378,7 +1383,7 @@ export class Phase0Stage extends StageIso {
               py.m(new_notes, "append", note);
             }
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_rivers)) {
@@ -1386,7 +1391,7 @@ export class Phase0Stage extends StageIso {
               py.m(new_notes, "append", note);
             }
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_lagoons)) {
@@ -1394,7 +1399,7 @@ export class Phase0Stage extends StageIso {
               py.m(new_notes, "append", note);
             }
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_hills)) {
@@ -1402,7 +1407,7 @@ export class Phase0Stage extends StageIso {
               py.m(new_notes, "append", note);
             }
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_locations)) {
@@ -1410,7 +1415,7 @@ export class Phase0Stage extends StageIso {
               py.m(new_notes, "append", note);
             }
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
           for (note of py.iter(this.game.datastore.list_writers)) {
@@ -1418,7 +1423,7 @@ export class Phase0Stage extends StageIso {
               py.m(new_notes, "append", note);
             }
             if (!py.contains(notes, note)) {
-              notes.append(note);
+              py.m(notes, "append", note);
             }
           }
         } else if ((py.eq(mod, pygame.KMOD_LSHIFT) && py.eq(e.key, pygame.K_m))) {
@@ -1465,5 +1470,14 @@ export class PhaseContent {
   }
   on_reset_dialog(animate: any): any {
     return null;
+  }
+}
+py.register("game/stages/phase0", $self);
+export function $set(name: string, v: any): void {
+  switch (name) {
+    case "GRID_CELL_HEIGHT": GRID_CELL_HEIGHT = v; break;
+    case "GRID_CELL_WIDTH": GRID_CELL_WIDTH = v; break;
+    case "GRID_ORIGIN": GRID_ORIGIN = v; break;
+    case "GRID_SIZE": GRID_SIZE = v; break;
   }
 }

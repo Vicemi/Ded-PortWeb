@@ -21,6 +21,7 @@ import { pygame } from '../../runtime/prelude';
 import * as startscreen from './startscreen';
 import * as stats from '../../runtime/stats';
 import * as web from '../../runtime/web';
+import * as $self from './presentation';
 
 export function send_error_cb(result: any): any {
   if (!py.truthy(result.error)) {
@@ -395,3 +396,4 @@ export class PresentationStage extends Stage {
     return null;
   }
 }
+py.register("game/stages/presentation", $self);

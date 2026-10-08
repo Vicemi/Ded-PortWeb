@@ -11,6 +11,7 @@ import { K_ESCAPE } from '../../runtime/prelude';
 import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
+import { base64 } from '../../runtime/py';
 import * as datamodel from '../data/datamodel';
 import * as datastore from '../data/datastore';
 import * as des from '../../runtime/des';
@@ -19,9 +20,11 @@ import * as minigame from './minigame';
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as serialization from '../data/serialization';
+const startscreen: any = py.lazy("game/stages/startscreen");
 import * as statcodes from '../data/statcodes';
 import * as text from '../../engine/textutil';
 import * as web from '../../runtime/web';
+import * as $self from './endgame';
 
 export class EndReason {
   static TIME_UP: any = 0;
@@ -523,7 +526,7 @@ export class EndGame {
     return null;
   }
   continue_with_next(): any {
-    let base64, k, score: any;
+    let k, score: any;
     this.continue_visible = false;
     this.hide_layers();
     k = des.des(datastore.SCORE_KEY, des.CBC, datastore.SCORE_IV, null, des.PAD_PKCS5);
@@ -553,7 +556,7 @@ export class EndGame {
     return null;
   }
   restart_game(): any {
-    let datastore, initial_stage, startscreen: any;
+    let datastore, initial_stage: any;
     initial_stage = new startscreen.StartScreenStage(this.stage.game, true);
     this.stage.game.set_stage(initial_stage);
     datastore = this.stage.game.datastore;
@@ -1227,3 +1230,4 @@ export class EndGame {
     return null;
   }
 }
+py.register("game/stages/endgame", $self);

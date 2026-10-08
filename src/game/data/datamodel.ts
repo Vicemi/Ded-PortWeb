@@ -3,6 +3,7 @@
 import * as py from '../../runtime/py';
 import * as assets from '../../engine/assets';
 import * as text from '../../engine/textutil';
+import * as $self from './datamodel';
 const $d1: any = [];
 const $d2: any = [];
 const $d3: any = [];
@@ -740,3 +741,4 @@ export class Sport {
     return;
   }
 }
+py.register("game/data/datamodel", $self);

@@ -1,15 +1,25 @@
 // @ts-nocheck
 // Generated from the original game code (see MODLOG.md). Do not edit by hand.
 import * as py from '../../runtime/py';
+// unresolved from-import types DictType
+// unresolved from-import types FloatType
+// unresolved from-import types FunctionType
+// unresolved from-import types IntType
+// unresolved from-import types ListType
+// unresolved from-import types LongType
+// unresolved from-import types StringType
+// unresolved from-import types TupleType
 import * as assets from '../../engine/assets';
 import * as datamodel from './datamodel';
 import * as external from '../../runtime/external';
 import { os } from '../../runtime/py';
+const phase1: any = py.lazy("game/stages/phase1");
 import { random } from '../../runtime/py';
 import * as stats from '../../runtime/stats';
 import { sys } from '../../runtime/py';
 import { time } from '../../runtime/py';
 import { uuid } from '../../runtime/py';
+import * as $self from './serialization';
 
 export function save_character(datastore: any, c: any, cp: any, game: any, stage: any, check_save_in_development: any): any {
   let bricklayer_pictures, captured_thieves, character_data, clue_found, clues, clues_found, d, department, department_solved, departments, file_name, folder_witnesses, found, i, identikit, item, j, k, lair_set, location, medal, medals, n, new_notes, notes, picture, posible_departments, s, stage_clue, statements, t, target_cities, tc, thief, thief_index, thieves, visited_witnesses, w, wit_dep, wit_dep_index, witnesses: any;
@@ -240,7 +250,7 @@ export function save_character(datastore: any, c: any, cp: any, game: any, stage
   return null;
 }
 export function open_character(datastore: any, charinfo: any): any {
-  let arrest_order_thief, bricklayer_help_seen, bricklayer_pictures_seen, c_dep, c_id, c_uuid, captured_thieves, case_, case_number, category, caught_thief, char, char_progress, character_data, city, clue, clues_found, clues_identified, crime_loc, ct, d, dep_index, department, file_name, gardener_help_seen, generate_new_case, identikit_help, identikit_statement, index, intro_statement, item_type, janitor_statement, k, last_dep_lair, last_dep_visited, last_help_step_seen, layout, librarian_help_seen, line, list_clues, list_dep, list_dep_solved, list_folder_witnesses, list_posible_deps, list_sel_feat, list_target_cities, list_thieves, list_visited_witnesses, list_wit_statements, list_witnesses, location_statement, medal, medals, new_notes, note_item, notes, pending_witness_statements, phase1, phase2_help, phase3_help, place_holder, resolved_cases, score, set_elements, shoptender_help_seen, show_folder, show_notes_animation, size, stage, statement_index, stolen_obj, t, tc, thief, thief_index, thief_lair_set, time_limit, time_spend, type, value, w, w_s, wit_ori, witness, wrong_witness_visited: any;
+  let arrest_order_thief, bricklayer_help_seen, bricklayer_pictures_seen, c_dep, c_id, c_uuid, captured_thieves, case_, case_number, category, caught_thief, char, char_progress, character_data, city, clue, clues_found, clues_identified, crime_loc, ct, d, dep_index, department, file_name, gardener_help_seen, generate_new_case, identikit_help, identikit_statement, index, intro_statement, item_type, janitor_statement, k, last_dep_lair, last_dep_visited, last_help_step_seen, layout, librarian_help_seen, line, list_clues, list_dep, list_dep_solved, list_folder_witnesses, list_posible_deps, list_sel_feat, list_target_cities, list_thieves, list_visited_witnesses, list_wit_statements, list_witnesses, location_statement, medal, medals, new_notes, note_item, notes, pending_witness_statements, phase2_help, phase3_help, place_holder, resolved_cases, score, set_elements, shoptender_help_seen, show_folder, show_notes_animation, size, stage, statement_index, stolen_obj, t, tc, thief, thief_index, thief_lair_set, time_limit, time_spend, type, value, w, w_s, wit_ori, witness, wrong_witness_visited: any;
   file_name = get_character_file_name(charinfo.id);
   character_data = assets.load_data(file_name, ";", false, undefined, true);
   if (((character_data == null) || py.eq(character_data, []))) {
@@ -1025,7 +1035,7 @@ export function get_travel_turns(datastore: any, list_deps: any): any {
   return dep_distance;
 }
 export function check_obj_equals(o1: any, name1: any, stack1: any, o2: any, name2: any, stack2: any, check_cache: any): any {
-  let DictType, FloatType, FunctionType, IntType, ListType, LongType, StringType, TupleType, field, field1, field2, fields1, fields2, i, key, type1, type2: any;
+  let field, field1, field2, fields1, fields2, i, key, type1, type2: any;
   if ((o1 == null)) {
     if ((o2 == null)) {
       return null;
@@ -1098,3 +1108,4 @@ export function check_obj_equals(o1: any, name1: any, stack1: any, o2: any, name
   }
   return null;
 }
+py.register("game/data/serialization", $self);

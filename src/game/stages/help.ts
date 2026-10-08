@@ -11,6 +11,7 @@ import * as assets from '../../engine/assets';
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
+import * as $self from './help';
 
 export class Help {
   constructor(stage: any, hide_up: any = false, include_ui_help: any = false) {
@@ -391,3 +392,4 @@ export class Help {
     return null;
   }
 }
+py.register("game/stages/help", $self);
