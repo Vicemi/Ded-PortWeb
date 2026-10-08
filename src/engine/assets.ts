@@ -12,34 +12,27 @@ const NL = String.fromCharCode(10);
 const CR_END = new RegExp(String.fromCharCode(13) + '$');
 
 interface Store {
-  pak: Uint8Array | null;
-  index: Record<string, [number, number]>;
+  paks: (Uint8Array | null)[];
+  base: string;
+  index: Record<string, [number, number, number]>;
   data: Record<string, { kind: string; text: string }>;
   fonts: Record<string, FontEntry>;
   atlas: Surface | null;
   racer: any;
 }
-const store: Store = { pak: null, index: {}, data: {}, fonts: {}, atlas: null, racer: null };
+const store: Store = { paks: [null, null], base: '', index: {}, data: {}, fonts: {}, atlas: null, racer: null };
 /** the data files of the car chase (camera, car, thief, traffic, gui and the maps), parsed from the original YAML */
 export function racerData(): any { return store.racer; }
 const decoded = new Map<string, WeakRef<Surface>>();
 const registry = typeof FinalizationRegistry !== 'undefined' ? new FinalizationRegistry<string>((k) => { const r = decoded.get(k); if (r && !r.deref()) decoded.delete(k); }) : null;
 
-/** Downloads the packed game files. `base` = URL of public/assets. */
-export async function initAssets(base: string, onProgress?: (fraction: number) => void): Promise<void> {
-  const get = async <T,>(file: string): Promise<T> => (await fetch(`${base}/${file}`)).json() as Promise<T>;
-  const [index, data, fonts, sounds, racer] = await Promise.all([
-    get<Record<string, [number, number]>>('images.json'), get<Store['data']>('data.json'),
-    get<Record<string, FontEntry>>('fonts.json'), get<Record<string, number>>('sounds.json'), get<any>('racer.json'),
-  ]);
-  store.index = index; store.data = data; store.fonts = fonts; store.racer = racer;
-  mixer.init(`${base}/sounds`, sounds);
-  // the atlas of the glyphs (decoded here: <img>.decode() can stall in background tabs)
-  const png = decodeImage('fonts.png', new Uint8Array(await (await fetch(`${base}/fonts.png`)).arrayBuffer()));
-  store.atlas = Surface.fromRGBA(png.w, png.h, png.data, true);
-  // the images: one file, with progress
-  const r = await fetch(`${base}/images.pak`);
-  const total = Number(r.headers.get('content-length')) || 16_000_000;
+let restLoading: Promise<void> = Promise.resolve();
+/** resolves when every image is downloaded (the game does not wait for it: see decodeSurface) */
+export function assetsComplete(): Promise<void> { return restLoading; }
+
+async function download(url: string, onProgress?: (fraction: number) => void): Promise<Uint8Array> {
+  const r = await fetch(url);
+  const total = Number(r.headers.get('content-length')) || 0;
   const reader = r.body!.getReader();
   const chunks: Uint8Array[] = [];
   let got = 0;
@@ -47,12 +40,48 @@ export async function initAssets(base: string, onProgress?: (fraction: number) =
     const { done, value } = await reader.read();
     if (done) break;
     chunks.push(value); got += value.length;
-    onProgress?.(Math.min(1, got / total));
+    if (total) onProgress?.(Math.min(1, got / total));
   }
-  const pak = new Uint8Array(got);
+  const out = new Uint8Array(got);
   let o = 0;
-  for (const c of chunks) { pak.set(c, o); o += c.length; }
-  store.pak = pak;
+  for (const c of chunks) { out.set(c, o); o += c.length; }
+  onProgress?.(1);
+  return out;
+}
+
+/** Downloads the packed game files: the small `boot` pack of images first (the game can start with it), the rest in the background.
+ *  `base` = URL of public/assets. */
+export async function initAssets(base: string, onProgress?: (fraction: number) => void): Promise<void> {
+  const get = async <T,>(file: string): Promise<T> => (await fetch(`${base}/${file}`)).json() as Promise<T>;
+  const [index, data, fonts, sounds, racer] = await Promise.all([
+    get<Store['index']>('images.json'), get<Store['data']>('data.json'),
+    get<Record<string, FontEntry>>('fonts.json'), get<Record<string, number>>('sounds.json'), get<any>('racer.json'),
+  ]);
+  store.base = base; store.index = index; store.data = data; store.fonts = fonts; store.racer = racer;
+  mixer.init(`${base}/sounds`, sounds);
+  // the atlas of the glyphs (decoded here: <img>.decode() can stall in background tabs)
+  const png = decodeImage('fonts.png', new Uint8Array(await (await fetch(`${base}/fonts.png`)).arrayBuffer()));
+  store.atlas = Surface.fromRGBA(png.w, png.h, png.data, true);
+  store.paks[0] = await download(`${base}/images_boot.pak`, onProgress);
+  restLoading = download(`${base}/images_rest.pak`).then((b) => { store.paks[1] = b; }).catch((e) => { console.warn('background download failed, images are fetched one by one', e); });
+}
+
+/** an image that is not downloaded yet (the player was faster than the background download): fetched on the spot with a synchronous range request */
+function fetchNow(pak: number, off: number, len: number): Uint8Array | null {
+  if (typeof XMLHttpRequest === 'undefined') return null;
+  try {
+    const x = new XMLHttpRequest();
+    x.open('GET', `${store.base}/images_${pak === 0 ? 'boot' : 'rest'}.pak`, false);
+    x.overrideMimeType('text/plain; charset=x-user-defined');
+    x.setRequestHeader('Range', `bytes=${off}-${off + len - 1}`);
+    x.send();
+    if (x.status !== 206 && x.status !== 200) return null;
+    const t = x.responseText;
+    const start = x.status === 206 ? 0 : off;
+    const out = new Uint8Array(len);
+    for (let i = 0; i < len; i++) out[i] = t.charCodeAt(start + i) & 0xff;
+    return out;
+  } catch { return null; }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------- data
@@ -89,8 +118,11 @@ function decodeSurface(file_name: string): Surface {
   const cached = decoded.get(file_name)?.deref();
   if (cached) return cached;
   const e = store.index[file_name];
-  if (!e || !store.pak) throw new Error(`Cannot load image: images/${file_name}`);
-  const r = decodeImage(file_name, store.pak.subarray(e[0], e[0] + e[1]));
+  if (!e) throw new Error(`Cannot load image: images/${file_name}`);
+  const pak = store.paks[e[0]];
+  const bytes = pak ? pak.subarray(e[1], e[1] + e[2]) : fetchNow(e[0], e[1], e[2]);
+  if (!bytes) throw new Error(`Cannot load image: images/${file_name}`);
+  const r = decodeImage(file_name, bytes);
   const s = Surface.fromRGBA(r.w, r.h, r.data, r.bits32);
   decoded.set(file_name, new WeakRef(s));
   registry?.register(s, file_name);

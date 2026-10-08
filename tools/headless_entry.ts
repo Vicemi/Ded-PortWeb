@@ -1,6 +1,6 @@
 // Runs the real game code in Node (no browser): canvas from @napi-rs/canvas, assets from public/assets. Used by the tests and for driving the game
 // through its screens while developing (see tools/headless.mjs).
-import { initAssets } from '../src/engine/assets';
+import { assetsComplete, initAssets } from '../src/engine/assets';
 import { K, event, input, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, KEYDOWN, KEYUP, setClock } from '../src/engine/pygame';
 import { createGame } from '../src/game/main';
 import type { Game } from '../src/engine/engine';
@@ -28,6 +28,7 @@ export interface Dev {
 
 export async function start(assetBase: string, save: (name: string, buf: Buffer) => void): Promise<Dev> {
   await initAssets(assetBase);
+  await assetsComplete();
   let t = 1000;
   setClock(() => t);
   const canvas = (globalThis as any).document.createElement('canvas');

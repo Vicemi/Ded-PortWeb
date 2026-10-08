@@ -29,12 +29,14 @@ export default function DedGame() {
   const [touch, setTouch] = useState(false);
   const [portrait, setPortrait] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [note, setNote] = useState<string | null>(null);
   const canFull = typeof document !== 'undefined' && !!document.fullscreenEnabled;
 
   useEffect(() => {
     const ctl = startHost(canvasRef.current!, import.meta.env.BASE_URL.replace(/\/$/, '') + '/assets');
     ctlRef.current = ctl;
-    if (import.meta.env.DEV) (window as unknown as { __ded: Controller }).__ded = ctl;
+    if (import.meta.env.DEV) { (window as unknown as { __ded: Controller }).__ded = ctl; (window as unknown as { __mixer: typeof mixer }).__mixer = mixer; }
     const id = window.setInterval(() => {
       setProgress(ctl.state.progress);
       setLoaded(ctl.state.loaded);
@@ -73,6 +75,28 @@ export default function DedGame() {
       const down = ch.toLowerCase().charCodeAt(0);
       ctl.key(down, true, ch); ctl.key(down, false);
     }
+  };
+
+  const saveProgress = () => {
+    const ctl = ctlRef.current;
+    if (!ctl) return;
+    const blob = new Blob([ctl.exportSave()], { type: 'application/json' });
+    const a = document.createElement('a');
+    const d = new Date();
+    a.href = URL.createObjectURL(blob);
+    a.download = `ded-progreso-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    setNote('Progreso guardado en el archivo ' + a.download);
+  };
+  const loadProgress = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const n = ctlRef.current!.importSave(await file.text());
+      setNote(`Progreso cargado (${n} archivos). Reiniciando…`);
+      setTimeout(() => location.reload(), 800);
+    } catch (e) { setNote((e as Error).message); }
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const toggleFull = () => {
@@ -115,13 +139,18 @@ export default function DedGame() {
         {touch && <button className="ded-btn" aria-label="Menú / Escape" onClick={() => ctlRef.current?.tap(K.ESCAPE)}>☰</button>}
         {canFull && <button className="ded-btn" aria-label="Pantalla completa" onClick={toggleFull}>{full ? '✕' : '⛶'}</button>}
         <button className="ded-btn" aria-label={mute ? 'Activar sonido' : 'Silenciar'} onClick={() => { mixer.setMuted(!mixer.muted); setMute(mixer.muted); }}>{mute ? '🔇' : '🔊'}</button>
+        <button className="ded-btn" aria-label="Guardar progreso en un archivo" title="Guardar progreso en un archivo" onClick={saveProgress}>💾</button>
+        <button className="ded-btn" aria-label="Cargar progreso desde un archivo" title="Cargar progreso desde un archivo" onClick={() => fileRef.current?.click()}>📂</button>
         <button className="ded-btn" aria-label="Créditos" onClick={() => setInfo(true)}>i</button>
       </div>
+      <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={(e) => void loadProgress(e.target.files?.[0])} />
+      {note && <div className="ded-note" role="status" onClick={() => setNote(null)}>{note}</div>}
       {info && (
         <div className="ded-modal" onClick={() => setInfo(false)}>
           <div className="ded-card" onClick={(e) => e.stopPropagation()}>
             <h1>División Especial de Detectives</h1>
             <p>Un juego de <b>Trojan Chicken</b> para las laptops XO del programa Plan Ceibal / One Laptop per Child (actividad Sugar).</p>
+            <p>Tu progreso se guarda en este navegador. Con 💾 puedes bajarlo a un archivo y con 📂 volver a cargarlo (por si cambias de equipo o se borran los datos del navegador).</p>
             <p>Versión web hecha por <b>Vicemi Dev</b> con todos los recursos originales del juego.</p>
             <button className="ded-close" onClick={() => setInfo(false)}>Cerrar</button>
           </div>

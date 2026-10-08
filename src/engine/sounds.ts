@@ -66,7 +66,15 @@ export class Sound {
       this.loading = (async () => {
         try {
           const r = await fetch(`${this.m.base}/${this.name}`);
-          this.buffer = await ctx.decodeAudioData(await r.arrayBuffer());
+          const bytes = await r.arrayBuffer();
+          try {
+            this.buffer = await ctx.decodeAudioData(bytes.slice(0));
+          } catch (e) {
+            // browsers without Ogg Vorbis (older Safari): the same sound as AAC
+            if (!this.name.endsWith('.ogg')) throw e;
+            const r2 = await fetch(`${this.m.base}/${this.name.slice(0, -4)}.m4a`);
+            this.buffer = await ctx.decodeAudioData(await r2.arrayBuffer());
+          }
         } catch (e) { console.warn('cannot decode sound', this.name, e); this.loading = null; }
       })();
     }

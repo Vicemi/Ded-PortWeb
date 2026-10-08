@@ -15,7 +15,7 @@ export default async (dev) => {
     const err = st.x + 3.2;
     dev.hold(dev.K.LEFT, err > 0.8); dev.hold(dev.K.RIGHT, err < -0.8);
     dev.go(8);
-    console.log(i * 8, st.phase, 'v', st.v.toFixed(0), 'dist', st.distance.toFixed(1), 'x', st.x.toFixed(1), 'tx', st.thief.x.toFixed(1));
+    console.log(i * 8, st.phase, 'ths', (st.thief.s-st.s).toFixed(1), 'v', st.v.toFixed(0), 'dist', st.distance.toFixed(1), 'x', st.x.toFixed(1), 'tx', st.thief.x.toFixed(1));
     if (i % 3 === 0 || st.phase !== 'run') dev.save('h' + String(i).padStart(2, '0'));
     if (dev.stage() !== "RacerStage" || st.phase === "won") break;
   }

@@ -582,6 +582,14 @@ function fsSet(p: string, v: string): void {
   memfs.set(p, v);
   try { localStorage.setItem(FS_PREFIX + p, v); } catch { /* storage unavailable: kept in memory */ }
 }
+/** every file the game wrote (characters, scores, settings) */
+export function userFiles(): Record<string, string> {
+  const out: Record<string, string> = {};
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i)!; if (k.startsWith(FS_PREFIX)) out[k.slice(FS_PREFIX.length)] = localStorage.getItem(k) ?? ''; } } catch { /* none */ }
+  for (const [k, v] of memfs) out[k] = v;
+  return out;
+}
+export function restoreUserFiles(files: Record<string, string>): void { for (const [k, v] of Object.entries(files)) fsSet(k, v); }
 export class PyFile {
   private pos = 0;
   private buf = '';

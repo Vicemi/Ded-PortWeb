@@ -4,6 +4,7 @@ import { initAssets } from '../engine/assets';
 import type { Game } from '../engine/engine';
 import { ACTIVEEVENT, KEYDOWN, KEYUP, K, KMOD_LALT, KMOD_LCTRL, KMOD_LSHIFT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, event, input, setClock, time } from '../engine/pygame';
 import { mixer } from '../engine/sounds';
+import { restoreUserFiles, userFiles } from '../runtime/py';
 import { ItemText } from '../engine/items';
 import { createGame } from './main';
 
@@ -23,6 +24,10 @@ export interface Controller {
   tap(code: number): void;
   /** the text field that opens the on-screen keyboard of a phone */
   attachTextInput(el: HTMLInputElement): () => void;
+  /** the progress of the player as the text of a file they can keep */
+  exportSave(): string;
+  /** loads a file made by exportSave (throws when it is not one); returns the number of files restored */
+  importSave(text: string): number;
   state: { loaded: boolean; progress: number; quit: boolean; error: string | null; racing: boolean; touch: boolean; typing: boolean };
 }
 
@@ -85,6 +90,19 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     hold(code, down) { if (down) input.pressed.add(code); else input.pressed.delete(code); },
     tap(code) { sendKey(code, true, '', 0); sendKey(code, false, '', 0); },
     attachTextInput(el) { textInput = el; return () => { if (textInput === el) textInput = null; }; },
+    exportSave() { return JSON.stringify({ game: 'ded', format: 1, saved: new Date().toISOString(), files: userFiles() }, null, 1); },
+    importSave(text) {
+      let o: { game?: string; format?: number; files?: Record<string, unknown> };
+      try { o = JSON.parse(text); } catch { throw new Error('No es un archivo de progreso válido'); }
+      if (o.game !== 'ded' || o.format !== 1 || !o.files || typeof o.files !== 'object') throw new Error('No es un archivo de progreso de este juego');
+      const files: Record<string, string> = {};
+      for (const [k, v] of Object.entries(o.files)) {
+        if (typeof v !== 'string' || !/^[\w.\- ]+(\/[\w.\- ]+)*$/.test(k) || k.includes('..')) throw new Error('El archivo de progreso está dañado');
+        files[k] = v;
+      }
+      restoreUserFiles(files);
+      return Object.keys(files).length;
+    },
     stop() { stopped = true; cancelAnimationFrame(raf); },
   };
 
@@ -161,6 +179,7 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
 
   void (async () => {
     try {
+      try { void navigator.storage?.persist?.(); } catch { /* none */ }
       await initAssets(assetBase, (p) => { state.progress = p; });
       ctl.game = createGame(canvas);
       ctl.game.onQuit = () => { state.quit = true; };

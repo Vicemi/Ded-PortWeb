@@ -55,6 +55,7 @@ export class RacerStage extends Stage {
   private maxTime: number;
   private thief: Vehicle;
   private traffic: Vehicle[] = [];
+  private catchGap0: number | null = null;
   private crashT = 0; private crashDir = 1; private crashKind: 'hard' | 'light' | '' = '';
   private catchT = 0; private catchSide = 1;
   private endAt = 0;
@@ -317,6 +318,7 @@ export class RacerStage extends Stage {
     if (ds >= 0.5 && ds < 12 && Math.abs(dx) < 9 && this.v >= th.v * 0.8 && Math.abs(this.x) < 12) {
       this.phase = 'catch';
       this.catchT = 0;
+      this.catchGap0 = null;
       this.catchSide = th.x >= this.x ? 1 : -1;
       this.play('p3_car_tires.wav', 1);
     }
@@ -331,9 +333,13 @@ export class RacerStage extends Stage {
       const k = clamp(this.catchT / f.maneuver_time, 0, 1);
       const tx = th.x - this.catchSide * f.maneuver_side_distance;
       this.x += (tx - this.x) * Math.min(1, dt / Math.max(0.02, f.maneuver_time - this.catchT + 0.02));
-      const front = th.s + f.maneuver_front_distance + f.close_distance;
-      if (this.s < front) this.s += Math.min(front - this.s, 60 * dt);
-      if (k >= 1 && this.v < 5 + th.v * 0.4) {
+      // the police car eases in behind the thief, which brakes in front of it (so the arrest is seen)
+      if (this.catchGap0 === null) this.catchGap0 = th.s - this.s;
+      const e = clamp(this.catchT / 0.6, 0, 1), ease = e * e * (3 - 2 * e);
+      const gap = this.catchGap0 + (f.close_distance + f.maneuver_front_distance + 0.5 - this.catchGap0) * ease;
+      this.s = th.s - gap;
+      this.v = th.v;
+      if (k >= 1 && th.v < 5) {
         this.phase = 'won';
         this.endAt = this.clock + this.map.exit_time / 1000;
         this.signs.thiefNear = 0;
