@@ -14,7 +14,7 @@ export interface Dev {
   down(x: number, y: number): void;
   up(x: number, y: number): void;
   move(x: number, y: number, frames?: number): void;
-  key(code: number, frames?: number, unicode?: string): void;
+  key(code: number, frames?: number, unicode?: string, mod?: number): void;
   type(text: string): void;
   stage(): string;
   now(): number;
@@ -47,9 +47,9 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
     down(x, y) { dev.move(x, y, 3); input.buttons[0] = 1; post(MOUSEMOTION, x, y); post(MOUSEBUTTONDOWN, x, y); go(2); },
     up(x, y) { input.buttons[0] = 0; post(MOUSEBUTTONUP, x, y); go(2); },
     click(x, y, frames = 20) { dev.down(x, y); dev.up(x, y); go(frames); },
-    key(code, frames = 3, unicode = '') {
-      input.pressed.add(code); event.post({ type: KEYDOWN, key: code, mod: 0, unicode }); go(2);
-      input.pressed.delete(code); event.post({ type: KEYUP, key: code, mod: 0, unicode: '' }); go(frames);
+    key(code, frames = 3, unicode = '', mod = 0) {
+      input.pressed.add(code); input.mods = mod; event.post({ type: KEYDOWN, key: code, mod, unicode }); go(2);
+      input.pressed.delete(code); input.mods = 0; event.post({ type: KEYUP, key: code, mod, unicode: '' }); go(frames);
     },
     type(text) { for (const ch of text) dev.key(ch.toLowerCase().charCodeAt(0), 2, ch); },
     stage() { return (game as any).stage?.constructor?.name ?? '?'; },

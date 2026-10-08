@@ -17,10 +17,12 @@ export default async (dev) => {
     }
   };
   guard('newgame', () => newGame(dev));
+  if (process.env.CHEATS) dev.game.set_development_mode(true);
   for (let i = 0; i < steps; i++) {
     const stage = dev.game.stage;
     const name = dev.stage();
     const r = rand();
+    if (process.env.CHEATS && r < 0.05) { const letters = 'asdfxzvjtc2'; const ch = letters[Math.floor(rand() * letters.length)]; guard('cheat ' + ch, () => dev.key(ch.charCodeAt(0), 30, ch.toUpperCase(), 1)); log.push(`${i} ${name} cheat ${ch}`); continue; }
     if (r < 0.08) { const keys = [dev.K.ESCAPE, dev.K.RETURN, dev.K.SPACE, dev.K.UP, dev.K.DOWN, 97 + Math.floor(rand() * 26)]; const k = keys[Math.floor(rand() * keys.length)]; guard('key ' + k, () => dev.key(k, 10, String.fromCharCode(k))); log.push(`${i} ${name} key ${k}`); continue; }
     const cands = [];
     if (stage && stage.layers) {
