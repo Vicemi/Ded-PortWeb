@@ -4,6 +4,7 @@ import { initAssets } from '../engine/assets';
 import type { Game } from '../engine/engine';
 import { ACTIVEEVENT, KEYDOWN, KEYUP, K, KMOD_LALT, KMOD_LCTRL, KMOD_LSHIFT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, event, input, setClock, time } from '../engine/pygame';
 import { mixer } from '../engine/sounds';
+import { ItemText } from '../engine/items';
 import { createGame } from './main';
 
 export const FPS = 40;
@@ -16,7 +17,13 @@ export interface Controller {
   pointer(type: 'move' | 'down' | 'up', x: number, y: number): void;
   key(code: number, down: boolean, unicode?: string): void;
   stop(): void;
-  state: { loaded: boolean; progress: number; quit: boolean; error: string | null };
+  /** keep a game key pressed (the on-screen controls of a phone) */
+  hold(code: number, down: boolean): void;
+  /** tap of a key (the menu button of a phone sends Escape) */
+  tap(code: number): void;
+  /** the text field that opens the on-screen keyboard of a phone */
+  attachTextInput(el: HTMLInputElement): () => void;
+  state: { loaded: boolean; progress: number; quit: boolean; error: string | null; racing: boolean; touch: boolean; typing: boolean };
 }
 
 const KEY_NAMES: Record<string, number> = {
@@ -36,7 +43,7 @@ function modifiers(e: KeyboardEvent): number {
 }
 
 export function startHost(canvas: HTMLCanvasElement, assetBase: string): Controller {
-  const state = { loaded: false, progress: 0, quit: false, error: null as string | null };
+  const state = { loaded: false, progress: 0, quit: false, error: null as string | null, racing: false, touch: false, typing: false };
   let virtual = false;
   let vnow = 0;
   let raf = 0;
@@ -75,6 +82,9 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     },
     pointer(type, x, y) { send(type, x, y, 0); },
     key(code, down, unicode = '') { sendKey(code, down, unicode, 0); },
+    hold(code, down) { if (down) input.pressed.add(code); else input.pressed.delete(code); },
+    tap(code) { sendKey(code, true, '', 0); sendKey(code, false, '', 0); },
+    attachTextInput(el) { textInput = el; return () => { if (textInput === el) textInput = null; }; },
     stop() { stopped = true; cancelAnimationFrame(raf); },
   };
 
@@ -83,17 +93,41 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     return [((e.clientX - r.left) * 600) / r.width, ((e.clientY - r.top) * 450) / r.height];
   };
 
+  let textInput: HTMLInputElement | null = null;
+  const editingText = (): boolean => {
+    const st = (ctl.game as unknown as { stage?: { get_focus?: () => unknown } } | null)?.stage;
+    const f = st?.get_focus?.();
+    return f instanceof ItemText && f.is_editing();
+  };
+  /** a phone shows its keyboard only when an input is focused from inside a touch handler: run the frame the tap produced right here */
+  const syncKeyboard = (): void => {
+    if (!state.touch || !textInput || !ctl.game) return;
+    try { ctl.game.tick(); } catch (e) { console.error(e); }
+    const editing = editingText();
+    if (editing && document.activeElement !== textInput) textInput.focus({ preventScroll: true });
+    if (!editing && document.activeElement === textInput) textInput.blur();
+    state.typing = editing;
+  };
   canvas.addEventListener('pointerdown', (e) => {
     mixer.unlock();
     canvas.focus();
+    state.touch = e.pointerType === 'touch' || e.pointerType === 'pen';
+    input.touch = state.touch;
     try { canvas.setPointerCapture(e.pointerId); } catch { /* not capturable */ }
     const [x, y] = toGame(e);
     e.preventDefault();
     send('down', x, y, e.button);
   });
   canvas.addEventListener('pointermove', (e) => { const [x, y] = toGame(e); send('move', x, y, -1); });
-  canvas.addEventListener('pointerup', (e) => { const [x, y] = toGame(e); send('up', x, y, e.button); });
-  canvas.addEventListener('pointercancel', (e) => { const [x, y] = toGame(e); send('up', x, y, e.button); });
+  const release = (e: PointerEvent): void => {
+    const [x, y] = toGame(e);
+    send('up', x, y, e.button);
+    // a finger that is lifted is not hovering anything any more
+    if (e.pointerType === 'touch') { event.post({ type: MOUSEMOTION, pos: [-50, -50], rel: [0, 0], buttons: [0, 0, 0] }); input.pos = [-50, -50]; lastPos = [-50, -50]; }
+    syncKeyboard();
+  };
+  canvas.addEventListener('pointerup', release);
+  canvas.addEventListener('pointercancel', release);
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
   const onKey = (down: boolean) => (e: KeyboardEvent): void => {
@@ -120,6 +154,8 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     if (now - last >= 1000 / FPS - 2) {
       last = now;
       try { ctl.game.tick(); } catch (e) { console.error(e); state.error = String(e); }
+      const sn = (ctl.game as unknown as { stage?: { constructor: { name: string } } }).stage?.constructor?.name;
+      state.racing = sn === 'RacerStage';
     }
   };
 

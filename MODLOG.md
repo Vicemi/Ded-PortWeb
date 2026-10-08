@@ -29,3 +29,10 @@ Diario del port web de *División Especial de Detectives* (Trojan Chicken, activ
 
 ## Estado
 (ver abajo, se actualiza mientras avanza el port)
+
+## Estado final (actualizado)
+- **Pipeline**: `research/build_game.sh` (descompilar → verificar por bytecode con Python 2.6.9 → parchear → transpilar a TS) genera `src/game/data|stages`. El motor (`src/engine`) y el runtime Python-2 (`src/runtime`) están hechos a mano.
+- **Verificación**: el código descompilado se recompila con Python 2.6 y se compara el bytecode normalizado con el original; arnés headless (`npm test`: newgame, hub, phase2, racer, endgame, monkey) y navegador (`ded-web`).
+- **Fase 3 (carrera)**: `racer.so` es nativo, se reimplementó (`src/game/racer`) con los YAML originales; sin oráculo de píxeles, afinado a mano.
+- **Móvil**: puntero táctil (sin hover), teclado en pantalla vía `<input>` oculto, gamepad en la carrera, botón ☰ (Escape), aviso de girar el teléfono, manifest.
+- **Pendiente / conocido**: ladrón no visible tras la maniobra de arresto; tráfico choca en el piloto automático de los tests; sin Safari-audio fallback.

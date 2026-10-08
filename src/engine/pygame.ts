@@ -281,6 +281,8 @@ class InputState {
   mods = 0;
   grab = false;
   repeat: [number, number] | null = null;
+  /** the last pointer was a finger: no mouse cursor is drawn */
+  touch = false;
 }
 export const input = new InputState();
 

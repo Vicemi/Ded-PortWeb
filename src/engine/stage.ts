@@ -633,7 +633,7 @@ export class Stage {
     this.draw_background(target);
     for (const l of this.layers) if (l.get_visible()) l.draw(target);
     if (loading_layer) loading_layer.draw(target);
-    else if (this.mouse_layer) this.mouse_layer.draw(target);
+    else if (this.mouse_layer && !input.touch) this.mouse_layer.draw(target);
     if (this.target_surface === null) {
       if (this.game.get_show_fps()) this.game.draw_fps();
       this.game.update_display();

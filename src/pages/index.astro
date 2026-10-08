@@ -8,6 +8,9 @@ import DedGame from '../components/DedGame.tsx';
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="description" content="División Especial de Detectives: el juego de detectives de Trojan Chicken (OLPC / Plan Ceibal), portado a la web." />
     <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <title>División Especial de Detectives</title>
@@ -32,5 +35,10 @@ import DedGame from '../components/DedGame.tsx';
   .ded-card h1 { margin: 0 0 0.4rem; font: 800 1.6rem system-ui, sans-serif; color: #7a2418; }
   .ded-card p { margin: 0.5rem 0; }
   .ded-close { margin-top: 0.6rem; padding: 0.5rem 1.4rem; border: 0; border-radius: 99px; background: #7a2418; color: #fff; font: 700 1rem system-ui, sans-serif; cursor: pointer; }
+  .ded-hidden-input { position: fixed; left: 0; bottom: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; font-size: 16px; pointer-events: none; }
+  .ded-gamepad { position: fixed; z-index: 6; left: 0; right: 0; bottom: calc(0.8rem + env(safe-area-inset-bottom)); display: flex; justify-content: space-between; padding: 0 calc(1rem + env(safe-area-inset-left)); pointer-events: none; }
+  .ded-pad-group { display: flex; gap: 0.8rem; }
+  .ded-pad { pointer-events: auto; width: clamp(3.4rem, 16vh, 5rem); height: clamp(3.4rem, 16vh, 5rem); border-radius: 50%; border: 2px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.35); color: #fff; font: 700 1.4rem system-ui, sans-serif; touch-action: none; padding: 0; -webkit-tap-highlight-color: transparent; }
+  .ded-pad:active { background: rgba(255,255,255,0.35); }
   .ded-rotate { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); color: #f4e8cc; text-align: center; font: 700 1.3rem/1.5 system-ui, sans-serif; }
 </style>

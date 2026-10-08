@@ -420,6 +420,8 @@ export class ItemText extends Item {
       if (this.edit_mode === null) { this.edit_mode = false; this.edit_key_pressed = key_pressed; this.update_text(); }
     } else this.edit_mode = null;
   }
+  /** the text box has the keyboard focus (the on-screen keyboard of a phone must be shown) */
+  is_editing(): boolean { return this.edit_mode === true; }
   get_alpha(): number { return this._alpha; }
   set_alpha(alpha: number): void { this._alpha = alpha; this.set_dirty(); }
   get_color(): Color { return this.color; }
