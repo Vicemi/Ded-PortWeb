@@ -1,0 +1,36 @@
+---
+import DedGame from '../components/DedGame.tsx';
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="description" content="División Especial de Detectives: el juego de detectives de Trojan Chicken (OLPC / Plan Ceibal), portado a la web." />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>División Especial de Detectives</title>
+  </head>
+  <body>
+    <DedGame client:only="react" />
+  </body>
+</html>
+
+<style is:global>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  .ded-stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; background: #000; display: flex; align-items: center; justify-content: center; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .ded-canvas { display: block; width: min(100vw, calc(100dvh * 4 / 3)); height: min(100dvh, calc(100vw * 3 / 4)); outline: none; touch-action: none; cursor: none; background: #000; }
+  .ded-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: #e8dcc0; font: 600 1.1rem system-ui, sans-serif; background: #000; z-index: 3; }
+  .ded-bar { width: min(60vw, 20rem); height: 0.5rem; background: #2a2418; border-radius: 99px; overflow: hidden; }
+  .ded-bar > i { display: block; height: 100%; background: #c8a24a; transition: width 120ms; }
+  .ded-tools { position: fixed; z-index: 8; top: calc(0.5rem + env(safe-area-inset-top)); right: calc(0.6rem + env(safe-area-inset-right)); display: flex; gap: 0.5rem; }
+  .ded-btn { width: clamp(2.2rem, 7vh, 2.8rem); height: clamp(2.2rem, 7vh, 2.8rem); border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: rgba(0,0,0,0.45); color: #fff; font: bold 1rem system-ui, sans-serif; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; opacity: 0.5; transition: opacity 120ms; }
+  .ded-btn:hover, .ded-btn:focus-visible { opacity: 1; }
+  .ded-modal { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); padding: 1rem; }
+  .ded-card { max-width: 34rem; max-height: 100%; overflow: auto; background: #f1e6c8; color: #2a2118; border-radius: 0.8rem; padding: 1.2rem 1.5rem; font: 400 1rem/1.5 system-ui, sans-serif; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+  .ded-card h1 { margin: 0 0 0.4rem; font: 800 1.6rem system-ui, sans-serif; color: #7a2418; }
+  .ded-card p { margin: 0.5rem 0; }
+  .ded-close { margin-top: 0.6rem; padding: 0.5rem 1.4rem; border: 0; border-radius: 99px; background: #7a2418; color: #fff; font: 700 1rem system-ui, sans-serif; cursor: pointer; }
+  .ded-rotate { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); color: #f4e8cc; text-align: center; font: 700 1.3rem/1.5 system-ui, sans-serif; }
+</style>
