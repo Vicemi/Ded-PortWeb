@@ -46,7 +46,7 @@ const THIEVES: NewThief[] = [
   { id: 'flor', sex: FEMALE, height: TALL, hair: BLONDE, feature: SCAR, pet: 'benteveo', sport: 'equitación', name: 'Flor de Ceibo', nick: '"La Florista"', age: '46 años',
     desc: 'Vende flores de ceibo en la esquina y, mientras sonríe, memoriza por dónde se entra a cada edificio.\nSu cicatriz se la hizo con las espinas del arbusto más famoso del país y dice que fue el único robo que le salió mal.\nSiempre deja un pétalo rojo como firma.' },
   { id: 'victor', sex: MALE, height: TALL, hair: BRUNETTE, feature: MOLE, pet: 'ratón', sport: 'boxeo', name: 'Víctor Escoba', nick: '"El Conserje"', age: '26 años',
-    desc: 'Conserje de un edificio de oficinas y el único que tiene llaves de todos los pisos.\nLa limpieza es su fachada: en el carrito de limpieza escondía tusi para vender de contrabando.\nNunca se separa de sus aros ni de su carrito.',
+    desc: 'Conserje de un edificio de oficinas y el único que tiene llaves de todos los pisos.\nLa limpieza es su fachada: en el carrito de limpieza escondía tussi para vender de contrabando.\nNunca se separa de sus aros ni de su carrito.',
     rumors: ['Dicen que anda vendiendo tusi.', 'Huele a perfume y a polvo rosado.', 'Siempre lleva un carrito de limpieza.'] },
   { id: 'carnicero', sex: MALE, height: SHORT, hair: GREY_HAIRED, feature: GLASSES, pet: 'cuervo', sport: 'bochas', name: 'Fausto Filete', nick: '"El Carnicero"', age: '57 años',
     desc: 'Carnicero de barrio con una receta secreta que nadie logra copiar y una heladera a la que nadie puede asomarse.\nSus cortes "especiales" son los más caros de la cuadra y los vecinos prefieren no preguntar de dónde vienen.\nAfila el cuchillo mientras sonríe, aunque no haya clientes.',
