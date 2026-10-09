@@ -3,3 +3,5 @@ dist/
 .astro/
 research/
 *.log
+art_inbox/*
+!art_inbox/.gitkeep

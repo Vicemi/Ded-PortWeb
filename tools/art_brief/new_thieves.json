@@ -1,0 +1,92 @@
+[
+  {
+    "id": "mateo", "code": "S 411", "serial": "40127745",
+    "name": "Mateo Cebadura", "nickname": "\"El Cebador\"", "age": "44 años",
+    "sex": "M", "height": "TALL", "hair": "BRUNETTE", "feature": "GLASSES", "car": "green",
+    "pet": {"name": "carpincho", "classification": "MAMMAL", "diet": "HERBIVORE", "movement": "SWIM"},
+    "sport": {"name": "rugby", "kind": "TERRESTRIAL", "team": true, "ball": true},
+    "desc": "Nunca sale sin su termo bajo el brazo y jura que el mate es el mejor testigo: escucha todo y no dice nada.\nSe dedicaba a vender yerba en las ferias, hasta que descubrió que robarla salía más barato.\nLe gustan los objetos que \"se pasan de mano en mano\".",
+    "look": "tall man, about 44, round glasses, dark brown hair, a mate gourd and a thermos tucked under the arm, brown wool vest, relaxed smile"
+  },
+  {
+    "id": "rita", "code": "S 438", "serial": "51873320",
+    "name": "Rita Platillo", "nickname": "\"La Murguista\"", "age": "37 años",
+    "sex": "F", "height": "TALL", "hair": "REDHEAD", "feature": "TATOO", "car": "violet",
+    "pet": {"name": "hornero", "classification": "BIRD", "diet": "CARNIVORE", "movement": "FLY"},
+    "sport": {"name": "básquetbol", "kind": "TERRESTRIAL", "team": true, "ball": true},
+    "desc": "Cantó diez carnavales en una murga y una noche se llevó, además de los aplausos, la recaudación del teatro.\nSe tatuó un platillo en el brazo y dice que cada robo \"suena redondo\".\nSu especialidad: desaparecer entre el público cuando termina el espectáculo.",
+    "look": "tall woman, about 37, curly red hair, a drum cymbal tattoo on the forearm, carnival murga jacket with sequins, mischievous grin"
+  },
+  {
+    "id": "gambeta", "code": "S 452", "serial": "36209814",
+    "name": "Gambeta Garra", "nickname": "\"El Diez\"", "age": "29 años",
+    "sex": "M", "height": "SHORT", "hair": "BLONDE", "feature": "MOLE", "car": "blue",
+    "pet": {"name": "tero", "classification": "BIRD", "diet": "CARNIVORE", "movement": "WALK"},
+    "sport": {"name": "baby fútbol", "kind": "TERRESTRIAL", "team": true, "ball": true},
+    "desc": "Delantero de potrero, rápido para gambetear a los defensas y todavía más rápido para gambetear a la policía.\nDicen que su lunar tiene la forma de una pelota; él asegura que es de nacimiento.\nSiempre juega con la camiseta celeste puesta debajo de la ropa.",
+    "look": "short man, about 29, blond messy hair, a mole on the cheek, sky-blue football jersey, athletic, cocky smile"
+  },
+  {
+    "id": "dulcinea", "code": "S 467", "serial": "28817755",
+    "name": "Dulcinea Alfajor", "nickname": "\"La Golosa\"", "age": "52 años",
+    "sex": "F", "height": "SHORT", "hair": "BRUNETTE", "feature": "SCAR", "car": "violet",
+    "pet": {"name": "mulita", "classification": "MAMMAL", "diet": "CARNIVORE", "movement": "WALK"},
+    "sport": {"name": "ciclismo", "kind": "TERRESTRIAL", "team": false, "ball": false},
+    "desc": "Pastelera de oficio y ladrona por antojo: sus robos siempre empiezan donde hay algo dulce.\nLa cicatriz de la mejilla se la hizo con una tapa de lata de dulce de leche.\nDeja migas de alfajor en la escena del crimen, y nadie sabe si lo hace a propósito.",
+    "look": "short stout woman, about 52, brown hair in a bun, a small scar on the cheek, flour-dusted apron, holding an alfajor"
+  },
+  {
+    "id": "tannat", "code": "S 473", "serial": "45560198",
+    "name": "Doña Tannat", "nickname": "\"La Sommelier\"", "age": "63 años",
+    "sex": "F", "height": "TALL", "hair": "GREY_HAIRED", "feature": "SCAR", "car": "green",
+    "pet": {"name": "zorro de monte", "classification": "MAMMAL", "diet": "CARNIVORE", "movement": "WALK"},
+    "sport": {"name": "golf", "kind": "TERRESTRIAL", "team": false, "ball": true},
+    "desc": "Heredó una bodega de Canelones y la perdió en una sola cosecha; desde entonces cobra \"impuestos\" en botellas.\nHuele un tannat a cien metros y un descuido del guardia a doscientos.\nSe retira de cada robo con una reverencia y una copa vacía.",
+    "look": "tall elegant woman, about 63, silver hair in a neat bob, a thin scar near the eyebrow, burgundy shawl, holding a wine glass"
+  },
+  {
+    "id": "rambla", "code": "S 489", "serial": "61124873",
+    "name": "Rambla Ramírez", "nickname": "\"El Trotador\"", "age": "34 años",
+    "sex": "M", "height": "TALL", "hair": "REDHEAD", "feature": "MOLE", "car": "blue",
+    "pet": {"name": "lobo marino", "classification": "MAMMAL", "diet": "CARNIVORE", "movement": "SWIM"},
+    "sport": {"name": "maratón", "kind": "TERRESTRIAL", "team": false, "ball": false},
+    "desc": "Corre cada mañana por la rambla de punta a punta, y cada tanto se \"olvida\" de devolver lo que levanta en el camino.\nSu mejor coartada es una cinta en la cabeza y una remera de maratón.\nNunca lo atraparon corriendo, así que ahora hay que atraparlo parado.",
+    "look": "tall lean man, about 34, red hair with a sweat headband, a mole on the chin, running tank top and shorts, cheerful"
+  },
+  {
+    "id": "byte", "code": "S 496", "serial": "73390216",
+    "name": "Byte Ceibal", "nickname": "\"La Hacker\"", "age": "29 años",
+    "sex": "F", "height": "SHORT", "hair": "BLONDE", "feature": "TATOO", "car": "violet",
+    "pet": {"name": "tortuga de laguna", "classification": "REPTILE", "diet": "HERBIVORE", "movement": "SWIM"},
+    "sport": {"name": "ajedrez", "kind": "TERRESTRIAL", "team": false, "ball": false},
+    "desc": "Aprendió a programar a los diez años en una laptop verde y blanca que le entregaron en la escuela, y nunca la soltó.\nLleva tatuado un código binario en el cuello que, según ella, es la clave de su próxima jugada.\nPrefiere abrir cerraduras digitales; las comunes la aburren.",
+    "look": "short young woman, about 29, blond pixie hair with colored streaks, a binary code tattoo on the neck, hoodie, small green-and-white laptop under the arm"
+  },
+  {
+    "id": "tato", "code": "S 504", "serial": "19945307",
+    "name": "Tato Repique", "nickname": "\"El Tamborilero\"", "age": "41 años",
+    "sex": "M", "height": "SHORT", "hair": "BRUNETTE", "feature": "MOLE", "car": "green",
+    "pet": {"name": "ñandú", "classification": "BIRD", "diet": "HERBIVORE", "movement": "WALK"},
+    "sport": {"name": "remo", "kind": "AQUATIC", "team": true, "ball": false},
+    "desc": "Desfiló en las Llamadas desde chico y se sabe todos los toques de memoria; los usa para avisar a su banda cuando hay vía libre.\nSu coartada favorita es \"estaba ensayando\", y nadie ha querido comprobar cuánto ensaya.\nLleva siempre unas baquetas en el bolsillo.",
+    "look": "short man, about 41, short dark hair, a mole on the cheek, bright festival shirt, drumsticks in the chest pocket, confident"
+  },
+  {
+    "id": "telmo", "code": "S 517", "serial": "52681490",
+    "name": "Telmo Telescopio", "nickname": "\"El Astrónomo\"", "age": "58 años",
+    "sex": "M", "height": "SHORT", "hair": "BLONDE", "feature": "GLASSES", "car": "blue",
+    "pet": {"name": "ballena franca", "classification": "MAMMAL", "diet": "CARNIVORE", "movement": "SWIM"},
+    "sport": {"name": "pesca", "kind": "AQUATIC", "team": false, "ball": false},
+    "desc": "Pasa las noches mirando estrellas desde el techo de los edificios y los días mirando vidrieras.\nSus lentes tienen tantos aumentos que jura ver el botín desde otro departamento.\nSolo roba cuando hay luna nueva, para que nadie lo vea.",
+    "look": "short man, about 58, wild blond hair, thick round glasses, scarf and long coat covered with tiny star pins, cheerful"
+  },
+  {
+    "id": "flor", "code": "S 528", "serial": "84215563",
+    "name": "Flor de Ceibo", "nickname": "\"La Florista\"", "age": "46 años",
+    "sex": "F", "height": "TALL", "hair": "BLONDE", "feature": "SCAR", "car": "green",
+    "pet": {"name": "benteveo", "classification": "BIRD", "diet": "CARNIVORE", "movement": "FLY"},
+    "sport": {"name": "equitación", "kind": "TERRESTRIAL", "team": false, "ball": false},
+    "desc": "Vende flores de ceibo en la esquina y, mientras sonríe, memoriza por dónde se entra a cada edificio.\nSu cicatriz se la hizo con las espinas del arbusto más famoso del país y dice que fue el único robo que le salió mal.\nSiempre deja un pétalo rojo como firma.",
+    "look": "tall woman, about 46, long blond hair under a straw hat with red flowers, a small scar on the chin, floral apron, friendly smile"
+  }
+]
