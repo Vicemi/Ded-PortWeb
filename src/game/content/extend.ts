@@ -47,12 +47,15 @@ const THIEVES: NewThief[] = [
 
 /** adds the new pets, sports and thieves to the lists of the datastore (the thieves whose pictures exist) */
 export function extend(ds: any): void {
-  const animals = new Map<string, any>(), sports = new Map<string, any>();
+  // the original pets and sports can be used by the new thieves too
+  const animals = new Map<string, any>(ds.list_animals.map((a: any) => [a.name, a])), sports = new Map<string, any>(ds.list_sports.map((a: any) => [a.name, a]));
   for (const [n, c, d, m] of ANIMALS) { const a = new datamodel.Animal(n, c, d, m); animals.set(n, a); ds.list_animals.push(a); }
   for (const [n, c, t, b] of SPORTS) { const s = new datamodel.Sport(n, c, t, b); sports.set(n, s); ds.list_sports.push(s); }
   for (const t of THIEVES) {
     const small = `p0_thief_small_${t.id}.png`, big = (k: number) => `p0_thief_big_${t.id}_${k}.jpg`;
+    const pet = animals.get(t.pet), sport = sports.get(t.sport);
+    if (!pet || !sport) throw new Error('unknown pet or sport of ' + t.name);
     if (!has_image(small) || !has_image(big(1)) || !has_image(big(2)) || !has_image(big(3))) continue;
-    ds.list_thieves.push(new datamodel.Thief(t.sex, t.height, t.hair, t.feature, animals.get(t.pet), sports.get(t.sport), t.name, t.nick, t.age, t.desc, small, big(1), big(2), big(3)));
+    ds.list_thieves.push(new datamodel.Thief(t.sex, t.height, t.hair, t.feature, pet, sport, t.name, t.nick, t.age, t.desc, small, big(1), big(2), big(3)));
   }
 }

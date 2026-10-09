@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
-const scenarios = ['newgame', 'hub', 'phase2', 'racer', 'endgame', 'monkey'];
+const scenarios = ['thieves', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'hub', 'phase2', 'racer', 'endgame', 'monkey'];  // newgame is repeated: every run generates a random case
 let failed = 0;
 for (const s of scenarios) {
   const r = spawnSync(process.execPath, [path.join(root, 'tools', 'headless.mjs'), path.join(root, 'tools', 'scenarios', s + '.mjs'), path.join(root, 'research', 'shots')],
