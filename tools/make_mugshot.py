@@ -133,8 +133,9 @@ def main():
     bg = Image.new('RGBA', card.size, (0, 0, 0, 0))
     ww, wh = x1 - x0, y1 - y0
     fw, fh = front.size
-    hw = fw * 0.42                      # the head and a little of the shoulders
-    box = (int((fw - hw) / 2), int(fh * 0.02), int((fw + hw) / 2), int(fh * 0.02 + hw * wh / ww))
+    bh = fh * 0.44                       # the head and the neck
+    hw = bh * ww / wh
+    box = (int((fw - hw) / 2), int(fh * 0.01), int((fw + hw) / 2), int(fh * 0.01 + bh))
     face = Image.new('RGBA', (box[2] - box[0], box[3] - box[1]), (214, 219, 226, 255))
     face.alpha_composite(front.crop(box))
     bg.paste(face.resize((ww, wh), Image.LANCZOS), (x0, y0))
