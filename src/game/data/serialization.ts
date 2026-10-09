@@ -744,6 +744,9 @@ export class CaseGenerator {
     } else {
       intro_statement = py.getitem(datastore.list_statements, 2);
     }
+    if (py.truthy(thief.rumors)) {
+      intro_statement = py.getitem(thief.rumor_statements, 0);
+    }
     for (s of py.iter(datastore.list_identikit_statements)) {
       if ((py.eq(thief.sex, s.sex_feature) && py.eq(thief.height, s.height_feature))) {
         py.m(list_identikit_statements, "append", s);
@@ -796,6 +799,9 @@ export class CaseGenerator {
         identikit_statement = py.getitem(list_identikit_statements, 2);
       }
       janitor_statement = py.getitem(list_janitor_statements, i);
+      if (py.truthy(thief.rumors)) {
+        intro_statement = py.getitem(thief.rumor_statements, py.mod(i, py.len(thief.rumor_statements)));
+      }
       py.m(list_w_statements, "append", new datamodel.WitnessStatement(intro_statement, janitor_statement, identikit_statement));
     }
     return list_w_statements;

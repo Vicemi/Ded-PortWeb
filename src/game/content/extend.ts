@@ -3,6 +3,7 @@
 // packs, so the roster grows as the art is delivered (tools/make_mugshot.py builds the pictures, tools/art_brief/new_thieves.json has the briefs).
 import * as datamodel from '../data/datamodel';
 import { has_image } from '../../engine/assets';
+export { extendCases, extendNotes } from './facts';
 
 // the codes of the original datastore.py
 const MALE = 1, FEMALE = 2, TALL = 1, SHORT = 2, BRUNETTE = 1, BLONDE = 2, REDHEAD = 3, GREY_HAIRED = 4, SCAR = 1, TATOO = 2, GLASSES = 3, MOLE = 4;
@@ -13,15 +14,16 @@ const ANIMALS: [string, number, number, number][] = [
   ['carpincho', MAMMAL, HERBIVORE, SWIM], ['hornero', BIRD, CARNIVORE, FLY], ['tero', BIRD, CARNIVORE, WALK], ['mulita', MAMMAL, CARNIVORE, WALK],
   ['zorro de monte', MAMMAL, CARNIVORE, WALK], ['lobo marino', MAMMAL, CARNIVORE, SWIM], ['tortuga de laguna', REPTILE, HERBIVORE, SWIM],
   ['ñandú', BIRD, HERBIVORE, WALK], ['ballena franca', MAMMAL, CARNIVORE, SWIM], ['benteveo', BIRD, CARNIVORE, FLY],
+  ['ratón', MAMMAL, HERBIVORE, WALK], ['cuervo', BIRD, CARNIVORE, FLY], ['caballo', MAMMAL, HERBIVORE, WALK], ['hámster', MAMMAL, HERBIVORE, WALK],
 ];
 /** sports (name, category, team, ball) */
 const SPORTS: [string, number, boolean, boolean][] = [
   ['rugby', TERRESTRIAL, true, true], ['básquetbol', TERRESTRIAL, true, true], ['baby fútbol', TERRESTRIAL, true, true], ['ciclismo', TERRESTRIAL, false, false],
   ['maratón', TERRESTRIAL, false, false], ['ajedrez', TERRESTRIAL, false, false], ['remo', AQUATIC, true, false], ['pesca', AQUATIC, false, false],
-  ['equitación', TERRESTRIAL, false, false],
+  ['equitación', TERRESTRIAL, false, false], ['boxeo', TERRESTRIAL, false, false], ['bochas', TERRESTRIAL, false, true], ['voleibol', TERRESTRIAL, true, true],
 ];
 
-interface NewThief { id: string; sex: number; height: number; hair: number; feature: number; pet: string; sport: string; name: string; nick: string; age: string; desc: string }
+interface NewThief { rumors?: string[]; id: string; sex: number; height: number; hair: number; feature: number; pet: string; sport: string; name: string; nick: string; age: string; desc: string }
 const THIEVES: NewThief[] = [
   { id: 'mateo', sex: MALE, height: TALL, hair: BRUNETTE, feature: GLASSES, pet: 'carpincho', sport: 'rugby', name: 'Mateo Cebadura', nick: '"El Cebador"', age: '44 años',
     desc: 'Nunca sale sin su termo bajo el brazo y jura que el mate es el mejor testigo: escucha todo y no dice nada.\nSe dedicaba a vender yerba en las ferias, hasta que descubrió que robarla salía más barato.\nLe gustan los objetos que "se pasan de mano en mano".' },
@@ -43,6 +45,18 @@ const THIEVES: NewThief[] = [
     desc: 'Pasa las noches mirando estrellas desde el techo de los edificios y los días mirando vidrieras.\nSus lentes tienen tantos aumentos que jura ver el botín desde otro departamento.\nSolo roba cuando hay luna nueva, para que nadie lo vea.' },
   { id: 'flor', sex: FEMALE, height: TALL, hair: BLONDE, feature: SCAR, pet: 'benteveo', sport: 'equitación', name: 'Flor de Ceibo', nick: '"La Florista"', age: '46 años',
     desc: 'Vende flores de ceibo en la esquina y, mientras sonríe, memoriza por dónde se entra a cada edificio.\nSu cicatriz se la hizo con las espinas del arbusto más famoso del país y dice que fue el único robo que le salió mal.\nSiempre deja un pétalo rojo como firma.' },
+  { id: 'victor', sex: MALE, height: TALL, hair: BRUNETTE, feature: MOLE, pet: 'ratón', sport: 'boxeo', name: 'Víctor Escoba', nick: '"El Conserje"', age: '26 años',
+    desc: 'Conserje de un edificio de oficinas y el único que tiene llaves de todos los pisos.\nLa limpieza es su fachada: en el carrito de limpieza escondía tusi para vender de contrabando.\nNunca se separa de sus aros ni de su carrito.',
+    rumors: ['Dicen que anda vendiendo tusi.', 'Huele a perfume y a polvo rosado.', 'Siempre lleva un carrito de limpieza.'] },
+  { id: 'carnicero', sex: MALE, height: SHORT, hair: GREY_HAIRED, feature: GLASSES, pet: 'cuervo', sport: 'bochas', name: 'Fausto Filete', nick: '"El Carnicero"', age: '57 años',
+    desc: 'Carnicero de barrio con una receta secreta que nadie logra copiar y una heladera a la que nadie puede asomarse.\nSus cortes "especiales" son los más caros de la cuadra y los vecinos prefieren no preguntar de dónde vienen.\nAfila el cuchillo mientras sonríe, aunque no haya clientes.',
+    rumors: ['Su carne es un misterio.', 'Nadie sabe de dónde la saca.', 'En su local huele raro de noche.'] },
+  { id: 'veterinaria', sex: FEMALE, height: TALL, hair: BRUNETTE, feature: SCAR, pet: 'caballo', sport: 'natación', name: 'Vera Pezuña', nick: '"La Veterinaria"', age: '41 años',
+    desc: 'Cura vacas, perros y caballos de día, y de noche anda entre gente que paga bien por lo que sobra en su clínica.\nLa cicatriz de la cara se la hizo un potrillo nervioso; cuenta que fue el único cliente que no pagó.\nTodos los animales la quieren; a los dueños los tiene más preocupados.',
+    rumors: ['Faltan calmantes en su clínica.', 'Anda con gente del tusi.'] },
+  { id: 'ninera', sex: FEMALE, height: SHORT, hair: BLONDE, feature: MOLE, pet: 'hámster', sport: 'voleibol', name: 'Nana Nochera', nick: '"La Niñera"', age: '24 años',
+    desc: 'Niñera de confianza de media ciudad: conoce las casas, las alarmas y las horas en que nadie está.\nCuando los niños duermen, se escapa a fiestas donde circula el tusi y se lleva algún recuerdo de la casa.\nSiempre llega con una sonrisa y una mochila demasiado grande.',
+    rumors: ['Se la ve en fiestas de tusi.', 'Nunca cuenta dónde pasa la noche.'] },
 ];
 
 /** adds the new pets, sports and thieves to the lists of the datastore (the thieves whose pictures exist) */
@@ -56,6 +70,8 @@ export function extend(ds: any): void {
     const pet = animals.get(t.pet), sport = sports.get(t.sport);
     if (!pet || !sport) throw new Error('unknown pet or sport of ' + t.name);
     if (!has_image(small) || !has_image(big(1)) || !has_image(big(2)) || !has_image(big(3))) continue;
-    ds.list_thieves.push(new datamodel.Thief(t.sex, t.height, t.hair, t.feature, pet, sport, t.name, t.nick, t.age, t.desc, small, big(1), big(2), big(3)));
+    const th: any = new datamodel.Thief(t.sex, t.height, t.hair, t.feature, pet, sport, t.name, t.nick, t.age, t.desc, small, big(1), big(2), big(3));
+    if (t.rumors) th.rumors = t.rumors;
+    ds.list_thieves.push(th);
   }
 }
