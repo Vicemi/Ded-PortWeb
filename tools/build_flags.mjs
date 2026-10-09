@@ -83,4 +83,38 @@ for (const d of depts) {
   g.putImageData(img, 0, 0);
   fs.writeFileSync(path.join(OUT, `p0_merits_medals_tiny_${d}.png`), c.toBuffer('image/png'));
 }
+
+// the round emblem in the middle of the medals (big: 66x66 jpg inside the golden ring; small: the disc of the list medals) shows the flag too.
+// Which part of the flag is seen (0 = hoist side, 1 = fly side): the emblem of most flags is in the middle, some are not
+const FOCUS = { artigas: 0.12, rivera: 0.0, treintaytres: 0.62, salto: 0.3, lavalleja: 0.5, florida: 0.15, rionegro: 0.5 };
+function discFlag(fc, d, size) {
+  const c = createCanvas(size, size), g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+  const sw = size * (fc.width / fc.height), off = (sw - size) * (FOCUS[d] ?? 0.5);
+  g.drawImage(fc, -off, 0, sw, size);
+  return c;
+}
+for (const d of depts) {
+  const fc = await flagCanvas(d);
+  // big: keep everything outside the inner disc, replace the inside, add a little gloss
+  const orig = await original(`p0_merits_medals_tab_${d}.jpg`);
+  const R = 27, cx = 33, cy = 33;
+  const out = createCanvas(66, 66), og = out.getContext('2d'); og.drawImage(orig, 0, 0);
+  const disc = discFlag(fc, d, 2 * R + 2), dc = disc.getContext('2d');
+  const grad = dc.createRadialGradient(R + 1 - 6, R + 1 - 9, 2, R + 1, R + 1, R + 2);
+  grad.addColorStop(0, 'rgba(255,255,255,0.28)'); grad.addColorStop(0.5, 'rgba(255,255,255,0)'); grad.addColorStop(1, 'rgba(0,0,0,0.38)');
+  dc.fillStyle = grad; dc.fillRect(0, 0, disc.width, disc.height);
+  og.save(); og.beginPath(); og.arc(cx, cy, R, 0, Math.PI * 2); og.clip(); og.drawImage(disc, cx - R - 1, cy - R - 1); og.restore();
+  fs.writeFileSync(path.join(OUT, `p0_merits_medals_tab_${d}.jpg`), out.toBuffer('image/jpeg', 95));
+  // small: the disc of the tiny medal
+  const t = await original(`p0_merits_medals_tiny_${d}.png`);
+  const tcv = createCanvas(t.width, t.height), tgx = tcv.getContext('2d'); tgx.drawImage(t, 0, 0);
+  // the ribbon part of the tiny medal was already made above: start from that file
+  const done = await loadImage(path.join(OUT, `p0_merits_medals_tiny_${d}.png`));
+  const tc2 = createCanvas(t.width, t.height), g2 = tc2.getContext('2d'); g2.drawImage(done, 0, 0);
+  const r2 = 8.5, dd = discFlag(fc, d, 18);
+  const gl = dd.getContext('2d'), gg = gl.createRadialGradient(6, 5, 1, 9, 9, 10);
+  gg.addColorStop(0, 'rgba(255,255,255,0.25)'); gg.addColorStop(1, 'rgba(0,0,0,0.3)'); gl.fillStyle = gg; gl.fillRect(0, 0, 18, 18);
+  g2.save(); g2.beginPath(); g2.arc(18.3, 47.2, r2, 0, Math.PI * 2); g2.clip(); g2.drawImage(dd, 18.3 - 9, 47.2 - 9); g2.restore();
+  fs.writeFileSync(path.join(OUT, `p0_merits_medals_tiny_${d}.png`), tc2.toBuffer('image/png'));
+}
 console.log('flags built', depts.length);
