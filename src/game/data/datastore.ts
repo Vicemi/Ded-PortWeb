@@ -4,6 +4,7 @@ import * as py from '../../runtime/py';
 import { CharacterInfo } from './datamodel';
 import * as assets from '../../engine/assets';
 import { collections } from '../../runtime/py';
+import * as content_extend from '../../game/content/extend';
 import * as datamodel from './datamodel';
 import * as serialization from './serialization';
 import * as stats from '../../runtime/stats';
@@ -461,6 +462,7 @@ export class Datastore {
     this.list_stolen_objects = this.set_up_stolen_objects();
     this.list_crime_locations = this.set_up_crime_locations();
     this.list_thieves = this.set_up_thieves();
+    content_extend.extend(this);
     this.list_lair_sets = this.set_up_lair_sets();
     this.list_witnesses = this.set_up_witness();
     this.list_statements = this.set_up_statements();

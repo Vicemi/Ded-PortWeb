@@ -823,7 +823,7 @@ export class CaseGenerator {
     return total_turns;
   }
   generate_thiefs(): any {
-    let captured_thieves, case_thief, possible_thieves, t, thieves: any;
+    let captured_thieves, case_thief, possible_thieves, same_sex, t, thieves: any;
     possible_thieves = py.slice(this.datastore.list_thieves, null, null);
     captured_thieves = this.datastore.user_character_progress.captured_thieves;
     if (py.eq(py.len(captured_thieves), py.len(possible_thieves))) {
@@ -835,7 +835,9 @@ export class CaseGenerator {
       }
     }
     case_thief = random.choice(possible_thieves);
-    thieves = py.filter(((x) => py.eq(x.sex, case_thief.sex)), this.datastore.list_thieves);
+    same_sex = py.filter(((x) => py.and(py.eq(x.sex, case_thief.sex), () => (x !== case_thief))), this.datastore.list_thieves);
+    random.shuffle(same_sex);
+    thieves = py.add([case_thief], py.slice(same_sex, null, 7));
     py.m(thieves, "append", random.choice(py.filter(((x) => !py.eq(x.sex, case_thief.sex)), this.datastore.list_thieves)));
     random.shuffle(thieves);
     return [case_thief, thieves];
