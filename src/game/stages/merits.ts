@@ -15,7 +15,7 @@ import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
 import * as $self from './merits';
 
-export let MEDALS_DATA: any = py.mkdict([["artigas", [97, 123, "ARTIGAS", 1]], ["canelones", [143, 123, "CANELONES", 3]], ["cerrolargo", [190, 123, "CERRO LARGO", null]], ["colonia", [236, 123, "COLONIA", 3]], ["durazno", [282, 123, "DURAZNO", null]], ["flores", [328, 123, "FLORES", 3]], ["florida", [375, 123, "FLORIDA", null]], ["lavalleja", [421, 123, "LAVALLEJA", 1]], ["maldonado", [467, 123, "MALDONADO", 2]], ["montevideo", [76, 202, "MONTEVIDEO", 2]], ["paysandu", [123, 202, "PAYSAND\xda", 2]], ["rionegro", [170, 202, "R\xcdO NEGRO", 2]], ["rivera", [218, 202, "RIVERA", 1]], ["rocha", [265, 202, "ROCHA", 1]], ["salto", [312, 202, "SALTO", null]], ["sanjose", [359, 202, "SAN JOS\xc9", 1]], ["soriano", [407, 202, "SORIANO", 3]], ["tacuarembo", [454, 202, "TACUAREMB\xd3", 2]], ["treintaytres", [501, 202, "TREINTA Y TRES", 2]]]);
+export let MEDALS_DATA: any = py.mkdict([["artigas", [97, 123, "ARTIGAS", null]], ["canelones", [143, 123, "CANELONES", null]], ["cerrolargo", [190, 123, "CERRO LARGO", null]], ["colonia", [236, 123, "COLONIA", null]], ["durazno", [282, 123, "DURAZNO", null]], ["flores", [328, 123, "FLORES", null]], ["florida", [375, 123, "FLORIDA", null]], ["lavalleja", [421, 123, "LAVALLEJA", null]], ["maldonado", [467, 123, "MALDONADO", null]], ["montevideo", [76, 202, "MONTEVIDEO", null]], ["paysandu", [123, 202, "PAYSAND\xda", 2]], ["rionegro", [170, 202, "R\xcdO NEGRO", 2]], ["rivera", [218, 202, "RIVERA", null]], ["rocha", [265, 202, "ROCHA", null]], ["salto", [312, 202, "SALTO", null]], ["sanjose", [359, 202, "SAN JOS\xc9", 1]], ["soriano", [407, 202, "SORIANO", null]], ["tacuarembo", [454, 202, "TACUAREMB\xd3", 2]], ["treintaytres", [501, 202, "TREINTA Y TRES", null]]]);
 export class Merits {
   constructor(stage: any) {
     this.stage = stage;
@@ -245,6 +245,8 @@ export class Merits {
     py.m(this.medal_popup_layer, "add", this.tab_item);
     this.big_medal_item = new ItemImage(0, 0, null);
     py.m(this.medal_popup_layer, "add", this.big_medal_item);
+    this.flag_item = new ItemImage(133, 178, null);
+    py.m(this.medal_popup_layer, "add", this.flag_item);
     this.big_name_items = this.add_text_with_shadow(this.medal_popup_layer, 204, 284, font_24, "", [252, 193, 45], 195, 35, 2, 1, (-2), 3, 255);
     return null;
   }
@@ -261,6 +263,7 @@ export class Merits {
       this.ribbon_item.set_visible(false);
       this.base_item.set_visible(false);
       this.tab_item.set_visible(false);
+      this.flag_item.set_visible(false);
     } else {
       this.big_medal_item.set_visible(false);
       if ((item.ribbon == null)) {
@@ -274,6 +277,8 @@ export class Merits {
       tab_image = assets.load_image(py.add(py.add("p0_merits_medals_tab_", item.medal_name), ".jpg"));
       this.tab_item.set_image(tab_image);
       this.tab_item.set_visible(true);
+      this.flag_item.set_image(assets.load_image(py.add(py.add("p0_flag_", item.medal_name), ".png")));
+      this.flag_item.set_visible(true);
     }
     return null;
   }

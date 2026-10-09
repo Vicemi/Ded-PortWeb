@@ -156,6 +156,8 @@ export class Phase0Stage extends StageIso {
     dep_name = text.to_upper(dep.name);
     this.locator_text = new ItemText(75, 22, this.locator_font, 0, dep_name, [255, 255, 255]);
     py.m(this.info_layer, "add", this.locator_text);
+    this.locator_flag = new ItemImage(160, 44, assets.load_image(py.add(py.add("p0_flagsmall_", dep.image), ".png")));
+    py.m(this.info_layer, "add", this.locator_flag);
     return null;
   }
   set_up_timer(): any {
@@ -396,6 +398,7 @@ export class Phase0Stage extends StageIso {
     locator_pos = dep.locator_pos;
     this.locator_sel.set_lefttop(py.getitem(locator_pos, 0), py.getitem(locator_pos, 1));
     this.locator_sel.set_image(image);
+    this.locator_flag.set_image(assets.load_image(py.add(py.add("p0_flagsmall_", dep.image), ".png")));
     return null;
   }
   set_time_left(time: any = 0, callback: any = null): any {

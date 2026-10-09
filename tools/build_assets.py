@@ -21,6 +21,10 @@ def images():
     src = GAME + '/images'
     boot = set(json.load(open(os.path.join(ROOT, 'tools', 'boot_images.json'))))
     names = sorted(os.listdir(src))
+    extra = os.path.join(ROOT, 'tools', 'extra_images')  # images added by the port (the departmental flags...); same name = replaces the original
+    extras = sorted(os.listdir(extra)) if os.path.isdir(extra) else []
+    names = sorted(set(names) | set(extras))
+    folder = lambda n: extra if n in extras else src
     boot |= {n for n in names if n.split('_')[0].split('.')[0] in ('cursor', 'btn', 'black')}
     def phase(n):
         return (n[1] if len(n) > 2 and n[0] == 'p' and n[1].isdigit() and n[2] == '_' else '-', n)
@@ -30,7 +34,7 @@ def images():
         pos = 0
         with open(OUT + '/images_%s.pak' % pack, 'wb') as pak:
             for name in items:
-                b = open(os.path.join(src, name), 'rb').read()
+                b = open(os.path.join(folder(name), name), 'rb').read()
                 index[name] = [0 if pack == 'boot' else 1, pos, len(b)]
                 pak.write(b)
                 pos += len(b)
