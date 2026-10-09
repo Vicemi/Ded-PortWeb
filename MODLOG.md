@@ -36,3 +36,9 @@ Diario del port web de *División Especial de Detectives* (Trojan Chicken, activ
 - **Fase 3 (carrera)**: `racer.so` es nativo, se reimplementó (`src/game/racer`) con los YAML originales; sin oráculo de píxeles, afinado a mano.
 - **Móvil**: puntero táctil (sin hover), teclado en pantalla vía `<input>` oculto, gamepad en la carrera, botón ☰ (Escape), aviso de girar el teléfono, manifest.
 - **Pendiente / conocido**: ladrón no visible tras la maniobra de arresto; tráfico choca en el piloto automático de los tests; sin Safari-audio fallback.
+
+## Edición actualizada (contenido nuevo)
+- **Banderas**: las 19 banderas departamentales actuales (Wikimedia Commons, ver `tools/flags/SOURCES.json`) → cintas de las medallas (grande y de la lista), discos centrales de las medallas, bandera en el popup de medalla y colgando de la barra de ubicación del mapa. `tools/build_flags.mjs` → `tools/extra_images/` (el pack de imágenes las incluye; mismo nombre = reemplaza el original).
+- **Ladrones nuevos** (`src/game/content/extend.ts`, briefs en `tools/art_brief/`): Mateo, Rita, Gambeta, Dulcinea, Doña Tannat y Rambla con arte hecho en Gemini (Nano Banana) y armado por `tools/make_mugshot.mjs`; Byte, Tato, Telmo y Flor están definidos y se activan solos cuando existan sus 4 imágenes. Mascotas y deportes uruguayos nuevos. El identikit tiene 9 lugares: ahora los sospechosos son el culpable + 7 del mismo sexo + 1 del otro (antes eran todos).
+- **Flujo del arte**: Gemini web en el navegador integrado (la API gratis no genera imágenes). Las imágenes se capturan de pantalla (`tools/grab_shot.mjs`) porque las descargas y la red local están bloqueadas desde esa página. Gemini limita las imágenes por día (límite alcanzado el 8/10; se restablece a las 2:02 a.m.).
+- **Pendiente**: 4 ladrones más, más medallas/logros, datos actuales de Uruguay (escritores, hechos históricos, museos/objetos) y nuevos retos.
