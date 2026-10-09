@@ -34,6 +34,10 @@ def key(path):
     # green spill on the remaining edge pixels
     spill = (g > r + 20) & (g > b + 20) & ndimage.binary_dilation(mask, iterations=3)
     im[..., 1] = np.where(spill, np.maximum(r, b) + 5, g)
+    # green seen through glasses or between arm and body: a pale glass tint instead
+    hole = (alpha > 0) & (g > 170) & (g - r > 90) & (g - b > 90)
+    for c, v in enumerate((205, 215, 225)):
+        im[..., c] = np.where(hole, v, im[..., c])
     rgba = np.dstack([im.clip(0, 255).astype(np.uint8), alpha])
     ys, xs = np.where(alpha > 0)
     return Image.fromarray(rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1], 'RGBA')
