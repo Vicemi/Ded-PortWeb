@@ -1,6 +1,6 @@
 // Content of the updated edition that is added to the original data of the game (see MODLOG.md): new thieves with their pets and sports.
 // Called once by Datastore.set_up_data (a hook added by research/content_web.py). A thief is only added when his four pictures are in the image
-// packs, so the roster grows as the art is delivered (tools/make_mugshot.mjs builds the pictures, tools/art_brief/new_thieves.json has the briefs).
+// packs, so the roster grows as the art is delivered (tools/make_mugshot.py builds the pictures, tools/art_brief/new_thieves.json has the briefs).
 import * as datamodel from '../data/datamodel';
 import { has_image } from '../../engine/assets';
 

@@ -1,7 +1,7 @@
 # Nuevos ladrones: guía para generar el arte (Nano Banana / Gemini)
 
 Datos de los 10 personajes nuevos: `new_thieves.json` (nombre, apodo, rasgos, descripción, prompt de aspecto).
-Cada ladrón necesita **dos dibujos**: frente y perfil. El resto (foto policial con la tabla de alturas, placa, recorte, icono de la lista) lo arma `tools/make_mugshot.mjs`.
+Cada ladrón necesita **dos dibujos**: frente y perfil. El resto (foto policial con la tabla de alturas, placa, recorte, icono de la lista) lo arma `tools/make_mugshot.py`.
 
 ## Cómo generarlos
 1. En Gemini (Nano Banana) sube de **referencia de estilo** 2-3 fichas originales de `research/art_refs/` (por ejemplo `ruffo_1.png`, `helga_1.png`, `helga_2.png`; son las fotos policiales del juego) y escribe el prompt.
