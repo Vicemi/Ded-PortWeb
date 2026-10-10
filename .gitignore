@@ -7,3 +7,4 @@ art_inbox/*
 !art_inbox/.gitkeep
 .env.local
 .env
+__pycache__/
