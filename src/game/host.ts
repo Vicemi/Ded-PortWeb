@@ -135,7 +135,10 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     try { canvas.setPointerCapture(e.pointerId); } catch { /* not capturable */ }
     const [x, y] = toGame(e);
     e.preventDefault();
+    // a finger has no hover: the game must see the pointer arrive (it places its own cursor) before it sees the press
+    if (state.touch && ctl.game) { send('move', x, y, -1); try { ctl.game.tick(); } catch (er) { console.error(er); } }
     send('down', x, y, e.button);
+    if (state.touch && ctl.game) { try { ctl.game.tick(); } catch (er) { console.error(er); } }
   });
   canvas.addEventListener('pointermove', (e) => { const [x, y] = toGame(e); send('move', x, y, -1); });
   let hoverReset = false;

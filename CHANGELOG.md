@@ -5,8 +5,8 @@ La descripción de cada release de GitHub es la sección de su versión; la vers
 ## 1.0.1
 
 ### Correcciones
-- **Web en celular**: el juego ya no se congela después de la pantalla de Vicemi Dev y el prólogo (en el teléfono se descargan todas las imágenes antes de empezar, con barra de progreso, en vez de pedirlas de forma bloqueante).
-- El toque en la pantalla táctil ya no pierde el clic al levantar el dedo.
+- **Web en celular**: el juego ya no se congela después de la pantalla de Vicemi Dev y el prólogo (las imágenes que faltan se piden sin bloquear la página).
+- **Táctil**: Continuar, Saltar y todos los botones ya responden al toque en el celular (el juego recibía el toque antes de saber dónde estaba el dedo). Ya no hay que esperar a que se descargue todo para jugar.
 - Botones de la web más ordenados en celulares apaisados (van en la franja negra, no sobre el juego).
 - Versión de escritorio: se quitaron los botones superiores adicionales (el menú de la ventana ya tiene esas opciones).
 

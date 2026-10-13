@@ -62,8 +62,10 @@ export async function initAssets(base: string, onProgress?: (fraction: number) =
   // the atlas of the glyphs (decoded here: <img>.decode() can stall in background tabs)
   const png = decodeImage('fonts.png', new Uint8Array(await (await fetch(`${base}/fonts.png`)).arrayBuffer()));
   store.atlas = Surface.fromRGBA(png.w, png.h, png.data, true);
-  // phones (coarse pointer / data saver): wait for every image. The game reads missing images with a synchronous request that freezes the page on a slow connection
-  const waitAll = typeof matchMedia !== 'undefined' && (matchMedia('(pointer: coarse)').matches || !!(navigator as unknown as { connection?: { saveData?: boolean } }).connection?.saveData);
+  // the game reads a missing image with a synchronous range request: that is only safe when the server really supports ranges, otherwise wait for every image
+  let ranges = false;
+  try { ranges = (await fetch(`${base}/images_rest.pak`, { method: 'HEAD' })).headers.get('accept-ranges') === 'bytes'; } catch { /* unknown */ }
+  const waitAll = !ranges;
   store.paks[0] = await download(`${base}/images_boot.pak`, waitAll ? (f) => onProgress?.(f * 0.05) : onProgress);
   const rest = download(`${base}/images_rest.pak`, waitAll ? (f) => onProgress?.(0.05 + f * 0.95) : undefined).then((b) => { store.paks[1] = b; });
   restLoading = rest.catch((e) => { console.warn('background download failed, images are fetched one by one', e); });
