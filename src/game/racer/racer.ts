@@ -153,7 +153,7 @@ export class RacerStage extends Stage {
     }
   }
   private inButton(which: 'yes' | 'no', x: number, y: number): boolean {
-    const d = this.data.gui.exit_dialog[which];
+    const d = this.data.gui.exit_dialog[which === 'yes' ? 'true' : 'false'];  // (the YAML keys true / false)
     const im = this.image(d.src);
     return x >= d.pos.x && x < d.pos.x + im.get_width() && y >= d.pos.y && y < d.pos.y + im.get_height();
   }
@@ -638,8 +638,8 @@ export class RacerStage extends Stage {
   private drawDialog(g: CanvasRenderingContext2D): void {
     const d = this.data.gui.exit_dialog;
     g.drawImage(this.image(d.background.src).surface.canvas, d.background.pos.x, d.background.pos.y);
-    if (this.overYes) g.drawImage(this.image(d.yes.src).surface.canvas, d.yes.pos.x, d.yes.pos.y);
-    if (this.overNo) g.drawImage(this.image(d.no.src).surface.canvas, d.no.pos.x, d.no.pos.y);
+    if (this.overYes) g.drawImage(this.image(d['true'].src).surface.canvas, d['true'].pos.x, d['true'].pos.y);
+    if (this.overNo) g.drawImage(this.image(d['false'].src).surface.canvas, d['false'].pos.x, d['false'].pos.y);
     const cur = this.game.get_default_mouse_cursor();
     if (cur) g.drawImage(cur.surface.canvas, input.pos[0], input.pos[1]);
   }
