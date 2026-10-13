@@ -30,6 +30,8 @@ interface Vehicle { s: number; x: number; v: number; kind: CarKind; targetX: num
 
 type Phase = 'run' | 'catch' | 'won' | 'lost' | 'quit';
 
+const CHASE_VARIANTS = ['p3_music_chase_a.ogg', 'p3_music_chase_b.ogg', 'p3_music_chase_c.ogg', 'p3_music_chase_d.ogg'];
+
 export class RacerStage extends Stage {
   private data = racerData();
   private map: MapDef;
@@ -117,7 +119,10 @@ export class RacerStage extends Stage {
     const music = this.map.music.loop;
     const ch = mixer.Channel(0);
     ch.set_volume(music.volume ?? 0.6);
-    ch.play(mixer.sound(nameOf(music.sound)), -1, 0, 0, { loopStart: music.loop_start ?? 0 });
+    // the original theme most of the times (60%); sometimes one of the four new variations of the updated edition (plain loops)
+    const variant = Math.random() < 0.6 ? null : CHASE_VARIANTS[Math.floor(Math.random() * CHASE_VARIANTS.length)];
+    if (variant) ch.play(mixer.sound(variant), -1, 0, 0, { loopStart: 0 });
+    else ch.play(mixer.sound(nameOf(music.sound)), -1, 0, 0, { loopStart: music.loop_start ?? 0 });
   }
 
   private sound(file: string) { return mixer.sound(nameOf(file)); }
