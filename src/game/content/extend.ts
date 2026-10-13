@@ -4,6 +4,7 @@
 import * as datamodel from '../data/datamodel';
 import { has_image } from '../../engine/assets';
 export { extendCases, extendNotes, extraPictures, extendWitnesses, isNewWitness, newMinigame } from './facts';
+export { grantAchievements, achievementsLayer, logrosButton, showAchievements } from './achievements';
 
 // the codes of the original datastore.py
 const MALE = 1, FEMALE = 2, TALL = 1, SHORT = 2, BRUNETTE = 1, BLONDE = 2, REDHEAD = 3, GREY_HAIRED = 4, SCAR = 1, TATOO = 2, GLASSES = 3, MOLE = 4;
@@ -36,7 +37,7 @@ const THIEVES: NewThief[] = [
     rumors: ['Llevaba puesto un chaleco con lentejuelas de murga.', 'Se escuchaban toques de platillo cuando escapaba.', 'Dicen que canta en el tablado del barrio.'] },
   { id: 'gambeta', sex: MALE, height: SHORT, hair: BLONDE, feature: MOLE, pet: 'tero', sport: 'baby fútbol', name: 'Gambeta Garra', nick: '"El Diez"', age: '29 años',
     desc: 'Delantero de potrero, rápido para gambetear a los defensas y todavía más rápido para gambetear a la policía.\nDicen que su lunar tiene la forma de una pelota; él asegura que es de nacimiento.\nSiempre juega con la camiseta celeste puesta debajo de la ropa.',
-    rumors: ['Llevaba la camiseta celeste de la selección puesta.', 'Iba haciendo jueguitos con una pelota chica.', 'Corría a toda velocidad como si estuviera en la cancha.'] },
+    rumors: ['Llevaba la camiseta celeste de la selección puesta.', 'Iba haciendo jueguitos con una pelota chica.', 'Corría a toda velocidad como si estuviera en la cancha.', 'Iba tarareando "Yendo a la casa de Damián".'] },
   { id: 'dulcinea', sex: FEMALE, height: SHORT, hair: BRUNETTE, feature: SCAR, pet: 'mulita', sport: 'ciclismo', name: 'Dulcinea Alfajor', nick: '"La Golosa"', age: '52 años',
     desc: 'Pastelera de oficio y ladrona por antojo: sus robos siempre empiezan donde hay algo dulce.\nLa cicatriz de la mejilla se la hizo con una tapa de lata de dulce de leche.\nDeja migas de alfajor en la escena del crimen, y nadie sabe si lo hace a propósito.',
     rumors: ['Dejó migas de alfajor en el camino.', 'En el lugar quedó un intenso aroma a dulce de leche.', 'Llevaba una bolsa de confitería de barrio.'] },
@@ -55,11 +56,11 @@ const THIEVES: NewThief[] = [
   { id: 'flor', sex: FEMALE, height: TALL, hair: BLONDE, feature: SCAR, pet: 'benteveo', sport: 'equitación', name: 'Flor de Ceibo', nick: '"La Florista"', age: '46 años',
     desc: 'Vende flores de ceibo en la esquina y, mientras sonríe, memoriza por dónde se entra a cada edificio.\nSu cicatriz se la hizo con las espinas del arbusto más famoso del país y dice que fue el único robo que le salió mal.\nSiempre deja un pétalo rojo como firma.' },
   { id: 'victor', sex: MALE, height: TALL, hair: BRUNETTE, feature: MOLE, pet: 'ratón', sport: 'boxeo', name: 'Víctor Pintos', nick: '"El Conserje"', age: '26 años',
-    desc: 'Conserje de un edificio de oficinas y el único que tiene llaves de todos los pisos.\nLa limpieza es su fachada: en el carrito de limpieza escondía tussi para vender de contrabando.\nNunca se separa de sus aros ni de su carrito.',
-    rumors: ['Dicen que anda vendiendo tusi.', 'Huele a perfume y a polvo rosado.', 'Siempre lleva un carrito de limpieza.'] },
+    desc: 'Conserje de un edificio de oficinas y el único que tiene llaves de todos los pisos.\nLa limpieza es su fachada: en el carrito de limpieza escondía tussi para vender de contrabando.\nNunca se separa de sus aros ni de su carrito, y canta a los gritos los temas del Cuarteto de Nos.',
+    rumors: ['Dicen que anda vendiendo tusi.', 'Huele a perfume y a polvo rosado.', 'Siempre lleva un carrito de limpieza.', 'Siempre andaba tarareando canciones del Cuarteto de Nos mientras limpiaba.', 'Le encanta el Cuarteto de Nos: dicen que se sabe todos sus discos.','Dicen que en la fiesta del barrio el tusi corría más que el pop.'] },
   { id: 'carnicero', sex: MALE, height: SHORT, hair: GREY_HAIRED, feature: GLASSES, pet: 'cuervo', sport: 'bochas', name: 'Fausto Filete', nick: '"El Carnicero"', age: '57 años',
     desc: 'Carnicero de barrio con una receta secreta que nadie logra copiar y una heladera a la que nadie puede asomarse.\nSus cortes "especiales" son los más caros de la cuadra y los vecinos prefieren no preguntar de dónde vienen.\nAfila el cuchillo mientras sonríe, aunque no haya clientes.',
-    rumors: ['Su carne es un misterio.', 'Nadie sabe de dónde la saca.', 'En su local huele raro de noche.'] },
+    rumors: ['Su carne es un misterio.', 'Nadie sabe de dónde la saca.', 'En su local huele raro de noche.', 'Dicen que el chivito de ahí tiene un sabor demasiado raro.'] },
   { id: 'veterinaria', sex: FEMALE, height: TALL, hair: BRUNETTE, feature: SCAR, pet: 'caballo', sport: 'natación', name: 'Vera Pezuña', nick: '"La Veterinaria"', age: '41 años',
     desc: 'Cura vacas, perros y caballos de día, y de noche anda entre gente que paga bien por lo que sobra en su clínica.\nLa cicatriz de la cara se la hizo un potrillo nervioso; cuenta que fue el único cliente que no pagó.\nTodos los animales la quieren; a los dueños los tiene más preocupados.',
     rumors: ['Faltan calmantes en su clínica.', 'Anda con gente del tusi.'] },

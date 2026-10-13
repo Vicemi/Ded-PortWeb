@@ -12,6 +12,7 @@ import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
 import { base64 } from '../../runtime/py';
+import * as content_extend from '../../game/content/extend';
 import * as datamodel from '../data/datamodel';
 import * as datastore from '../data/datastore';
 import * as des from '../../runtime/des';
@@ -175,6 +176,7 @@ export class EndGame {
     case_ = character_progress.case;
     this.medal_name = case_.crime_location.department.image;
     character_progress.add_medal("tut");
+    this.new_achievements = [];
     return null;
   }
   add_medal(): any {
@@ -207,6 +209,7 @@ export class EndGame {
       uy_medals = uy_medals + 1;
       this.won_uy_medal = true;
     }
+    this.new_achievements = content_extend.grantAchievements(character_progress, this.stage.game.datastore);
     return null;
   }
   build_continue_button(fast: any = false): any {
@@ -1030,15 +1033,21 @@ export class EndGame {
         next_scene = 3;
       } else if (py.truthy(this.promoted)) {
         next_scene = 4;
+      } else if (py.truthy(this.new_achievements)) {
+        next_scene = 5;
       } else {
         next_scene = null;
       }
     } else if ((this.score_scene === 3)) {
       if (py.truthy(this.promoted)) {
         next_scene = 4;
+      } else if (py.truthy(this.new_achievements)) {
+        next_scene = 5;
       } else {
         next_scene = null;
       }
+    } else if (((this.score_scene === 4) && py.truthy(this.new_achievements))) {
+      next_scene = 5;
     } else {
       next_scene = null;
     }
@@ -1073,7 +1082,16 @@ export class EndGame {
       animations.wait_locked(this.stage, 100, py.bind(this, "show_medal_uy_won"));
     } else if ((this.score_scene === 4)) {
       animations.wait_locked(this.stage, 100, py.bind(this, "show_promotion"));
+    } else if ((this.score_scene === 5)) {
+      animations.wait_locked(this.stage, 100, py.bind(this, "show_achievements_won"));
     }
+    return null;
+  }
+  show_achievements_won(): any {
+    this.stage.render();
+    content_extend.showAchievements(this);
+    this.stage.set_music_volume(0.2, 300);
+    animations.wait(this.stage, 200, py.bind(this, "play_medal_sound"));
     return null;
   }
   show_medal_won(): any {

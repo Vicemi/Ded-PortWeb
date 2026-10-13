@@ -32,6 +32,12 @@ const HISTORY: [string, string, string, number[], string, string, string | null]
   ['se lanzó', 'el', 'primer satélite uruguayo, AntelSat', [D.MONTEVIDEO], '19 de junio de 2014', 'Satélite experimental desarrollado por ingenieros de la Facultad de Ingeniería de la Udelar y Antel.', null],
   ['se celebró', 'la', 'primera Noche de la Nostalgia', [D.MONTEVIDEO], '24 de agosto de 1978', 'Creada por Pablo Lecueder, es la fiesta popular nocturna más multitudinaria y tradicional del país.', 'Cada víspera del 25 de agosto se baila música de décadas pasadas en todo el territorio.'],
   ['nació', 'el', 'chivito como plato tradicional uruguayo', [D.MALDONADO], '1944', 'Creado por Antonio Carbonaro en el bar El Mejillón de Punta del Este, se convirtió en el plato rápido emblema del país.', null],
+  ['se formó', 'la', 'banda El Cuarteto de Nos', [D.MONTEVIDEO], '1980', 'Nació en Montevideo y se hizo famosa por sus letras llenas de humor, con discos como Raro, Bipolar y Porfiado.', 'Su canción "Yendo a la casa de Damián" fue nominada a los Latin Grammy.'],
+  ['se formó', 'la', 'banda La Vela Puerca', [D.MONTEVIDEO], '1995', 'Es una de las bandas de rock más queridas de Uruguay, con un público fiel que canta todos sus temas en los recitales.', null],
+  ['se reguló', 'el', 'mercado del cannabis en Uruguay', [D.MONTEVIDEO], '2013', 'Uruguay fue el primer país del mundo en regular la producción y la venta de marihuana, con registro de usuarios y farmacias.', 'Otras sustancias, como el "tusi" (una mezcla de ketamina y otras drogas teñida de rosa), siguen siendo ilegales y peligrosas.'],
+  ['asumió', 'el', 'presidente Yamandú Orsi', [D.MONTEVIDEO, D.CANELONES], '1 de marzo de 2025', 'Fue intendente de Canelones y es el presidente de Uruguay desde 2025, tras José "Pepe" Mujica y Tabaré Vázquez.', null],
+  ['se anunció', 'el', 'partido inaugural del Mundial 2030 en el Estadio Centenario', [D.MONTEVIDEO], '2023', 'La FIFA decidió que el Mundial de los 100 años empiece en Uruguay y siga en Argentina, Paraguay, España, Portugal y Marruecos.', null],
+  ['se aprobó', 'el', 'matrimonio igualitario', [D.MONTEVIDEO], '2013', 'Uruguay fue el segundo país de América Latina en permitir que parejas del mismo sexo se casen.', null],
 ];
 
 /** [name, sex, department, dates, description] */
@@ -52,6 +58,11 @@ const WRITERS: [string, string, number, string, string][] = [
   ['Fernanda Trías', 'F', D.MONTEVIDEO, '(1976)', 'Escritora contemporánea montevideana, distinguida internacionalmente con el Premio Sor Juana Inés de la Cruz por Mugre Rosa.'],
   ['Mario Benedetti', 'M', D.TACUAREMBO, '(1920 - 2009)', 'Nacido en Paso de los Toros, uno de los poetas y narradores más leídos y traducidos de América Latina.'],
   ['Juana de Ibarbourou', 'F', D.CERRO_LARGO, '(1892 - 1979)', 'Nacida en Melo, apodada "Juana de América", una de las figuras poéticas más ilustres del continente.'],
+  ['Natalia Oreiro', 'F', D.MONTEVIDEO, '(1977)', 'Actriz y cantante nacida en Montevideo, conocida en todo el mundo por sus telenovelas y sus discos.'],
+  ['Diego Forlán', 'M', D.MONTEVIDEO, '(1979)', 'Ex futbolista nacido en Montevideo. En el Mundial de 2010 ganó el Balón de Oro como mejor jugador del torneo.'],
+  ['Luis Suárez', 'M', D.SALTO, '(1987)', 'Delantero nacido en Salto, máximo goleador de la historia de la selección uruguaya.'],
+  ['José "Pepe" Mujica', 'M', D.MONTEVIDEO, '(1935 - 2025)', 'Fue presidente de Uruguay entre 2010 y 2015 y se hizo famoso en el mundo por su vida sencilla en su chacra.'],
+  ['Los Tussi Warriors', 'M', D.MONTEVIDEO, '(grupo actual)', 'Grupo uruguayo de música urbana y humor absurdo que se hizo conocido en las redes y salió de gira por el exterior.'],
   ['Pablo Atchugarry', 'M', D.MONTEVIDEO, '(1954)', 'Escultor uruguayo reconocido en el mundo entero por sus monumentales obras en mármol de Carrara y creador del MACA en Maldonado.'],
   ['Marosa di Giorgio', 'F', D.SALTO, '(1932 - 2004)', 'Poeta nacida en Salto, conocida por su mundo de flores, animales y fantasías.'],
   ['Armonía Somers', 'F', D.CANELONES, '(1914 - 1994)', 'Narradora nacida en Pando, departamento de Canelones.'],

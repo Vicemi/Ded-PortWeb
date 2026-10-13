@@ -10,6 +10,7 @@ import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import * as characterid from './characterid';
+import * as content_extend from '../../game/content/extend';
 import * as datamodel from '../data/datamodel';
 import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
@@ -128,6 +129,7 @@ export class Merits {
     for (medal of py.iter(character_progress.medals)) {
       if ((medal.name === "uy")) {
         medal_uy = medal;
+      } else if (py.truthy(py.m(medal.name, "startswith", "ach_"))) {
       } else {
         this.add_tiny_medal(medal.name, medal.count, font_18);
       }
@@ -138,6 +140,8 @@ export class Merits {
       count = 0;
     }
     this.add_bottom_medal("uy", "URUGUAY", count, 271, 287, (-26), (-21), 5, (-4), 211, 53, font_18);
+    content_extend.grantAchievements(character_progress, this.stage.game.datastore);
+    py.m(this.medals_layer, "add", content_extend.logrosButton(this));
     return null;
   }
   add_tiny_medal(name: any, count: any, font: any): any {
@@ -538,6 +542,36 @@ export class Merits {
   }
   blind_main_back_callback(layer: any): any {
     this.stage.close_dialog(this.main_layer);
+    return null;
+  }
+  logros_click(item: any, args: any): any {
+    this.stage.render();
+    this.click_sound.play();
+    this.logros_layer = content_extend.achievementsLayer(this);
+    this.stage.show_dialog(this.logros_layer, py.bind(this, "logros_handle_event"), null);
+    this.stage.blind_dialog(this.logros_layer, animations.BlindDirection.SHOW_DOWN, true, []);
+    return null;
+  }
+  logros_handle_event(e: any): any {
+    if ((py.eq(e.type, KEYDOWN) && py.eq(e.key, K_ESCAPE))) {
+      this.stage.render();
+      this.click_sound.play();
+      this.close_logros();
+    }
+    return null;
+  }
+  logros_back_click(item: any, args: any): any {
+    this.stage.render();
+    this.click_sound.play();
+    this.close_logros();
+    return null;
+  }
+  close_logros(): any {
+    this.stage.blind_dialog(this.logros_layer, animations.BlindDirection.HIDE_UP, true, [], py.bind(this, "blind_logros_back_callback"));
+    return null;
+  }
+  blind_logros_back_callback(layer: any): any {
+    this.stage.close_dialog(this.logros_layer);
     return null;
   }
   medals_back_click(item: any, args: any): any {

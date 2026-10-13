@@ -6,6 +6,7 @@ import { createGame } from '../src/game/main';
 import type { Game } from '../src/engine/engine';
 import { lazy } from '../src/runtime/py';
 import * as newgames from '../src/game/minigames/newgames';
+import * as achievements from '../src/game/content/achievements';
 
 export interface Dev {
   game: Game;
@@ -25,6 +26,7 @@ export interface Dev {
   K: typeof K;
   /** the new minigames (hand-written) */
   newgames: typeof newgames;
+  achievements: typeof achievements;
   /** a generated game module by path, e.g. mod('game/stages/phase0').Phase0Stage */
   mod(path: string): any;
 }
@@ -46,7 +48,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
     else event.post({ type, pos: [x, y], button });
   };
   const dev: Dev = {
-    game, canvas, K, newgames,
+    game, canvas, K, newgames, achievements,
     mod: (path) => lazy(path),
     go,
     move(x, y, frames = 3) { post(MOUSEMOTION, x, y); go(frames); },
