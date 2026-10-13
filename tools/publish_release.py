@@ -1,6 +1,6 @@
 """Publishes a GitHub release with the Windows installer attached (the desktop version looks for it to offer updates).
 
-usage: python tools/publish_release.py <version> [notes.md]
+usage: python tools/publish_release.py <version> [notes.md] [--replace]   (--replace deletes a release / tag of the same version first)
   - the version is the one of desktop/Cargo.toml ([workspace.package]) and the tag is v<version>
   - the notes (default: CHANGELOG.md, the section of that version) become the description of the release = the changelog the players see in the game
   - needs desktop/release/DED-Instalador.exe (python tools/build_desktop.py) and the commit pushed to origin/main
@@ -36,13 +36,26 @@ def notes_for(version, path):
 
 
 def main():
-    version = sys.argv[1].lstrip('v')
-    notes = notes_for(version, os.path.join(ROOT, sys.argv[2] if len(sys.argv) > 2 else 'CHANGELOG.md'))
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    version = args[0].lstrip('v')
+    notes = notes_for(version, os.path.join(ROOT, args[1] if len(args) > 1 else 'CHANGELOG.md'))
     exe = os.path.join(ROOT, 'desktop', 'release', 'DED-Instalador.exe')
     if not os.path.exists(exe):
         sys.exit('falta ' + exe)
     tok = token()
     tag = 'v' + version
+    if '--replace' in sys.argv:
+        # a release of the same version that was published before (and the tag) are deleted first
+        try:
+            old = api('GET', 'https://api.github.com/repos/%s/releases/tags/%s' % (REPO, tag), tok)
+            api('DELETE', 'https://api.github.com/repos/%s/releases/%d' % (REPO, old['id']), tok)
+            print('deleted the old release', tag)
+        except SystemExit:
+            pass
+        try:
+            api('DELETE', 'https://api.github.com/repos/%s/git/refs/tags/%s' % (REPO, tag), tok)
+        except SystemExit:
+            pass
     rel = api('POST', 'https://api.github.com/repos/%s/releases' % REPO, tok, {'tag_name': tag, 'target_commitish': 'main', 'name': 'División Especial de Detectives %s' % version, 'body': notes, 'draft': False, 'prerelease': False})
     print('release', rel['html_url'])
     name = 'DED-Instalador-%s.exe' % version

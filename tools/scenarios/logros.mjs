@@ -8,6 +8,7 @@ export default async (dev) => {
   prog.medals = [new dm.Medal('artigas', 1), new dm.Medal('salto', 3)];
   prog.resolved_cases = 6; prog.score = 6000;
   prog.captured_thieves = ds.list_thieves.filter((t) => ['Víctor Pintos', 'Aaron Silva', 'Rita Platillo'].includes(t.name));
+  if (process.env.ACH_ALL) { prog.resolved_cases = 60; prog.score = 30000; prog.captured_thieves = ds.list_thieves.slice(); prog.medals = ds.list_departments.map((d) => new dm.Medal(d.image, 3)).concat([new dm.Medal('uy', 1)]); }
   const news = ex.grantAchievements(prog, ds);
   if (news.length < 5) throw new Error('few achievements: ' + news);
   if (ex.grantAchievements(prog, ds).length) throw new Error('granted twice');
