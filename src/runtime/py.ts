@@ -553,13 +553,14 @@ export const base64 = {
 };
 
 export class UUID {
-  constructor(public hex: string) {}
+  hex: string;
+  constructor(hex: string) { this.hex = String(hex).toLowerCase(); }
   __str__(): string { return this.hex; }
   __eq__(o: any): boolean { return o instanceof UUID && o.hex === this.hex; }
   __hash__(): string { return this.hex; }
 }
 export const uuid = {
-  UUID: (s: string) => new UUID(s.toLowerCase()),
+  UUID,
   uuid4: (): UUID => {
     const b = Array.from({ length: 16 }, () => Math.floor(Math.random() * 256));
     b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;

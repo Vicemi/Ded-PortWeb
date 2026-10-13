@@ -181,8 +181,10 @@ export class Surface {
     this.pix = data;
   }
   /** get_at: [r, g, b, a]; throws outside of the surface like pygame ("pixel index out of range") */
-  get_at(x: number, y: number): [number, number, number, number] {
-    x = trunc(x); y = trunc(y);
+  get_at(x: number | readonly number[], y?: number): [number, number, number, number] {
+    // pygame takes a position: get_at((x, y)); (x, y) is accepted too
+    if (typeof x !== 'number') { y = x[1]; x = x[0]; }
+    x = trunc(x); y = trunc(y as number);
     const w = this.canvas.width;
     if (x < 0 || y < 0 || x >= w || y >= this.canvas.height) throw new RangeError('pixel index out of range');
     const p = this.pixels(), i = (y * w + x) * 4;
