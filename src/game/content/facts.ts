@@ -120,3 +120,29 @@ export function extendNotes(ds: any): void {
   const galeano = ds.list_writers.find((w: any) => w.name === 'Eduardo Galeano');
   if (galeano) galeano.dates = '(1940 - 2015)';
 }
+
+// ---------------------------------------------------------------------------------------------------------------------------------- puzzle pictures
+import { has_image } from '../../engine/assets';
+/** more places for the puzzle of the bricklayer [number, name, department]; the pictures are made by tools/build_postals.py (a place is only offered when its pictures exist) */
+const POSTALS: [number, string, string][] = [
+  [6, 'Teatro Solís', 'Montevideo'], [7, 'Casapueblo', 'Maldonado'], [8, 'Puente de la Barra', 'Maldonado'], [9, 'Calle de los Suspiros', 'Colonia'],
+  [10, 'Quebrada de los Cuervos', 'Treinta y Tres'], [11, 'Represa de Salto Grande', 'Salto'], [12, 'Palacio Salvo', 'Montevideo'], [13, 'Frigorífico Anglo', 'Río Negro'],
+];
+export function extraPictures(Picture: any): any[] {
+  const n3 = (n: number): string => String(n).padStart(3, '0');
+  return POSTALS.filter(([n]) => has_image(`p1_minigame_bricklayer_postal_${n3(n)}.jpg`) && has_image(`p1_minigame_bricklayer_photo_${n3(n)}.png`)).map(([n, name, dep]) => new Picture(name, dep, n));
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------- new kinds of witness
+import { NEW_WITNESSES } from '../minigames/newgames';
+/** is it one of the new witnesses of the investigation (they have their own minigame)? */
+export function isNewWitness(name: string): boolean { return name in NEW_WITNESSES; }
+/** the minigame of a new witness */
+export function newMinigame(name: string, stage: any, phase1: any, witness: any): any { return new NEW_WITNESSES[name].cls(stage, phase1, witness); }
+/** adds the new kinds of witness whose pictures exist (called with the notes: the witnesses of the datastore are built after the thieves) */
+export function extendWitnesses(ds: any): void {
+  for (const [name, w] of Object.entries(NEW_WITNESSES)) {
+    const id = w.image.replace('p1_witness_', '').replace('.png', '');
+    if (has_image(w.image) && has_image(`p1_minigame_${id}.png`)) ds.list_witnesses.push(new datamodel.Witness(name, w.image));
+  }
+}

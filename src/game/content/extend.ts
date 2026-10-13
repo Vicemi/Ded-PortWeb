@@ -3,7 +3,7 @@
 // packs, so the roster grows as the art is delivered (tools/make_mugshot.py builds the pictures, tools/art_brief/new_thieves.json has the briefs).
 import * as datamodel from '../data/datamodel';
 import { has_image } from '../../engine/assets';
-export { extendCases, extendNotes } from './facts';
+export { extendCases, extendNotes, extraPictures, extendWitnesses, isNewWitness, newMinigame } from './facts';
 
 // the codes of the original datastore.py
 const MALE = 1, FEMALE = 2, TALL = 1, SHORT = 2, BRUNETTE = 1, BLONDE = 2, REDHEAD = 3, GREY_HAIRED = 4, SCAR = 1, TATOO = 2, GLASSES = 3, MOLE = 4;
@@ -16,7 +16,7 @@ const ANIMALS: [string, number, number, number][] = [
   ['ñandú', BIRD, HERBIVORE, WALK], ['ballena franca', MAMMAL, CARNIVORE, SWIM], ['benteveo', BIRD, CARNIVORE, FLY],
   ['ratón', MAMMAL, HERBIVORE, WALK], ['cuervo', BIRD, CARNIVORE, FLY], ['caballo', MAMMAL, HERBIVORE, WALK], ['hámster', MAMMAL, HERBIVORE, WALK],
   ['guazubirá', MAMMAL, HERBIVORE, WALK], ['chajá', BIRD, HERBIVORE, WALK], ['cardenal amarillo', BIRD, HERBIVORE, FLY],
-  ['lagarto overo', REPTILE, CARNIVORE, WALK],
+  ['lagarto overo', REPTILE, CARNIVORE, WALK], ['pez betta', 4, CARNIVORE, SWIM],
 ];
 /** sports (name, category, team, ball) */
 const SPORTS: [string, number, boolean, boolean][] = [
@@ -66,6 +66,9 @@ const THIEVES: NewThief[] = [
   { id: 'ninera', sex: FEMALE, height: SHORT, hair: BLONDE, feature: MOLE, pet: 'hámster', sport: 'voleibol', name: 'Nana Nochera', nick: '"La Niñera"', age: '24 años',
     desc: 'Niñera de confianza de media ciudad: conoce las casas, las alarmas y las horas en que nadie está.\nCuando los niños duermen, se escapa a fiestas donde circula el tusi y se lleva algún recuerdo de la casa.\nSiempre llega con una sonrisa y una mochila demasiado grande.',
     rumors: ['Se la ve en fiestas de tusi.', 'Nunca cuenta dónde pasa la noche.'] },
+  { id: 'aaron', sex: MALE, height: SHORT, hair: BRUNETTE, feature: SCAR, pet: 'pez betta', sport: 'ajedrez', name: 'Aaron Silva', nick: '"Elliot"', age: '27 años',
+    desc: 'Hacker de primera que vive de noche con la capucha puesta y casi nunca mira a los ojos.\nSe infiltra en bancos y empresas para "borrar deudas", como el personaje de esa serie que ve una y otra vez.\nTiene cargos por delitos de ciberseguridad y en los ventiladores de su computadora se encontró polvo blanco.',
+    rumors: ['Siempre lleva la capucha puesta.', 'Hallaron polvo blanco en su computadora.', 'Dicen que le dicen Elliot.'] },
 ];
 
 /** adds the new pets, sports and thieves to the lists of the datastore (the thieves whose pictures exist) */

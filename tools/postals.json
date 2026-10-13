@@ -1,0 +1,10 @@
+[
+  {"number": 6, "name": "Teatro Solís", "department": "Montevideo", "prompt": "the neoclassical facade of the Teatro Solís in Montevideo, white columns and arches, a few people on the plaza"},
+  {"number": 7, "name": "Casapueblo", "department": "Maldonado", "prompt": "Casapueblo, the white sculpture-house on the cliffs of Punta Ballena, Maldonado, at sunset over the sea"},
+  {"number": 8, "name": "Puente de la Barra", "department": "Maldonado", "prompt": "the wavy bridge of La Barra, a curved wooden-and-concrete bridge over a stream with the beach in the background"},
+  {"number": 9, "name": "Calle de los Suspiros", "department": "Colonia", "prompt": "the Calle de los Suspiros in Colonia del Sacramento, a cobblestone street with low colonial houses and tile roofs"},
+  {"number": 10, "name": "Quebrada de los Cuervos", "department": "Treinta y Tres", "prompt": "the Quebrada de los Cuervos, a green rocky canyon with a stream and a few black birds flying"},
+  {"number": 11, "name": "Represa de Salto Grande", "department": "Salto", "prompt": "the Salto Grande dam on the Uruguay river, concrete wall with open spillway gates and water"},
+  {"number": 12, "name": "Palacio Salvo", "department": "Montevideo", "prompt": "the Palacio Salvo, a tall ornate tower on Plaza Independencia in Montevideo, blue sky"},
+  {"number": 13, "name": "Frigorífico Anglo", "department": "Río Negro", "prompt": "the old Anglo meat plant of Fray Bentos on the Uruguay river, red brick buildings and a tall chimney"}
+]

@@ -478,6 +478,7 @@ export class Datastore {
     this.list_locations = this.set_up_locations();
     this.list_writers = this.set_up_writers();
     content_extend.extendNotes(this);
+    content_extend.extendWitnesses(this);
     this.notes_type_index = py.mkdict([["HISTORY_FACT", this.list_history_facts], ["RIVER", this.list_rivers], ["LAGOON", this.list_lagoons], ["HILL", this.list_hills], ["LOCATION", this.list_locations], ["WRITER", this.list_writers]]);
     this.department_type_index = collections.defaultdict((() => collections.defaultdict(py.list)));
     for (note of py.iter(py.add(py.add(py.add(py.add(py.add(this.list_history_facts, this.list_rivers), this.list_lagoons), this.list_hills), this.list_locations), this.list_writers))) {

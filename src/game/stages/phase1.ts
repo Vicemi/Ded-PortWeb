@@ -11,6 +11,7 @@ import { Phase0Stage } from './phase0';
 const Statement: any = py.lazyName("game/data/datamodel", "Statement");
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
+import * as content_extend from '../../game/content/extend';
 import * as datastore from '../data/datastore';
 const endgame: any = py.lazy("game/stages/endgame");
 import * as janitor from './janitor';
@@ -418,6 +419,9 @@ export class Phase1Content extends phase0.PhaseContent {
           minigamebricklayer_dialog = new minigamebricklayer.MinigameBricklayer(this.stage, this, this.witness_pin.witness);
           minigamebricklayer_dialog.show_wrong_place_dialog();
           case_.wrong_witness_visited = true;
+        } else if (py.truthy(content_extend.isNewWitness(item.witness.name))) {
+          content_extend.newMinigame(item.witness.name, this.stage, this, this.witness_pin.witness).show_wrong_place_dialog();
+          case_.wrong_witness_visited = true;
         }
       }
     } else {
@@ -445,6 +449,8 @@ export class Phase1Content extends phase0.PhaseContent {
     } else if ((name === "Alba\xf1il")) {
       minigamebricklayer_dialog = new minigamebricklayer.MinigameBricklayer(this.stage, this, witness_pin.witness);
       minigamebricklayer_dialog.show_opening_dialog();
+    } else if (py.truthy(content_extend.isNewWitness(name))) {
+      content_extend.newMinigame(name, this.stage, this, witness_pin.witness).show_opening_dialog();
     } else if ((name === "Vendedor")) {
       this.minigame_solved(true);
     } else if ((name === "Verdulera")) {

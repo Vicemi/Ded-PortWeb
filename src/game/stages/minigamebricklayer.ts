@@ -8,6 +8,7 @@ import { Minigame } from './minigame';
 import { Rect } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
+import * as content_extend from '../../game/content/extend';
 import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
@@ -193,14 +194,14 @@ export class MinigameBricklayer extends Minigame {
   }
   set_up_photo(photo_number: any): any {
     let photo_image, photo_item: any;
-    photo_image = assets.load_image(py.add(py.add("p1_minigame_bricklayer_photo_00", py.str(photo_number)), ".png"));
+    photo_image = assets.load_image(py.fmt("p1_minigame_bricklayer_photo_%03d.png", photo_number));
     photo_item = new ItemImage(0, 157, photo_image);
     py.m(this.layer, "add", photo_item);
     return null;
   }
   set_up_puzzle(photo_number: any, rows: any, cols: any, minigame_level: any): any {
     let i, j, piece: any;
-    this.puzzle_image = assets.load_image(py.add(py.add("p1_minigame_bricklayer_postal_00", py.str(photo_number)), ".jpg"));
+    this.puzzle_image = assets.load_image(py.fmt("p1_minigame_bricklayer_postal_%03d.jpg", photo_number));
     this.tile_image = null;
     this.tile_image = assets.load_image(py.add(py.add(py.add(py.add("p1_minigame_bricklayer_tile", py.str(rows)), "x"), py.str(cols)), ".png"));
     this.rows = rows;
@@ -555,7 +556,7 @@ export class MinigameBricklayer extends Minigame {
     selected_picture = null;
     random.seed();
     while ((selected_picture == null)) {
-      pictures = [new Picture("Piedra Pintada", "Artigas", 1), new Picture("Cerro Batov\xed", "Tacuaremb\xf3", 2), new Picture("Faro de Cabo Polonio", "Rocha", 3), new Picture("Monumento al Ahogado", "Maldonado", 4), new Picture("Real de San Carlos", "Colonia", 5)];
+      pictures = py.add([new Picture("Piedra Pintada", "Artigas", 1), new Picture("Cerro Batov\xed", "Tacuaremb\xf3", 2), new Picture("Faro de Cabo Polonio", "Rocha", 3), new Picture("Monumento al Ahogado", "Maldonado", 4), new Picture("Real de San Carlos", "Colonia", 5)], content_extend.extraPictures(Picture));
       for (number of py.iter(pictures_seen)) {
         for (picture of py.iter(pictures)) {
           if (py.eq(picture.number, number)) {
