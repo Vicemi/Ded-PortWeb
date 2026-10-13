@@ -42,4 +42,7 @@ import DedGame from '../components/DedGame.tsx';
   .ded-pad { pointer-events: auto; width: clamp(3.4rem, 16vh, 5rem); height: clamp(3.4rem, 16vh, 5rem); border-radius: 50%; border: 2px solid rgba(255,255,255,0.7); background: rgba(0,0,0,0.35); color: #fff; font: 700 1.4rem system-ui, sans-serif; touch-action: none; padding: 0; -webkit-tap-highlight-color: transparent; }
   .ded-pad:active { background: rgba(255,255,255,0.35); }
   .ded-rotate { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.92); color: #f4e8cc; text-align: center; font: 700 1.3rem/1.5 system-ui, sans-serif; }
+  /* wide screens (phones in landscape): the buttons go in the black bar on the right, not over the game */
+  @media (min-aspect-ratio: 16/10) { .ded-tools { flex-direction: column; gap: 0.35rem; right: calc(0.3rem + env(safe-area-inset-right)); top: calc(0.3rem + env(safe-area-inset-top)); } .ded-btn { width: clamp(2rem, 11vh, 2.6rem); height: clamp(2rem, 11vh, 2.6rem); opacity: 0.75; } }
+  @media (max-height: 420px) { .ded-note { bottom: 0.4rem; font-size: 0.8rem; } .ded-card { font-size: 0.85rem; padding: 0.7rem 1rem; } .ded-card h1 { font-size: 1.15rem; } }
 </style>

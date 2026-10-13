@@ -2,6 +2,14 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.1
+
+### Correcciones
+- **Web en celular**: el juego ya no se congela después de la pantalla de Vicemi Dev y el prólogo (en el teléfono se descargan todas las imágenes antes de empezar, con barra de progreso, en vez de pedirlas de forma bloqueante).
+- El toque en la pantalla táctil ya no pierde el clic al levantar el dedo.
+- Botones de la web más ordenados en celulares apaisados (van en la franja negra, no sobre el juego).
+- Versión de escritorio: se quitaron los botones superiores adicionales (el menú de la ventana ya tiene esas opciones).
+
 ## 1.0.0
 
 **Primera versión de escritorio (Windows, funciona sin internet) de la edición actualizada de División Especial de Detectives, recreada por Vicemi Dev (vicemi.dev).**

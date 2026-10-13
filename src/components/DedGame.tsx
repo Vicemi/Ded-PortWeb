@@ -142,14 +142,14 @@ export default function DedGame() {
           <div>↻<br />Gira el teléfono para jugar mejor<br /><small>(toca para continuar así)</small></div>
         </div>
       )}
-      <div className="ded-tools">
+      {!isDesktop() && <div className="ded-tools">
         {touch && <button className="ded-btn" aria-label="Menú / Escape" onClick={() => ctlRef.current?.tap(K.ESCAPE)}>☰</button>}
         {canFull && <button className="ded-btn" aria-label="Pantalla completa" onClick={toggleFull}>{full ? '✕' : '⛶'}</button>}
         <button className="ded-btn" aria-label={mute ? 'Activar sonido' : 'Silenciar'} onClick={() => { mixer.setMuted(!mixer.muted); setMute(mixer.muted); }}>{mute ? '🔇' : '🔊'}</button>
         <button className="ded-btn" aria-label="Guardar progreso en un archivo" title="Guardar progreso en un archivo" onClick={saveProgress}>💾</button>
         <button className="ded-btn" aria-label="Cargar progreso desde un archivo" title="Cargar progreso desde un archivo" onClick={() => (isDesktop() ? toHost('load') : fileRef.current?.click())}>📂</button>
         <button className="ded-btn" aria-label="Créditos" onClick={() => setInfo(true)}>i</button>
-      </div>
+      </div>}
       <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={(e) => void loadProgress(e.target.files?.[0])} />
       {note && <div className="ded-note" role="status" onClick={() => setNote(null)}>{note}</div>}
       {info && (

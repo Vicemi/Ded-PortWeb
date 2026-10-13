@@ -8,3 +8,4 @@ art_inbox/*
 .env.local
 .env
 __pycache__/
+.claude/

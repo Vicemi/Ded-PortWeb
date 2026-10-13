@@ -119,8 +119,9 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
   };
   /** a phone shows its keyboard only when an input is focused from inside a touch handler: run the frame the tap produced right here */
   const syncKeyboard = (): void => {
-    if (!state.touch || !textInput || !ctl.game) return;
+    if (!state.touch || !ctl.game) return;
     try { ctl.game.tick(); } catch (e) { console.error(e); }
+    if (!textInput) return;
     const editing = editingText();
     if (editing && document.activeElement !== textInput) textInput.focus({ preventScroll: true });
     if (!editing && document.activeElement === textInput) textInput.blur();
@@ -137,12 +138,20 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     send('down', x, y, e.button);
   });
   canvas.addEventListener('pointermove', (e) => { const [x, y] = toGame(e); send('move', x, y, -1); });
+  let hoverReset = false;
+  const afterTick = (): void => {
+    if (!hoverReset) return;
+    hoverReset = false;
+    event.post({ type: MOUSEMOTION, pos: [-50, -50], rel: [0, 0], buttons: [0, 0, 0] }); input.pos = [-50, -50]; lastPos = [-50, -50];
+  };
   const release = (e: PointerEvent): void => {
     const [x, y] = toGame(e);
     send('up', x, y, e.button);
     // a finger that is lifted is not hovering anything any more
-    if (e.pointerType === 'touch') { event.post({ type: MOUSEMOTION, pos: [-50, -50], rel: [0, 0], buttons: [0, 0, 0] }); input.pos = [-50, -50]; lastPos = [-50, -50]; }
+    // (after the game has seen the click: it checks the pointer position when it handles the button-up)
+    if (e.pointerType === 'touch') hoverReset = true;
     syncKeyboard();
+    afterTick();
   };
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
@@ -172,6 +181,7 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     if (now - last >= 1000 / FPS - 2) {
       last = now;
       try { ctl.game.tick(); } catch (e) { console.error(e); state.error = String(e); }
+      afterTick();
       const sn = (ctl.game as unknown as { stage?: { constructor: { name: string } } }).stage?.constructor?.name;
       state.racing = sn === 'RacerStage';
     }
