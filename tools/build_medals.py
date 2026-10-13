@@ -27,7 +27,7 @@ def cut(path):
     boxes = []
     for i, sl in enumerate(ndimage.find_objects(lab), 1):
         area = int((lab[sl] == i).sum())
-        if area < 1500 or area > 60000:
+        if area < 0.002 * a.shape[0] * a.shape[1] or area > 0.2 * a.shape[0] * a.shape[1]:   # (the white bars of a screenshot are one big piece)
             continue
         boxes.append((sl, i))
     # rows: group by vertical centre

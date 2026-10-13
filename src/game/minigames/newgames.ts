@@ -201,10 +201,24 @@ export class MinigameFlags extends NewMinigame {
     c.strokeStyle = '#1a140c'; c.lineWidth = 3; c.strokeRect(1.5, 1.5, w - 3, h - 3);
     return new assets.Image(s);
   }
+  /** a card turns over: it narrows, changes picture and widens again */
+  turn(card: any, from: any, to: any): void {
+    const squeeze = (img: any, k: number) => {
+      const w = img.get_width(), h = img.get_height(), s = new pygame.Surface([w, h], pygame.SRCALPHA, 32), c = s.ctx, nw = Math.max(2, Math.round(w * k));
+      c.drawImage(img.surface.canvas, 0, 0, w, h, Math.round((w - nw) / 2), 0, nw, h);
+      return new assets.Image(s);
+    };
+    const steps: [any, number][] = [[from, 0.6], [from, 0.25], [to, 0.25], [to, 0.6]];
+    let i = 0;
+    const next = () => {
+      if (i < steps.length) { card.set_image(squeeze(steps[i][0], steps[i][1])); i++; this.stage.render(); animations.wait(this.stage, 40, next); }
+      else { card.set_image(to); this.stage.render(); }
+    };
+    next();
+  }
   flip(card: any): any {
     if (this.minigame_solved || this.busy || card.state !== 0 || this.open.length >= 2) return null;
-    card.state = 1; card.set_image(card.face); this.open.push(card);
-    this.stage.render();
+    card.state = 1; this.turn(card, card.back, card.face); this.open.push(card);
     if (this.names[card.flag]) this.note(this.names[card.flag].toUpperCase(), 1800);
     if (this.open.length === 2) {
       const [a, b] = this.open;
@@ -216,7 +230,7 @@ export class MinigameFlags extends NewMinigame {
       } else {
         this.mistakes++; this.busy = true;
         animations.wait_locked(this.stage, 750, () => {
-          for (const c of this.open) { c.state = 0; c.set_image(c.back); }
+          for (const c of this.open) { c.state = 0; this.turn(c, c.face, c.back); }
           this.open = []; this.busy = false; this.note('Busca las parejas', 300);
         });
       }
