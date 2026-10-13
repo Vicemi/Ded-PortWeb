@@ -172,6 +172,19 @@ export class MinigameFlags extends NewMinigame {
     });
     this.info = new ItemText(BX, BY + BH - 30, this.font_14_bld, 16, 'Busca las parejas', [244, 230, 184], null, BW, 24, 2, 2);
     this.layer.add(this.info);
+    this.note_until = 0;
+  }
+  /** the line under the cards: a message for a moment, then the clock and the mistakes */
+  status(): string {
+    const t = Math.max(0, Math.floor(this.start_time === null ? 0 : this.elapsed()));
+    return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}  ·  Parejas ${this.found}/${this.total_pairs}  ·  Errores ${this.mistakes}`;
+  }
+  note(text: string, ms = 1400): void { this.info.set_text(text); this.note_until = pygame.time.get_ticks() + ms; }
+  on_start(): void {
+    this.stage.start_timer('new_minigame_tick', 500, () => {
+      if (this.minigame_solved || pygame.time.get_ticks() < this.note_until) return;
+      this.info.set_text(this.status()); this.stage.render();
+    }, null, true, false);
   }
   cardImage(id: string | null, w: number, h: number): any {
     const s = new pygame.Surface([w, h], pygame.SRCALPHA, 32), c = s.ctx;
@@ -192,19 +205,19 @@ export class MinigameFlags extends NewMinigame {
     if (this.minigame_solved || this.busy || card.state !== 0 || this.open.length >= 2) return null;
     card.state = 1; card.set_image(card.face); this.open.push(card);
     this.stage.render();
-    if (this.names[card.flag]) this.info.set_text(this.names[card.flag].toUpperCase());
+    if (this.names[card.flag]) this.note(this.names[card.flag].toUpperCase(), 1800);
     if (this.open.length === 2) {
       const [a, b] = this.open;
       if (a.flag === b.flag) {
         a.state = b.state = 2; this.open = []; this.found++;
         this.right_sound.play();
-        this.info.set_text('¡PAREJA! ' + (this.names[a.flag] || '').toUpperCase());
+        this.note('¡PAREJA! ' + (this.names[a.flag] || '').toUpperCase(), 2000);
         if (this.found >= this.total_pairs) this.complete();
       } else {
         this.mistakes++; this.busy = true;
         animations.wait_locked(this.stage, 750, () => {
           for (const c of this.open) { c.state = 0; c.set_image(c.back); }
-          this.open = []; this.busy = false; this.info.set_text('Busca las parejas');
+          this.open = []; this.busy = false; this.note('Busca las parejas', 300);
         });
       }
     }
@@ -255,7 +268,7 @@ export class MinigameCandombe extends NewMinigame {
     this.notes = [];
     song.notes.forEach((lane, i) => { if (lane >= 0) this.notes.push({ t: lead + i * song.beat, lane, state: 0 }); });   // state 0 waiting, 1 hit, 2 missed
     this.end_time = lead + song.notes.length * song.beat + 600;
-    this.t0 = null; this.hits = 0; this.fail = 0; this.flash = [0, 0, 0]; this.msg = ''; this.msg_t = 0; this.finished = false; this.counted = 0;
+    this.t0 = null; this.hits = 0; this.fail = 0; this.combo = 0; this.best = 0; this.perfects = 0; this.rings = []; this.miss = [0, 0, 0]; this.flash = [0, 0, 0]; this.msg = ''; this.msg_t = 0; this.finished = false; this.counted = 0;
   }
   on_start(): void {
     this.t0 = pygame.time.get_ticks();
@@ -265,7 +278,7 @@ export class MinigameCandombe extends NewMinigame {
   tick(): void {
     if (this.minigame_solved || this.t0 === null) return;
     const now = this.now();
-    for (const n of this.notes) if (n.state === 0 && now - n.t > 240) { n.state = 2; this.fail++; this.say('Fallaste', now); }
+    for (const n of this.notes) if (n.state === 0 && now - n.t > 240) { n.state = 2; this.fail++; this.combo = 0; this.miss[n.lane] = now; this.say('Fallaste', now); }
     if (!this.finished && now > this.end_time) {
       this.finished = true;
       const total = this.notes.length, ratio = this.hits / Math.max(1, total);
@@ -284,8 +297,13 @@ export class MinigameCandombe extends NewMinigame {
     this.flash[lane] = now;
     let best = null;
     for (const n of this.notes) if (n.state === 0 && n.lane === lane && Math.abs(n.t - now) <= 240 && (best === null || Math.abs(n.t - now) < Math.abs(best.t - now))) best = n;
-    if (best) { best.state = 1; this.hits++; this.say(Math.abs(best.t - now) < 90 ? '¡Perfecto!' : '¡Bien!', now); }
-    else { this.fail++; this.say('Fuera de tiempo', now); }
+    if (best) {
+      best.state = 1; this.hits++; this.combo++; this.best = Math.max(this.best, this.combo);
+      const perfect = Math.abs(best.t - now) < 90;
+      if (perfect) this.perfects++;
+      this.rings.push({ lane, t: now, perfect });
+      this.say(perfect ? '¡Perfecto!' : '¡Bien!', now);
+    } else { this.fail++; this.combo = 0; this.miss[lane] = now; this.say('Fuera de tiempo', now); }
     this.draw();
   }
   clicked(args: any): any {
@@ -333,6 +351,15 @@ export class MinigameCandombe extends NewMinigame {
     // progress and message
     const total = this.notes.length;
     c.fillStyle = '#f4e6b8'; c.font = 'bold 13px sans-serif'; c.textAlign = 'left'; c.fillText(`Aciertos: ${this.hits}/${total}`, 8, 18);
+    if (this.combo >= 2) { c.textAlign = 'right'; c.fillStyle = '#ffd24a'; c.font = 'bold 15px sans-serif'; c.fillText(`Combo x${this.combo}`, W - 8, 18); }
+    // rings that spread from the drum that was hit, and a red flash on the lane that was missed
+    this.rings = this.rings.filter((r) => now - r.t < 320);
+    for (const r of this.rings) {
+      const k = (now - r.t) / 320;
+      c.beginPath(); c.arc(LANES[r.lane].x, hitY, 36 + k * 26, 0, Math.PI * 2);
+      c.strokeStyle = r.perfect ? `rgba(255,255,255,${1 - k})` : `rgba(255,214,120,${0.8 - k * 0.8})`; c.lineWidth = r.perfect ? 4 : 3; c.stroke();
+    }
+    LANES.forEach((l, i) => { const f = Math.max(0, 1 - (now - this.miss[i]) / 220); if (f > 0) { c.fillStyle = `rgba(220,40,40,${0.28 * f})`; c.fillRect(l.x - 50, 0, 100, H); } });
     if (now - this.msg_t < 700 && this.msg) { c.textAlign = 'center'; c.font = 'bold 22px sans-serif'; c.fillStyle = '#fff'; c.fillText(this.msg, W / 2, 46); }
     if (now < 0) { c.textAlign = 'center'; c.font = 'bold 18px sans-serif'; c.fillStyle = '#fff'; c.fillText('¡Prepárate!', W / 2, 90); }
   }
@@ -359,7 +386,7 @@ export class MinigameTrivia extends NewMinigame {
     const level = this.level(), n = level === 1 ? 4 : level === 2 ? 5 : 6;
     this.maximum_time = 20 * n; this.maximum_time_score = 150;
     this.questions = this.makeQuestions(n);
-    this.index = 0;
+    this.index = 0; this.streak = 0; this.clean = true;
     this.layer.add(new ItemRect(BX, BY, BW, BH, null, 0, '', [0, 0, 0], [238, 226, 188], [60, 40, 14]));   // the paper of the letters
     this.counter = new ItemText(BX, BY + 6, this.font_14_bld, 16, '', [100, 66, 12], null, BW, 20, 2);
     this.qtext = new ItemText(BX + 14, BY + 32, this.font_18, 22, '', [75, 47, 7], null, BW - 28, 78, 2, 2);
@@ -399,7 +426,7 @@ export class MinigameTrivia extends NewMinigame {
   }
   show(): void {
     const q = this.questions[this.index];
-    this.counter.set_text(`Carta ${this.index + 1} de ${this.questions.length}`);
+    this.counter.set_text(`Carta ${this.index + 1} de ${this.questions.length}` + (this.streak >= 2 ? `  ·  Racha de ${this.streak}` : '') + (this.mistakes ? `  ·  Errores ${this.mistakes}` : ''));
     this.qtext.set_text(q.text);
     this.opts.forEach((r, i) => { r.set_text(q.options[i]); r.set_background([246, 235, 200]); r.set_visible(true); });
   }
@@ -408,13 +435,15 @@ export class MinigameTrivia extends NewMinigame {
     const q = this.questions[this.index];
     if (i === q.answer) {
       this.opts[i].set_background([170, 220, 140]);
+      if (this.clean) this.streak++; this.clean = true;
+      this.counter.set_text('¡Correcto!' + (this.streak >= 2 ? `  ·  Racha de ${this.streak}` : ''));
       this.right_sound.play(); this.locked = true;
       animations.wait_locked(this.stage, 650, () => {
         this.locked = false; this.index++;
         if (this.index >= this.questions.length) this.complete(); else this.show();
       });
     } else {
-      this.mistakes++;
+      this.mistakes++; this.streak = 0; this.clean = false;
       this.opts[i].set_background([230, 140, 130]);
       blip(180, 0.18, 0.3);
     }
