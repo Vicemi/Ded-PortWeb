@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { startHost, type Controller } from '../game/host';
 import { mixer } from '../engine/sounds';
 import { K } from '../engine/pygame';
+import { isDesktop, restoreFromHost, startAutosave, toHost } from '../desktop';
 
 /** a round button of the phone gamepad that keeps a game key pressed while the finger is on it */
 function Pad({ ctl, code, label, cls }: { ctl: React.RefObject<Controller | null>; code: number; label: string; cls: string }) {
@@ -31,11 +32,13 @@ export default function DedGame() {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<string | null>(null);
-  const canFull = typeof document !== 'undefined' && !!document.fullscreenEnabled;
+  const canFull = typeof document !== 'undefined' && (!!document.fullscreenEnabled || isDesktop());
 
   useEffect(() => {
+    restoreFromHost();
     const ctl = startHost(canvasRef.current!, import.meta.env.BASE_URL.replace(/\/$/, '') + '/assets');
     ctlRef.current = ctl;
+    const stopAutosave = startAutosave(ctl);
     if (import.meta.env.DEV) { (window as unknown as { __ded: Controller }).__ded = ctl; (window as unknown as { __mixer: typeof mixer }).__mixer = mixer; }
     const id = window.setInterval(() => {
       setProgress(ctl.state.progress);
@@ -47,7 +50,7 @@ export default function DedGame() {
     }, 100);
     canvasRef.current?.focus();
     const detach = ctl.attachTextInput(inputRef.current!);
-    return () => { window.clearInterval(id); detach(); ctl.stop(); };
+    return () => { window.clearInterval(id); detach(); stopAutosave(); ctl.stop(); };
   }, []);
 
   useEffect(() => {
@@ -80,6 +83,7 @@ export default function DedGame() {
   const saveProgress = () => {
     const ctl = ctlRef.current;
     if (!ctl) return;
+    if (isDesktop()) { toHost('saveas', ctl.exportSave()); return; }
     const blob = new Blob([ctl.exportSave()], { type: 'application/json' });
     const a = document.createElement('a');
     const d = new Date();
@@ -100,6 +104,7 @@ export default function DedGame() {
   };
 
   const toggleFull = () => {
+    if (isDesktop()) { toHost('fullscreen'); return; }
     if (document.fullscreenElement) { void document.exitFullscreen?.(); return; }
     void stageRef.current?.requestFullscreen?.();
     try { void (window.screen as unknown as { orientation?: { lock?: (o: string) => Promise<void> } }).orientation?.lock?.('landscape'); } catch { /* unsupported */ }
@@ -140,7 +145,7 @@ export default function DedGame() {
         {canFull && <button className="ded-btn" aria-label="Pantalla completa" onClick={toggleFull}>{full ? '✕' : '⛶'}</button>}
         <button className="ded-btn" aria-label={mute ? 'Activar sonido' : 'Silenciar'} onClick={() => { mixer.setMuted(!mixer.muted); setMute(mixer.muted); }}>{mute ? '🔇' : '🔊'}</button>
         <button className="ded-btn" aria-label="Guardar progreso en un archivo" title="Guardar progreso en un archivo" onClick={saveProgress}>💾</button>
-        <button className="ded-btn" aria-label="Cargar progreso desde un archivo" title="Cargar progreso desde un archivo" onClick={() => fileRef.current?.click()}>📂</button>
+        <button className="ded-btn" aria-label="Cargar progreso desde un archivo" title="Cargar progreso desde un archivo" onClick={() => (isDesktop() ? toHost('load') : fileRef.current?.click())}>📂</button>
         <button className="ded-btn" aria-label="Créditos" onClick={() => setInfo(true)}>i</button>
       </div>
       <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={(e) => void loadProgress(e.target.files?.[0])} />

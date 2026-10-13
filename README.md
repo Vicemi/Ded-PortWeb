@@ -21,6 +21,15 @@ npm test         # escenarios headless
 ```
 `npm run assets` regenera `public/assets` desde `F:\Games\DED\Ded.activity` (requiere Python + pygame + PyYAML).
 
+## Versión de escritorio (offline, en Rust)
+
+`desktop/` es un workspace de Rust con dos programas:
+
+- **`ded.exe`** (`desktop/player`): abre el juego en su propia ventana (WebView2 con `wry` + `tao`) y lo sirve desde la carpeta `game/` de la instalación, sin internet. Trae menú de **Pantalla** (pantalla completa F11, resoluciones 800x600 … 1920x1440, maximizar), menú de **Juego** (guardar ahora, guardar copia, cargar partida, abrir carpeta de partidas) y **Ayuda** (créditos, vicemi.dev). Las partidas se guardan solas en `saves/progress.json` dentro de la carpeta de instalación (con `progress.bak.json` y copias con fecha en `saves/backups/`); el tamaño de la ventana se recuerda en `data/settings.json`.
+- **`DED-Instalador.exe`** (`desktop/installer`): instalador por usuario (sin administrador) con interfaz propia, accesos directos, entrada en *Aplicaciones instaladas* y `uninstall.exe`. También acepta `--silent [--dir <carpeta>] [--no-shortcuts]` y `uninstall.exe --uninstall --silent [--remove-saves]`.
+
+El motor del juego sigue siendo el de la versión web (TypeScript + Canvas); Rust aporta la ventana, el servidor de archivos, el guardado y el instalador. Para compilarlo: `python tools/build_desktop.py` (necesita Rust y el SDK de Windows) → `desktop/release/DED-Instalador.exe`.
+
 ## Banderas departamentales
 Las cintas de las medallas y las banderitas del mapa y de las medallas usan las banderas actuales de los 19 departamentos (Tacuarembó no tiene bandera oficial: se usa su escudo sobre blanco; la de Montevideo es una bandera no oficial). Archivos de Wikimedia Commons, adaptados al juego (`tools/build_flags.mjs`). Las licencias CC BY-SA (Cerro Largo, Colonia, Rocha) exigen atribución y compartir igual:
 
