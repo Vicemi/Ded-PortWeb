@@ -15,6 +15,7 @@ import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import * as case_ from './case';
 import * as characterid from './characterid';
+import * as content_extend from '../../game/content/extend';
 import * as help from './help';
 import * as merits from './merits';
 import { open_browser } from '../../runtime/external';
@@ -93,6 +94,7 @@ export class MainMenu {
     this.play_button.set_rollover_image(play_rollover_image, this.rollover_sound);
     this.play_button.add_event_handler(ItemEvent.CLICK, py.bind(this, "play_click"));
     py.m(this.main_layer, "add", this.play_button);
+    content_extend.addMenuCredit(this.main_layer);
     if (py.truthy(this.overlay)) {
       backtogame_normal_image = assets.load_image("p0_mainmenu_btn_backtogame_normal.png");
       backtogame_rollover_image = assets.load_image("p0_mainmenu_btn_backtogame_rollover.png");

@@ -5,6 +5,7 @@ import { Stats } from '../runtime/stats';
 import * as datastore from './data/datastore';
 import * as statcodes from './data/statcodes';
 import * as presentation from './stages/presentation';
+import { LogoVicemiStage } from './content/logovicemi';
 // the stages register themselves for the imports the original did inside functions
 import './stages/case';
 import './stages/characterid';
@@ -50,6 +51,6 @@ export function createGame(canvas: HTMLCanvasElement): Game {
   g.datastore = new (datastore as any).Datastore(g);
   g.update_manager = new UpdateManager();
   (g.stats as unknown as Stats).start_time_event(statcodes.PLAY);
-  g.run(new (presentation as any).PresentationStage(g));
+  g.run(new LogoVicemiStage(g));
   return g;
 }

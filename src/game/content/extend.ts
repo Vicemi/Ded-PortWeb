@@ -4,6 +4,7 @@
 import * as datamodel from '../data/datamodel';
 import { has_image } from '../../engine/assets';
 export { extendCases, extendNotes, extraPictures, extendWitnesses, isNewWitness, newMinigame } from './facts';
+export { addMenuCredit } from './credit';
 export { grantAchievements, achievementsLayer, logrosButton, showAchievements } from './achievements';
 
 // the codes of the original datastore.py
