@@ -280,13 +280,19 @@ export class RacerStage extends Stage {
 
   private moveTraffic(dt: number): void {
     const tr = this.data.traffic;
+    // a vehicle never overtakes the one in front of it in its lane (it would end up side by side with it and block the road)
+    for (const t of this.traffic) {
+      const lead = this.traffic.find((o) => o !== t && o.s > t.s && o.s - t.s < 42 && Math.abs(o.x - t.x) < 3 && o.v < t.v);
+      if (lead) t.v = lead.v;
+    }
     for (const t of this.traffic) t.s += t.v * dt;
     this.traffic = this.traffic.filter((t) => t.s > this.s - 80 && t.s < this.s + tr.max_distance + 300);
     let guard = 0;
     while (this.traffic.length < 7 && guard++ < 10) {
       const lane = this.map.lanes[Math.floor(this.rng() * this.map.lanes.length)];
       const s = this.s + tr.min_distance + this.rng() * (tr.max_distance - tr.min_distance) + 120;
-      if (this.traffic.some((t) => Math.abs(t.s - s) < 45 && Math.abs(t.x - lane) < 3)) continue;
+      // keep a gap in every lane: nothing else within 85 m of a new vehicle, so two of them never wall the road off
+      if (this.traffic.some((t) => Math.abs(t.s - s) < 85)) continue;
       if (Math.abs(s - this.thief.s) < 40 && Math.abs(lane - this.thief.x) < 4) continue;
       const kind = tr.cars[Math.floor(this.rng() * tr.cars.length)];
       this.traffic.push({ s, x: lane, v: tr.min_speed + this.rng() * 32, kind, targetX: lane });
@@ -317,10 +323,21 @@ export class RacerStage extends Stage {
     const ds = this.s - th.s, dx = this.x - th.x;
     const touching = (th.kind.width + this.data.car.width) / 2;
     if (Math.abs(dx) < touching && ds > -5 && ds < 0.5) {
-      // the front of the car touches the back of the thief: no arrest, just a bump
+      // the front of the car touches the back of the thief: ramming him with some speed stops him (the arrest); a soft touch is just a bump
+      if (this.v >= th.v * 0.9 && this.v > 30) {
+        this.phase = 'catch'; this.catchT = 0; this.catchGap0 = null; this.catchSide = dx >= 0 ? -1 : 1;
+        this.play('P3_Car_Crash1.wav', 1);
+        return;
+      }
       this.lightCrash(dx >= 0 ? 1 : -1);
       this.s = th.s - 5.5;
       this.v = Math.min(this.v, th.v * 0.85);
+      return;
+    }
+    // overtaken and cut in front of him: the thief has to stop
+    if (ds > 1 && ds < 16 && Math.abs(dx) < touching + 3 && this.v >= th.v * 0.8 && Math.abs(this.x) < 12) {
+      this.phase = 'catch'; this.catchT = 0; this.catchGap0 = null; this.catchSide = th.x >= this.x ? 1 : -1;
+      this.play('p3_car_tires.wav', 1);
       return;
     }
     // caught up: the car is side by side with the thief (its nose less than 2.5 m behind him, or already past him). The thief stays in sight ahead of the car

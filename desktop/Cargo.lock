@@ -336,7 +336,7 @@ dependencies = [
 
 [[package]]
 name = "ded-installer"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "dirs",
  "embed-resource",
@@ -353,7 +353,7 @@ dependencies = [
 
 [[package]]
 name = "ded-player"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "chrono",
  "embed-resource",

@@ -141,7 +141,7 @@ export class Merits {
     }
     this.add_bottom_medal("uy", "URUGUAY", count, 271, 287, (-26), (-21), 5, (-4), 211, 53, font_18);
     content_extend.grantAchievements(character_progress, this.stage.game.datastore);
-    py.m(this.medals_layer, "add", content_extend.logrosButton(this));
+    for (const it of content_extend.logrosItems(this)) py.m(this.medals_layer, "add", it);
     return null;
   }
   add_tiny_medal(name: any, count: any, font: any): any {

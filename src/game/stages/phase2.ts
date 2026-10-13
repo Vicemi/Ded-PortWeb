@@ -901,6 +901,9 @@ export class Phase2Content extends phase0.PhaseContent {
       inside_clue_prob = 0.5;
       inside_item_prob = 0.4;
     }
+    // the updated edition hides more objects in each room (the original had 2-5 distractors of each kind)
+    fake_clues = fake_clues + 2;
+    extra_items = extra_items + 3;
     added_items = py.mkdict([]);
     if (!py.truthy(this.add_clues(clue_place_holders, fake_clues, below_prob, inside_clue_prob, build_stage_attempt, added_items, layout))) {
       return false;

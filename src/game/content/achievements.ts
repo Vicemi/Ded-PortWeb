@@ -143,6 +143,26 @@ export function logrosButton(merits: any): any {
   return btn;
 }
 
+/** the strip of the medals screen: a small picture of every achievement (earned ones in colour, the rest dark) and the button of the panel */
+export function logrosItems(merits: any): any[] {
+  const progress = merits.stage.game.datastore.user_character_progress;
+  const have = new Set<string>(progress.medals.map((m: any) => m.name));
+  const items: any[] = [];
+  const size = 24, gap = 2, total = ACHIEVEMENTS.length, x0 = Math.round((600 - (size + gap) * total) / 2);
+  ACHIEVEMENTS.forEach((a, i) => {
+    const got = have.has('ach_' + a.id);
+    const big = icon(a, got).surface.canvas;
+    const surf = new pygame.Surface([size, size], pygame.SRCALPHA, 32);
+    const r = Math.min(size / big.width, size / big.height), w = big.width * r, h = big.height * r;
+    surf.ctx.drawImage(big, (size - w) / 2, (size - h) / 2, w, h);
+    const it = new ItemImage(x0 + i * (size + gap), 366, new assets.Image(surf));
+    it.add_event_handler(ItemEvent.CLICK, (item: any, args: any) => merits.logros_click(item, args));
+    items.push(it);
+  });
+  items.push(logrosButton(merits));
+  return items;
+}
+
 /** scene of the score screens: the achievements won in this case */
 export function showAchievements(end: any): void {
   const layer = end.score_layer, list: string[] = end.new_achievements;

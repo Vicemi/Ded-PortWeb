@@ -5,7 +5,7 @@ import * as datamodel from '../data/datamodel';
 import { has_image } from '../../engine/assets';
 export { extendCases, extendNotes, extraPictures, extendWitnesses, isNewWitness, newMinigame } from './facts';
 export { addMenuCredit, pickMenuMusic } from './credit';
-export { grantAchievements, achievementsLayer, logrosButton, showAchievements } from './achievements';
+export { grantAchievements, achievementsLayer, logrosButton, logrosItems, showAchievements } from './achievements';
 
 // the codes of the original datastore.py
 const MALE = 1, FEMALE = 2, TALL = 1, SHORT = 2, BRUNETTE = 1, BLONDE = 2, REDHEAD = 3, GREY_HAIRED = 4, SCAR = 1, TATOO = 2, GLASSES = 3, MOLE = 4;

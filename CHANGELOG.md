@@ -2,6 +2,13 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.3
+
+### Correcciones
+- **Persecución en auto**: los vehículos ya no se amontonan ni se tapan la calle entre sí (siempre queda un carril libre; no se adelantan unos a otros), y se puede **atrapar al ladrón embistiéndolo** desde atrás con velocidad o **cerrándole el paso por delante**, además de ponerte a su lado.
+- **Lupa**: hay más objetos escondidos en cada habitación (más pistas falsas y más objetos sueltos).
+- **Logros**: ahora se ven en la pantalla de medallas (una fila con los 22 logros, en color los conseguidos) y al tocarlos se abre el panel completo.
+
 ## 1.0.2
 
 ### Correcciones
