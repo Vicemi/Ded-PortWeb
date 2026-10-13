@@ -75,13 +75,19 @@ def sounds():
     dst = OUT + '/sounds'
     os.makedirs(dst, exist_ok=True)
     meta = {}
-    for name in sorted(os.listdir(src)):
-        shutil.copyfile(os.path.join(src, name), os.path.join(dst, name))
+    extra = os.path.join(ROOT, 'tools', 'extra_sounds')  # sounds added by the port (the new menu music...); same name = replaces the original
+    extras = sorted(os.listdir(extra)) if os.path.isdir(extra) else []
+    for name in sorted(set(os.listdir(src)) | set(extras)):
+        if name in extras:
+            src_dir = extra
+        else:
+            src_dir = src
+        shutil.copyfile(os.path.join(src_dir, name), os.path.join(dst, name))
         if name.endswith('.ogg'):  # fallback for browsers that cannot play Ogg Vorbis (older Safari)
             import subprocess
-            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', os.path.join(src, name), '-c:a', 'aac', '-b:a', '96k', os.path.join(dst, name[:-4] + '.m4a')], check=True)
+            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', os.path.join(src_dir, name), '-c:a', 'aac', '-b:a', '96k', os.path.join(dst, name[:-4] + '.m4a')], check=True)
         try:
-            meta[name] = round(pygame.mixer.Sound(os.path.join(src, name)).get_length(), 4)
+            meta[name] = round(pygame.mixer.Sound(os.path.join(src_dir, name)).get_length(), 4)
         except Exception as e:  # noqa: BLE001
             print('cannot measure', name, e)
             meta[name] = 0

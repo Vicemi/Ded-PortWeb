@@ -537,31 +537,40 @@ export class MainMenu {
     this.credits_people_layer = new Layer();
     this.credits_people_layer_old = null;
     this.credits_page = 1;
-    this.credits_pagecount = 7;
+    this.credits_pagecount = 8;
     return null;
   }
   load_current_credits(apply_effect: any = true): any {
-    let additional_fonts, area, column, column_width, footer, footer_height, footer_width, footer_x, footer_y, header, header_height, header_separation, header_width, header_x, header_y, height, item, line_separation, shadow, shadow_text, small_line_font, small_line_height, text, text_font, title_font, top_margin, x, y: any;
+    let additional_fonts, area, column, column_width, footer, footer_height, footer_width, footer_x, footer_y, header, header_height, header_separation, header_width, header_x, header_y, height, item, line_separation, page, shadow, shadow_text, small_line_font, small_line_height, text, text_font, title_font, top_margin, x, y: any;
     header = null;
     footer = null;
     line_separation = 30;
     small_line_font = null;
     small_line_height = 0;
-    if ((this.credits_page === 1)) {
+    page = (this.credits_page - 1);
+    if ((page === 0)) {
+      top_margin = 14;
+      title_font = this.credits_font_24;
+      text_font = this.credits_font_20;
+      line_separation = 27;
+      small_line_font = this.credits_font_16;
+      small_line_height = 10;
+      text = [py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("&#c223,0,0!&#f:t!EDICI\xd3N ACTUALIZADA:&#c!&#f!\n", "RECREADO POR VICEMI DEV\n"), "VICEMI.DEV\n"), "&#f:s! \n&#f!"), "&#c223,0,0!&#f:t!NUEVO CONTENIDO:&#c!&#f!\n"), "NUEVOS PERSONAJES\n"), "NUEVOS MINIJUEGOS\n"), "LOGROS Y MEDALLAS\n"), "CULTURA URUGUAYA ACTUAL\n"), "M\xdaSICA NUEVA PARA EL MEN\xda\n")];
+    } else if ((page === 1)) {
       top_margin = 10;
       title_font = this.credits_font_30;
       text_font = this.credits_font_24;
       small_line_font = this.credits_font_16;
       small_line_height = 24;
       text = [py.add(py.add(py.add(py.add(py.add(py.add(py.add("&#c223,0,0!&#f:t!DISE\xd1O DE JUEGO:&#c!&#f!\n", "MART\xcdN DA SILVEIRA\n"), "&#f:s! \n&#f!"), "&#c223,0,0!&#f:t!ARTE:&#c!&#f!\n"), "FERNANDO PIC\xdaN\n"), "&#f:s! \n&#f!"), "&#c223,0,0!&#f:t!M\xdaSICA Y SONIDO:&#c!&#f!\n"), "MART\xcdN DA SILVEIRA\n"), py.add(py.add(py.add(py.add(py.add(py.add("&#c223,0,0!&#f:t!PROGRAMACI\xd3N:&#c!&#f!\n", "NICOL\xc1S CASTAGNET\n"), "JUAN PABLO AYALA\n"), "FELIPE OTAMENDI\n\n"), "&#c223,0,0!&#f:t!PRODUCCI\xd3N:&#c!&#f!\n"), "MARIANO DE LARROBLA\n"), "CARMEN FERNANDEZ\n")];
-    } else if ((this.credits_page === 2)) {
+    } else if ((page === 2)) {
       top_margin = 70;
       title_font = this.credits_font_24;
       text_font = this.credits_font_20;
       small_line_font = this.credits_font_16;
       small_line_height = 7;
       text = [py.add(py.add(py.add("&#c223,0,0!&#f:t!ASESORAMIENTO PEDAG\xd3GICO:&#c!&#f!\n", "&#f:s! \n&#f!"), "ANDR\xc9S COPES\n"), "WANDA SPINELLI\n"), py.add(py.add("&#c223,0,0!&#f:t!CORRECCI\xd3N DE TEXTOS:&#c!&#f!\n", "&#f:s! \n&#f!"), "LETICIA CHIFFLET\n"), py.add(py.add(py.add("&#c223,0,0!&#f:t!EQUIPO DE TESTING:&#c!&#f!\n", "&#f:s! \n&#f!"), "EUGENIA DE LARROBLA\n"), "GABRIELA CONZE\n")];
-    } else if ((this.credits_page === 3)) {
+    } else if ((page === 3)) {
       top_margin = 38;
       title_font = this.credits_font_24;
       text_font = this.credits_font_16;
@@ -569,7 +578,7 @@ export class MainMenu {
       header_separation = 44;
       header = "&#c223,0,0!&#f:t!BETA TESTERS:&#c!&#f!\n";
       text = [py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("ADRI\xc1N KIRCHNITZ\n", "AGUST\xcdN RAMASCO\n"), "AGUSTINA ALVAREZ\n"), "AGUSTINA CHALKLING\n"), "ALEJANDRO GONZ\xc1LEZ\n"), "ALEJO PIREZ\n"), "ALEXANDER ACEVEDO\n"), "ALVARO GARC\xcdA BARBIERI\n"), "ANDREA FERRERO PEREIRA\n"), "ANGEL MAT\xcdAS FERRARI SU\xc1REZ\n"), "ANTONELLA ECHEVESTE PALOMEQUE\n"), py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("BIANCA MARCHESONI\n", "BIANCA LEGUIZAM\xd3N\n"), "BRAHIAN RAMIRO GHISOLFO RAMOS\n"), "BRUNO LEEMAN\n"), "CRISTIAN ALMADA\n"), "DANIEL FIGUEREDO\n"), "DIEGO FERNANDO NELCIS PIRIZ\n"), "DIEGO HERN\xc1NDEZ\n"), "DIEGO PIEGAS\n"), "EMILIANO PIC\xdaN\n"), "ENZO FAGUNDEZ\n")];
-    } else if ((this.credits_page === 4)) {
+    } else if ((page === 4)) {
       top_margin = 38;
       title_font = this.credits_font_24;
       text_font = this.credits_font_16;
@@ -577,7 +586,7 @@ export class MainMenu {
       header_separation = 44;
       header = "&#c223,0,0!&#f:t!BETA TESTERS:&#c!&#f!\n";
       text = [py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("ERIC MORDEZKI\n", "ESTEFANI CA\xd1ETE\n"), "EZEQUIEL CABRERA\n"), "FABRIZZIO OVIEDO\n"), "FEDERICO M\xc9NDEZ\n"), "FELIPE DA SILVEIRA\n"), "FIORELLA TORRES\n"), "GABRIEL CURTI\n"), "GABRIELA DENISE G\xd3MEZ MEDINA\n"), "GONZALO DE SOSA\n"), "GUIDA\xcd BLENGINI\n"), py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("GUILLERMO GARC\xcdA BARBIERI\n", "GUILLERMO MORDEZKI\n"), "JAVIER SINTES\n"), "JOAQU\xcdN D\xcdAZ\n"), "JOS\xc9 IGNACIO GALATTI\n"), "JUAN I. CROSA\n"), "JUAN IGNACIO MEDINA CRUZ\n"), "JUAN IGNACIO VALLE\n"), "JUAN MANUEL VALLE\n"), "JUAN SEBASTI\xc1N MART\xcdNEZ APLANALP\n"), "JULIA DE LE\xd3N\n")];
-    } else if ((this.credits_page === 5)) {
+    } else if ((page === 5)) {
       top_margin = 38;
       title_font = this.credits_font_24;
       text_font = this.credits_font_16;
@@ -585,7 +594,7 @@ export class MainMenu {
       header_separation = 44;
       header = "&#c223,0,0!&#f:t!BETA TESTERS:&#c!&#f!\n";
       text = [py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("JULIA PISSANO\n", "LARA CONSANI\n"), "LAURA BEL\xc9N VEGA AYALA\n"), "LINET JOANA ALTAMIRANDA DA SILVA\n"), "LUANA PIREZ\n"), "LUCAS GENOLET\n"), "LUCAS MATTOS\n"), "LUC\xcdA CABRERA\n"), "MAIKEL PEREYRA\n"), "MAR\xcdA EUGENIA DE SOUZA\n"), "MAT\xcdAS IBARRA\n"), py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("MAURICIO SILVA\n", "MAURO CAUTERUCCIO\n"), "MICAELA ALMADA Z\xc1RATE\n"), "MILENA Z\xc1RATE MELGAREJO\n"), "MILTON AYALA SANTOS\n"), "NAHUEL ROMERO\n"), "ORIANA MONTA\xd1A\n"), "PABLO SOSA\n"), "PAULA GARC\xcdA\n"), "PILAR M\xc9NDEZ\n"), "RENZO CAUTERUCCIO\n")];
-    } else if ((this.credits_page === 6)) {
+    } else if ((page === 6)) {
       top_margin = 38;
       title_font = this.credits_font_24;
       text_font = this.credits_font_16;
@@ -595,7 +604,7 @@ export class MainMenu {
       header = "&#c223,0,0!&#f:t!BETA TESTERS:&#c!&#f!\n";
       footer = "&#c223,0,0!&#f:t!\xa1MUCHAS GRACIAS A TODOS!&#c!&#f!\n";
       text = [py.add(py.add(py.add(py.add("ROC\xcdO CAMILA CURTI MAWAD\n", "SANTIAGO NICOL\xc1S PR\xd3SPER VEINZ\n"), "SANTIAGO QUIJANO\n"), "SERGIO DANIEL GARC\xcdA SIERRA\n"), "SOF\xcdA GASPERI\n"), py.add(py.add(py.add(py.add("SOF\xcdA PIEDRA CUEVA\n", "TATIANA PIREZ\n"), "TOLENTINO G\xd3MEZ\n"), "VALENTINA GONZ\xc1LEZ\n"), "WINSTON SANTOS\n")];
-    } else if ((this.credits_page === 7)) {
+    } else if ((page === 7)) {
       top_margin = 36;
       title_font = this.credits_font_24;
       text_font = this.credits_font_18;

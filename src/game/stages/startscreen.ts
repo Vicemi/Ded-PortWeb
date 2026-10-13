@@ -12,6 +12,7 @@ import { Stage } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import { assets } from '../../runtime/prelude';
 import * as case_ from './case';
+import * as content_extend from '../../game/content/extend';
 import * as mainmenu from './mainmenu';
 import * as $self from './startscreen';
 
@@ -24,13 +25,19 @@ export class StartScreenStage extends Stage {
     return;
   }
   prepare(): any {
+    let variant: any;
     this.font = assets.load_font("evilgeniusbb_reg.ttf", 24);
     this.music_intro = assets.load_music("p1_music_intro.ogg");
     this.music_loop = assets.load_music("p1_music_loop.ogg");
     this.click_sound = assets.load_sound("GUI_Click.ogg");
     this.rollover_sound = assets.load_sound("GUI_roll_over.ogg");
     this.render();
-    this.play_music(this.music_intro, this.music_loop);
+    variant = content_extend.pickMenuMusic();
+    if ((variant != null)) {
+      this.play_music(null, assets.load_music(variant));
+    } else {
+      this.play_music(this.music_intro, this.music_loop);
+    }
     if (py.truthy(this.initial_mainmenu)) {
       this.show_mainmenu(true);
     } else {

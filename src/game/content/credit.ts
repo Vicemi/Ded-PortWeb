@@ -14,3 +14,10 @@ export function addMenuCredit(layer: any): void {
   layer.add(shadow);
   layer.add(new ItemText(5, 388, small, 14, news, [255, 222, 110], null, 150, 46, 2, 1));
 }
+
+/** the music of the main menu: the original most of the times (55%), else one of the three new variations (loops) */
+export const MENU_MUSIC = ['p1_music_menu_a.ogg', 'p1_music_menu_b.ogg', 'p1_music_menu_c.ogg'];
+export function pickMenuMusic(): string | null {
+  if (Math.random() < 0.55) return null;
+  return MENU_MUSIC[Math.floor(Math.random() * MENU_MUSIC.length)];
+}

@@ -151,7 +151,7 @@ export default function DedGame() {
             <h1>División Especial de Detectives</h1>
             <p>Un juego de <b>Trojan Chicken</b> para las laptops XO del programa Plan Ceibal / One Laptop per Child (actividad Sugar).</p>
             <p>Tu progreso se guarda en este navegador. Con 💾 puedes bajarlo a un archivo y con 📂 volver a cargarlo (por si cambias de equipo o se borran los datos del navegador).</p>
-            <p>Versión web hecha por <b>Vicemi Dev</b> con todos los recursos originales del juego.</p>
+            <p>Edición actualizada recreada por <b><a href="https://vicemi.dev" target="_blank" rel="noreferrer">Vicemi Dev (vicemi.dev)</a></b>, con nuevos personajes, minijuegos, medallas, música y contenido adicional sobre el Uruguay actual. Incluye todos los recursos originales del juego.</p>
             <button className="ded-close" onClick={() => setInfo(false)}>Cerrar</button>
           </div>
         </div>
