@@ -30,6 +30,12 @@ npm test         # escenarios headless
 
 El motor del juego sigue siendo el de la versión web (TypeScript + Canvas); Rust aporta la ventana, el servidor de archivos, el guardado y el instalador. Para compilarlo: `python tools/build_desktop.py` (necesita Rust y el SDK de Windows) → `desktop/release/DED-Instalador.exe`.
 
+### Actualizaciones de la versión de escritorio
+
+`ded.exe` mira (unos segundos después de abrir, y desde *Ayuda > Buscar actualizaciones*) la última release de este repositorio. Si su versión es mayor que la instalada, muestra una ventana con el **registro de cambios** (la descripción de la release), con los botones *Descargar e instalar*, *Ver en GitHub*, *Más tarde* y *Omitir esta versión*. Al descargar, baja el instalador adjunto (`DED-Instalador-<versión>.exe`), lo abre y cierra el juego; las partidas no se tocan, y al primer arranque de la versión nueva se muestran sus novedades. La web no necesita nada de esto (siempre es la última al recargar).
+
+Para publicar una versión: subir la versión en `desktop/Cargo.toml`, escribir su sección en `CHANGELOG.md`, `python tools/build_desktop.py` y `python tools/publish_release.py <versión>` (crea la release `v<versión>` con el instalador adjunto).
+
 ## Banderas departamentales
 Las cintas de las medallas y las banderitas del mapa y de las medallas usan las banderas actuales de los 19 departamentos (Tacuarembó no tiene bandera oficial: se usa su escudo sobre blanco; la de Montevideo es una bandera no oficial). Archivos de Wikimedia Commons, adaptados al juego (`tools/build_flags.mjs`). Las licencias CC BY-SA (Cerro Largo, Colonia, Rocha) exigen atribución y compartir igual:
 

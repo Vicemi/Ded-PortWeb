@@ -42,7 +42,8 @@ pub fn is_newer(candidate: &str, current: &str) -> bool {
 
 /// la última release publicada (None si no hay ninguna con un instalador adjunto)
 pub fn latest() -> Result<Option<Release>, String> {
-    let url = format!("https://api.github.com/repos/{REPO}/releases/latest");
+    // DED_UPDATE_API: otra dirección con el mismo formato que la API de GitHub (para probar las actualizaciones)
+    let url = std::env::var("DED_UPDATE_API").unwrap_or_else(|_| format!("https://api.github.com/repos/{REPO}/releases/latest"));
     let mut resp = agent().get(&url).header("Accept", "application/vnd.github+json").call().map_err(|e| match e {
         ureq::Error::StatusCode(404) => "NOREL".to_string(),
         other => other.to_string(),

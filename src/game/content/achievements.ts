@@ -45,7 +45,32 @@ const TIERS = [
   { rim: '#6e0f10', fill: '#e23a2e', hi: '#ff9d8f', ribbon: ['#ffd23f', '#1d63c9'] },     // special
 ];
 
+const iconCache = new Map<string, any>();
+/** the picture of the medal (ach_<id>.png, drawn in the style of the original medals) or, if it is missing, a plain one drawn here; locked = dark silhouette with a ? */
 function icon(a: Ach, got: boolean): any {
+  const key = a.id + (got ? '+' : '-');
+  const hit = iconCache.get(key);
+  if (hit) return hit;
+  const made = assets.has_image('ach_' + a.id + '.png') ? pictureIcon(a, got) : drawnIcon(a, got);
+  iconCache.set(key, made);
+  return made;
+}
+
+function pictureIcon(a: Ach, got: boolean): any {
+  const src = assets.load_image('ach_' + a.id + '.png').surface.canvas;
+  const s = new pygame.Surface([src.width, src.height], pygame.SRCALPHA, 32), c = s.ctx;
+  c.drawImage(src, 0, 0);
+  if (!got) {
+    c.globalCompositeOperation = 'source-atop';
+    c.fillStyle = 'rgba(48,6,6,0.82)'; c.fillRect(0, 0, src.width, src.height);
+    c.globalCompositeOperation = 'source-over';
+    c.fillStyle = '#c9b0a0'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = 'bold 22px sans-serif';
+    c.fillText('?', src.width / 2, src.height * 0.62);
+  }
+  return new assets.Image(s);
+}
+
+function drawnIcon(a: Ach, got: boolean): any {
   const W = 56, H = 62, s = new pygame.Surface([W, H], pygame.SRCALPHA, 32), c = s.ctx, t = TIERS[a.tier];
   if (!got) c.globalAlpha = 0.9;
   // ribbon
@@ -98,7 +123,8 @@ export function achievementsLayer(merits: any): any {
   const cols = 8, x0 = 30, y0 = 84, dx = 67, dy = 86;
   ACHIEVEMENTS.forEach((a, i) => {
     const got = have.has('ach_' + a.id), x = x0 + (i % cols) * dx, y = y0 + Math.floor(i / cols) * dy;
-    const it = new ItemImage(x, y, icon(a, got));
+    const pic = icon(a, got);
+    const it = new ItemImage(x + Math.round((dx - 4 - pic.get_width()) / 2), y, pic);
     it.add_event_handler(ItemEvent.MOUSE_ENTER, () => {
       merits.stage.render(); merits.rollover_sound.stop(); merits.rollover_sound.play();
       for (const t of name) t.set_text(got ? a.title.toUpperCase() : '??? ' + a.title.toUpperCase());
@@ -125,7 +151,7 @@ export function showAchievements(end: any): void {
   layer.add(new ItemText(100, 62, font_24, 24, rows.length > 1 ? '¡NUEVOS LOGROS!' : '¡NUEVO LOGRO!', [255, 212, 12], null, 400, 30, 2, 1));
   rows.forEach((a, i) => {
     const y = 108 + i * 70;
-    layer.add(new ItemImage(110, y, icon(a, true)));
+    layer.add(new ItemImage(110, y - 4, icon(a, true)));
     layer.add(new ItemText(180, y + 2, end.font_16, 16, a.title.toUpperCase(), [255, 212, 12], null, 330, 20, 1, 1));
     layer.add(new ItemText(180, y + 24, end.font_13_bold, 15, a.desc, [255, 255, 255], null, 330, 40, 1, 1));
   });
