@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
-const scenarios = ['reload', 'magnifier', 'thieves', 'witnessview', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'hub', 'phase2', 'witness_new', 'logros', 'credits', 'newgames@NG=flags', 'newgames@NG=candombe', 'newgames@NG=trivia', 'racer', 'endgame', 'monkey'];  // newgame is repeated: every run generates a random case
+const scenarios = ['reload', 'magnifier', 'thieves', 'witnessview', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'hub', 'phase2', 'witness_new', 'logros', 'credits', 'newgames@NG=flags', 'newgames@NG=candombe', 'newgames@NG=trivia', 'racer', 'racer4', 'racer4', 'endgame', 'monkey'];  // newgame is repeated: every run generates a random case
 let failed = 0;
 for (const entry of scenarios) {
   const [s, envs] = entry.split('@');           // 'name@VAR=value': the scenario with an environment variable

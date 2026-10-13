@@ -3,6 +3,7 @@ import { startHost, type Controller } from '../game/host';
 import { mixer } from '../engine/sounds';
 import { K } from '../engine/pygame';
 import { isDesktop, restoreFromHost, startAutosave, toHost } from '../desktop';
+import { installUpdateUi } from '../desktop-update';
 
 /** a round button of the phone gamepad that keeps a game key pressed while the finger is on it */
 function Pad({ ctl, code, label, cls }: { ctl: React.RefObject<Controller | null>; code: number; label: string; cls: string }) {
@@ -36,6 +37,7 @@ export default function DedGame() {
 
   useEffect(() => {
     restoreFromHost();
+    if (isDesktop()) installUpdateUi();
     const ctl = startHost(canvasRef.current!, import.meta.env.BASE_URL.replace(/\/$/, '') + '/assets');
     ctlRef.current = ctl;
     const stopAutosave = startAutosave(ctl);

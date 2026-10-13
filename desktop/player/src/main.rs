@@ -7,6 +7,7 @@
 
 mod saves;
 mod server;
+mod update;
 
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
@@ -28,6 +29,12 @@ const START_URL: &str = "http://ded.localhost/index.html";
 enum UserEvent {
     Menu(MenuEvent),
     Ipc(String),
+    /// hay una release más nueva que la instalada
+    UpdateFound(update::Release),
+    UpdateNone,
+    UpdateError(String),
+    UpdateProgress(f64),
+    UpdateReady(std::path::PathBuf),
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -139,10 +146,11 @@ fn main() {
     screen_menu.append(&PredefinedMenuItem::separator()).unwrap();
     screen_menu.append(&m_max).unwrap();
 
+    let m_update = MenuItem::with_id("update", "Buscar actualizaciones...", true, None);
     let m_about = MenuItem::with_id("about", "Créditos...", true, None);
     let m_site = MenuItem::with_id("site", "Visitar vicemi.dev", true, None);
     let m_web = MenuItem::with_id("web", "Jugar la versión web", true, None);
-    let help_menu = Submenu::with_items("&Ayuda", true, &[&m_about, &m_site, &m_web]).unwrap();
+    let help_menu = Submenu::with_items("&Ayuda", true, &[&m_update, &PredefinedMenuItem::separator(), &m_about, &m_site, &m_web]).unwrap();
 
     let menu = Menu::new();
     menu.append_items(&[&game_menu, &screen_menu, &help_menu]).unwrap();
@@ -188,6 +196,53 @@ fn main() {
     }
 
     let mut closing_deadline: Option<Instant> = None;
+    let mut found: Option<update::Release> = None;
+
+    // las novedades de la versión que se acaba de instalar, o la búsqueda automática de una versión más nueva
+    {
+        let mut st = update::load_state(&base);
+        let just_updated = st.pending_version.clone().filter(|v| !update::is_newer(v, update::CURRENT) && !update::is_newer(update::CURRENT, v));
+        if let Some(v) = just_updated {
+            let info = serde_json::json!({ "whatsNew": true, "version": v, "name": st.pending_name.clone().unwrap_or_default(), "body": st.pending_body.clone().unwrap_or_default() });
+            st.pending_version = None;
+            st.pending_name = None;
+            st.pending_body = None;
+            update::save_state(&base, &st);
+            let p = proxy.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_secs(5));
+                let _ = p.send_event(UserEvent::Ipc(serde_json::json!({ "t": "whatsnew", "data": info }).to_string()));
+            });
+        } else {
+            let p = proxy.clone();
+            let skipped = st.skipped.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(Duration::from_secs(8));
+                if let Ok(Some(rel)) = update::latest() {
+                    if update::is_newer(&rel.version, update::CURRENT) && skipped.as_deref() != Some(rel.version.as_str()) {
+                        let _ = p.send_event(UserEvent::UpdateFound(rel));
+                    }
+                }
+            });
+        }
+    }
+    let spawn_check = {
+        let p = proxy.clone();
+        move || {
+            let p = p.clone();
+            std::thread::spawn(move || match update::latest() {
+                Ok(Some(rel)) if update::is_newer(&rel.version, update::CURRENT) => {
+                    let _ = p.send_event(UserEvent::UpdateFound(rel));
+                }
+                Ok(_) => {
+                    let _ = p.send_event(UserEvent::UpdateNone);
+                }
+                Err(e) => {
+                    let _ = p.send_event(UserEvent::UpdateError(e));
+                }
+            });
+        }
+    };
 
     let toggle_fullscreen = move |window: &tao::window::Window, menu: &Menu| {
         if window.fullscreen().is_some() {
@@ -256,6 +311,7 @@ fn main() {
                         show_menu(&menu, hwnd);
                         window.set_maximized(true);
                     }
+                    "update" => spawn_check(),
                     "about" => about(),
                     "site" => {
                         let _ = open::that("https://vicemi.dev");
@@ -276,6 +332,26 @@ fn main() {
                     _ => {}
                 }
             }
+            Event::UserEvent(UserEvent::UpdateFound(rel)) => {
+                let info = serde_json::json!({ "version": rel.version, "current": update::CURRENT, "name": rel.name, "body": rel.body, "size": rel.size, "page": rel.page });
+                let _ = webview.evaluate_script(&format!("window.__dedUpdate && window.__dedUpdate({info});"));
+                found = Some(rel);
+            }
+            Event::UserEvent(UserEvent::UpdateNone) => {
+                let _ = webview.evaluate_script(&format!("window.__dedUpdateNone && window.__dedUpdateNone({});", serde_json::json!(update::CURRENT)));
+            }
+            Event::UserEvent(UserEvent::UpdateError(e)) => {
+                let _ = webview.evaluate_script(&format!("window.__dedUpdateError && window.__dedUpdateError({});", serde_json::json!(e)));
+            }
+            Event::UserEvent(UserEvent::UpdateProgress(v)) => {
+                let _ = webview.evaluate_script(&format!("window.__dedUpdateProgress && window.__dedUpdateProgress({v});"));
+            }
+            Event::UserEvent(UserEvent::UpdateReady(path)) => {
+                // el instalador reemplaza los archivos: el juego se cierra para soltarlos (las partidas y los datos no se tocan)
+                let _ = webview.evaluate_script("window.__dedSaveNow && window.__dedSaveNow();");
+                let _ = std::process::Command::new(&path).spawn();
+                closing_deadline = Some(Instant::now() + Duration::from_millis(900));
+            }
             Event::UserEvent(UserEvent::Ipc(body)) => {
                 let Ok(msg) = serde_json::from_str::<Message>(&body) else { return };
                 match msg.t.as_str() {
@@ -292,6 +368,48 @@ fn main() {
                     }
                     "load" => load_dialog(&webview, &base),
                     "fullscreen" => toggle_fullscreen(&window, &menu),
+                    "whatsnew" => {
+                        if let Some(info) = &msg.data {
+                            let _ = webview.evaluate_script(&format!("window.__dedUpdate && window.__dedUpdate({info});"));
+                        }
+                    }
+                    "update_download" => {
+                        if let Some(rel) = found.clone() {
+                            let p = proxy.clone();
+                            let base2 = base.clone();
+                            std::thread::spawn(move || {
+                                let pp = p.clone();
+                                match update::download(&rel, &move |v| {
+                                    let _ = pp.send_event(UserEvent::UpdateProgress(v));
+                                }) {
+                                    Ok(path) => {
+                                        // las novedades se muestran en el primer arranque de la versión nueva
+                                        let mut st = update::load_state(&base2);
+                                        st.pending_version = Some(rel.version.clone());
+                                        st.pending_name = Some(rel.name.clone());
+                                        st.pending_body = Some(rel.body.clone());
+                                        update::save_state(&base2, &st);
+                                        let _ = p.send_event(UserEvent::UpdateReady(path));
+                                    }
+                                    Err(e) => {
+                                        let _ = p.send_event(UserEvent::UpdateError(e));
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    "update_skip" => {
+                        if let Some(rel) = &found {
+                            let mut st = update::load_state(&base);
+                            st.skipped = Some(rel.version.clone());
+                            update::save_state(&base, &st);
+                        }
+                    }
+                    "update_page" => {
+                        if let Some(rel) = &found {
+                            let _ = open::that(&rel.page);
+                        }
+                    }
                     "quit" => {
                         let _ = webview.evaluate_script("window.__dedSaveNow && window.__dedSaveNow();");
                         closing_deadline = Some(Instant::now() + Duration::from_millis(500));

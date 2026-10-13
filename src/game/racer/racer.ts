@@ -18,6 +18,8 @@ const FOCAL = 315;                       // px: 600 px of screen = 87 degrees
 const TEX_W_M = 86, TEX_H_M = 10;        // the floor texture covers 86 x 10 metres
 const ROAD_HALF = 7;                     // asphalt half width (the materials start there)
 const VIEW_M = 700;                      // billboards farther than this are not drawn
+const ARREST_GAP = 21;                   // metres between the police car and the thief once he is caught (the thief is seen over the roof of the sideways police car)
+const CAR_Z = 7;                         // the car of the player is drawn where the road is 7 m from the camera (camera.yaml z_near): the camera is 7 m behind the car
 
 const SOUNDS = 'sounds/';
 const nameOf = (p: string): string => p.replace(/^.*\//, '');
@@ -30,6 +32,7 @@ interface Vehicle { s: number; x: number; v: number; kind: CarKind; targetX: num
 
 type Phase = 'run' | 'catch' | 'won' | 'lost' | 'quit';
 
+import { pickFromBag } from '../../engine/bag';
 const CHASE_VARIANTS = ['p3_music_chase_a.ogg', 'p3_music_chase_b.ogg', 'p3_music_chase_c.ogg', 'p3_music_chase_d.ogg'];
 
 export class RacerStage extends Stage {
@@ -119,8 +122,9 @@ export class RacerStage extends Stage {
     const music = this.map.music.loop;
     const ch = mixer.Channel(0);
     ch.set_volume(music.volume ?? 0.6);
-    // the original theme most of the times (60%); sometimes one of the four new variations of the updated edition (plain loops)
-    const variant = Math.random() < 0.6 ? null : CHASE_VARIANTS[Math.floor(Math.random() * CHASE_VARIANTS.length)];
+    // the original theme comes up most often (4 of 8 in the bag); the four new variations of the updated edition (plain loops) share the rest, and none repeats until the bag is empty
+    const choice = pickFromBag('chase', ['original', 'original', 'original', 'original', ...CHASE_VARIANTS]);
+    const variant = choice === 'original' ? null : choice;
     if (variant) ch.play(mixer.sound(variant), -1, 0, 0, { loopStart: 0 });
     else ch.play(mixer.sound(nameOf(music.sound)), -1, 0, 0, { loopStart: music.loop_start ?? 0 });
   }
@@ -319,8 +323,9 @@ export class RacerStage extends Stage {
       this.v = Math.min(this.v, th.v * 0.85);
       return;
     }
-    // overtaken: the car is side by side with the thief (or just ahead)
-    if (ds >= 0.5 && ds < 12 && Math.abs(dx) < 9 && this.v >= th.v * 0.8 && Math.abs(this.x) < 12) {
+    // caught up: the car is side by side with the thief (its nose less than 2.5 m behind him, or already past him). The thief stays in sight ahead of the car
+    // during the arrest, so he is never hidden behind the sprite of the police car
+    if (ds >= -2.5 && ds < 12 && Math.abs(dx) < 9 && Math.abs(dx) >= touching - 0.01 && this.v >= th.v * 0.8 && Math.abs(this.x) < 12) {
       this.phase = 'catch';
       this.catchT = 0;
       this.catchGap0 = null;
@@ -340,8 +345,8 @@ export class RacerStage extends Stage {
       this.x += (tx - this.x) * Math.min(1, dt / Math.max(0.02, f.maneuver_time - this.catchT + 0.02));
       // the police car eases in behind the thief, which brakes in front of it (so the arrest is seen)
       if (this.catchGap0 === null) this.catchGap0 = th.s - this.s;
-      const e = clamp(this.catchT / 0.6, 0, 1), ease = e * e * (3 - 2 * e);
-      const gap = this.catchGap0 + (f.close_distance + f.maneuver_front_distance + 0.5 - this.catchGap0) * ease;
+      const e = clamp(this.catchT / 0.9, 0, 1), ease = e * e * (3 - 2 * e);
+      const gap = this.catchGap0 + (ARREST_GAP - this.catchGap0) * ease;
       this.s = th.s - gap;
       this.v = th.v;
       if (k >= 1 && th.v < 5) {
@@ -455,14 +460,15 @@ export class RacerStage extends Stage {
     const [lr, lg, lb] = this.floorLeft, [rr, rg, rb] = this.floorRight;
     const pxPerM = 3000 / TEX_W_M, rowsPerM = 225 / TEX_H_M;
     const rows = SCREEN_H - HORIZON;
+    const cam = this.s - CAR_Z;
     for (let r = 0; r < rows; r++) {
       const dy = r + 1;                                  // rows below the horizon
       const z = CAM_H * FOCAL / dy;
-      const c = this.track.shear(this.s, z);
+      const c = this.track.shear(cam, z);
       const perPx = z / FOCAL;
       let u = 1500 + (this.x - c - SCREEN_W / 2 * perPx) * pxPerM;
       const du = perPx * pxPerM;
-      let v = ((this.s + z) % TEX_H_M);
+      let v = ((cam + z) % TEX_H_M);
       if (v < 0) v += TEX_H_M;
       const trow = Math.min(224, Math.floor(v * rowsPerM)) * 3000;
       let o = r * SCREEN_W * 4;
@@ -479,16 +485,17 @@ export class RacerStage extends Stage {
   }
 
   private project(s: number, x: number): { sx: number; sy: number; k: number; z: number } | null {
-    const z = s - this.s;
+    const cam = this.s - CAR_Z;
+    const z = s - cam;
     if (z < 2.5 || z > VIEW_M) return null;
     const k = FOCAL / z;
-    const c = this.track.shear(this.s, z);
+    const c = this.track.shear(cam, z);
     return { sx: SCREEN_W / 2 + (x - this.x + c) * k, sy: HORIZON + CAM_H * k, k, z };
   }
 
   private drawObjects(g: CanvasRenderingContext2D): void {
     const list: { z: number; draw: () => void }[] = [];
-    const objs = this.track.objectsIn(this.s + 2.5, this.s + VIEW_M);
+    const objs = this.track.objectsIn(this.s - CAR_Z + 2.5, this.s - CAR_Z + VIEW_M);
     for (const o of objs) {
       const p = this.project(o.s, o.x);
       if (!p) continue;
@@ -532,8 +539,10 @@ export class RacerStage extends Stage {
     let t = (this.clock * 1000) % total, f = frames[0];
     for (const fr of frames) { if (t < fr.duration) { f = fr; break; } t -= fr.duration; }
     const img = this.image(f.texture).surface.canvas;
-    const h = 2.5 * p.k;
-    g.drawImage(img, p.sx - img.width / 2, p.sy - h - arrow.y * p.k - img.height + (f.dy ?? 0));
+    // the arrow lives in the world like the cars: 2 units wide (data.thief.width), floating arrow.y units above the road, so it shrinks with the distance
+    const dw = (this.data.thief.width ?? 2) * p.k, s = dw / img.width, dh = img.height * s;
+    if (dw < 2) return;
+    g.drawImage(img, p.sx - dw / 2, p.sy - arrow.y * p.k - dh + (f.dy ?? 0) * s, dw, dh);
   }
 
   private drawPlayer(g: CanvasRenderingContext2D): void {
