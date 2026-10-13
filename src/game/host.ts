@@ -127,7 +127,17 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     if (!editing && document.activeElement === textInput) textInput.blur();
     state.typing = editing;
   };
+  // two fingers = pinch zoom of the page (DedGame.tsx): the game does not see those touches
+  const fingers = new Set<number>();
+  let gesture = false;
   canvas.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch') {
+      fingers.add(e.pointerId);
+      if (fingers.size > 1) {
+        if (!gesture) { gesture = true; send('up', lastPos[0], lastPos[1], 0); event.post({ type: MOUSEMOTION, pos: [-50, -50], rel: [0, 0], buttons: [0, 0, 0] }); input.pos = [-50, -50]; lastPos = [-50, -50]; }
+        return;
+      }
+    }
     mixer.unlock();
     canvas.focus();
     state.touch = e.pointerType === 'touch' || e.pointerType === 'pen';
@@ -140,7 +150,7 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     send('down', x, y, e.button);
     if (state.touch && ctl.game) { try { ctl.game.tick(); } catch (er) { console.error(er); } }
   });
-  canvas.addEventListener('pointermove', (e) => { const [x, y] = toGame(e); send('move', x, y, -1); });
+  canvas.addEventListener('pointermove', (e) => { if (gesture || (e.pointerType === 'touch' && fingers.size > 1)) return; const [x, y] = toGame(e); send('move', x, y, -1); });
   let hoverReset = false;
   const afterTick = (): void => {
     if (!hoverReset) return;
@@ -148,6 +158,10 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     event.post({ type: MOUSEMOTION, pos: [-50, -50], rel: [0, 0], buttons: [0, 0, 0] }); input.pos = [-50, -50]; lastPos = [-50, -50];
   };
   const release = (e: PointerEvent): void => {
+    if (e.pointerType === 'touch') {
+      fingers.delete(e.pointerId);
+      if (gesture) { if (fingers.size === 0) gesture = false; return; }
+    }
     const [x, y] = toGame(e);
     send('up', x, y, e.button);
     // a finger that is lifted is not hovering anything any more

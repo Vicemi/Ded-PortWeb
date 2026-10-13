@@ -33,6 +33,9 @@ export default function DedGame() {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [zoom, setZoom] = useState({ s: 1, x: 0, y: 0 });
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
   const canFull = typeof document !== 'undefined' && (!!document.fullscreenEnabled || isDesktop());
 
   useEffect(() => {
@@ -105,6 +108,37 @@ export default function DedGame() {
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  /** pinch with two fingers to zoom the game (the small buttons and lists are hard to hit on a phone), the same gesture pans it */
+  useEffect(() => {
+    const el = stageRef.current!;
+    const pts = new Map<number, { x: number; y: number }>();
+    let prev: { cx: number; cy: number; d: number } | null = null;
+    const measure = () => {
+      const [a, b] = [...pts.values()];
+      return { cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, d: Math.max(10, Math.hypot(a.x - b.x, a.y - b.y)) };
+    };
+    const down = (e: PointerEvent) => { if (e.pointerType !== 'touch') return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 2) prev = measure(); };
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || !pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size !== 2 || !prev) return;
+      const now = measure();
+      const z = zoomRef.current;
+      const r = el.getBoundingClientRect();
+      const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+      const s1 = Math.max(1, Math.min(4, z.s * now.d / prev.d));
+      let x1 = now.cx - ox - s1 * (prev.cx - ox - z.x) / z.s, y1 = now.cy - oy - s1 * (prev.cy - oy - z.y) / z.s;
+      const mx = (s1 - 1) * r.width / 2, my = (s1 - 1) * r.height / 2;
+      x1 = Math.max(-mx, Math.min(mx, x1)); y1 = Math.max(-my, Math.min(my, y1));
+      if (s1 === 1) { x1 = 0; y1 = 0; }
+      prev = now;
+      setZoom({ s: s1, x: x1, y: y1 });
+    };
+    const up = (e: PointerEvent) => { pts.delete(e.pointerId); prev = null; if (pts.size === 2) prev = measure(); };
+    el.addEventListener('pointerdown', down); el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+    return () => { el.removeEventListener('pointerdown', down); el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+  }, []);
+
   const toggleFull = () => {
     if (isDesktop()) { toHost('fullscreen'); return; }
     if (document.fullscreenElement) { void document.exitFullscreen?.(); return; }
@@ -114,7 +148,7 @@ export default function DedGame() {
 
   return (
     <div className="ded-stage" ref={stageRef}>
-      <canvas ref={canvasRef} className="ded-canvas" tabIndex={0} aria-label="División Especial de Detectives" />
+      <canvas ref={canvasRef} className="ded-canvas" tabIndex={0} aria-label="División Especial de Detectives" style={zoom.s > 1 ? { transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` } : undefined} />
       {!loaded && !error && (
         <div className="ded-loading">
           <span>Cargando… {Math.round(progress * 100)}%</span>
@@ -143,6 +177,7 @@ export default function DedGame() {
         </div>
       )}
       {!isDesktop() && <div className="ded-tools">
+        {zoom.s > 1 && <button className="ded-btn" aria-label="Quitar el zoom" onClick={() => setZoom({ s: 1, x: 0, y: 0 })}>1×</button>}
         {touch && <button className="ded-btn" aria-label="Menú / Escape" onClick={() => ctlRef.current?.tap(K.ESCAPE)}>☰</button>}
         {canFull && <button className="ded-btn" aria-label="Pantalla completa" onClick={toggleFull}>{full ? '✕' : '⛶'}</button>}
         <button className="ded-btn" aria-label={mute ? 'Activar sonido' : 'Silenciar'} onClick={() => { mixer.setMuted(!mixer.muted); setMute(mixer.muted); }}>{mute ? '🔇' : '🔊'}</button>

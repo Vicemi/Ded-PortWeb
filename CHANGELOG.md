@@ -2,6 +2,13 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.2
+
+### Correcciones
+- **Celular**: al crear un detective, la lista de departamentos tiene botones grandes **SUBIR / BAJAR / ELEGIR** (las filas eran demasiado chicas para tocarlas).
+- **Celular**: zoom con dos dedos (pellizcar) en todo el juego para tocar con precisión los botones y listas pequeños; el botón 1× vuelve al tamaño normal.
+- Los toques con dos dedos ya no cuentan como clics del juego.
+
 ## 1.0.1
 
 ### Correcciones

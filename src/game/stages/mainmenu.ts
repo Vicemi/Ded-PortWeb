@@ -359,6 +359,7 @@ export class MainMenu {
   set_up_state_list(): any {
     let background_image, background_item, dep, dep_y, departments, i, mask, state_rollover_image, y: any;
     this.state_list_layer = new Layer();
+    this.state_list_masks = [];
     background_image = assets.load_image("p0_mainmenu_swap_new_stateselector_backdrop.png");
     background_item = new ItemImage(166, 17, background_image);
     py.m(this.state_list_layer, "add", background_item);
@@ -378,9 +379,36 @@ export class MainMenu {
       mask.add_event_handler(ItemEvent.CLICK, py.bind(this, "create_department_click"));
       mask.department = dep;
       py.m(this.state_list_layer, "add", mask);
+      this.state_list_masks.push(mask);
       y = y + 17;
     }
+    this.state_list_index = -1;
+    this.set_up_state_list_buttons();
     return null;
+  }
+  /** big buttons (up / down / choose) next to the list: on a phone the 18 px rows are too small to tap */
+  state_list_masks: any[] = [];
+  state_list_index = -1;
+  set_up_state_list_buttons(): void {
+    const font = assets.load_font("evilgeniusbb_reg.ttf", 14);
+    const mk = (y: number, label: string, fn: () => void, green = false): void => {
+      const b = new ItemRect(430, y, 130, 56, font, 0, label, [255, 255, 255], green ? [40, 120, 50] : [122, 36, 24], [240, 220, 160], 1);
+      b.add_event_handler(ItemEvent.CLICK, () => { this.click_sound.play(); fn(); return null; });
+      py.m(this.state_list_layer, "add", b);
+    };
+    mk(70, "▲ SUBIR", () => this.state_list_move(-1));
+    mk(150, "▼ BAJAR", () => this.state_list_move(1));
+    mk(260, "ELEGIR", () => { const m = this.state_list_masks[Math.max(0, this.state_list_index)]; if (m) this.create_department_click(m, null); }, true);
+  }
+  state_list_move(delta: number): void {
+    const n = this.state_list_masks.length;
+    if (n === 0) return;
+    this.state_list_index = this.state_list_index < 0 ? (delta > 0 ? 0 : n - 1) : Math.max(0, Math.min(n - 1, this.state_list_index + delta));
+    const m = this.state_list_masks[this.state_list_index];
+    this.create_over_department = m;
+    this.stage.render();
+    this.create_state_rollover_item.set_top(m.get_top());
+    this.create_state_rollover_item.set_visible(true);
   }
   update_create_sex_mark(): any {
     if (py.truthy(this.create_sex_male)) {
