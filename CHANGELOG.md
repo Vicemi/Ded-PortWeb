@@ -2,6 +2,11 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.4
+
+### Novedades
+- **Lupa**: 24 objetos nuevos para encontrar escondidos en las habitaciones (termo con mate, mate, pelota celeste, guitarra, tambor de candombe, alfajor, chivito, dulce de leche, boina, poncho, cuchillo gaucho, lazo, tannat, copa, cámara, telescopio, libro de poemas, llavero, lupa vieja, reloj de bolsillo, radio a válvulas, celular, taza de café y mochila con la XO). Sus colores están ajustados a los del juego y al encontrarlos dice qué son.
+
 ## 1.0.3
 
 ### Correcciones

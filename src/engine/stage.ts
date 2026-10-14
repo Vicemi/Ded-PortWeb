@@ -715,6 +715,9 @@ const pyInt = (s: string): number => {
   return Math.trunc(v);
 };
 
+/** items added to a set by the game (set name -> [type, center x, center y, tag]), after its .tcs is read: the updated edition's objects */
+export const EXTRA_ITEMS: Record<string, [string, number, number, string][]> = {};
+
 export class StageIso extends Stage {
   private origin: [number, number] = [300, 200];
   private cell_width = 80;
@@ -793,6 +796,7 @@ export class StageIso extends Stage {
           throw e;
         }
       }
+      for (const [type, cx, cy, tag] of EXTRA_ITEMS[set_name] ?? []) this.item_definitions[type] = new IsoDefinition([cx, cy], [1, 1], [], tag, []);
     }
   }
   get_item_definition(item_type: string, _flipped_h = false): IsoDefinition {

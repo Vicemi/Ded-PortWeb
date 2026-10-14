@@ -25,6 +25,7 @@ import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import { sys } from '../../runtime/py';
 import * as text from '../../engine/textutil';
+import * as content_lupa from '../content/lupa_objects';
 import * as $self from './phase2';
 const $d1: any = [];
 
@@ -429,6 +430,7 @@ export class Phase2Content extends phase0.PhaseContent {
     this.music_loop = assets.load_music("p2_music_loop.ogg");
     this.magnifier_taken = false;
     this.clues_count = 0;
+    content_lupa.enableNewObjects(PLACE_HOLDER_TAGS, [PlaceHolderType.NORMALITEM, PlaceHolderType.BELOWITEM, PlaceHolderType.INSIDEITEM, PlaceHolderType.OUTSIDEITEM]);
     this.build_tags_dictionary();
     return null;
   }
@@ -663,6 +665,8 @@ export class Phase2Content extends phase0.PhaseContent {
       box = new ItemImage(62, 198, image);
       py.m(dialog, "add", box);
       message = "Esto no parece ser una pista interesante...";
+      const found = content_lupa.objectName(item.get_type ? item.get_type() : "");
+      if (found) message = "Encontraste: " + found + ". No parece ser una pista interesante...";
       message = text.to_upper(message);
       text_item = new ItemText(122, 239, font, 12, message, [0, 0, 0], null, 210, 30, 2, 2);
       py.m(dialog, "add", text_item);
