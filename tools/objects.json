@@ -147,36 +147,36 @@
   "id": "i624",
   "name": "empanada",
   "w": 20,
-  "h": 13
+  "h": 20
  },
  {
   "id": "i625",
   "name": "martillo azul",
   "w": 24,
-  "h": 20
+  "h": 24
  },
  {
   "id": "i626",
   "name": "bolsa de leche",
-  "w": 14,
+  "w": 17,
   "h": 20
  },
  {
   "id": "i627",
   "name": "torta frita",
   "w": 18,
-  "h": 14
+  "h": 13
  },
  {
   "id": "i628",
   "name": "chancleta suelta",
   "w": 20,
-  "h": 9
+  "h": 16
  },
  {
   "id": "i629",
   "name": "paraguas roto",
   "w": 26,
-  "h": 12
+  "h": 20
  }
 ]

@@ -24,15 +24,15 @@ LANCZOS = Image.LANCZOS
 BG = (600, 450)
 SPECS = {
     'mate_bg': ('bg', BG), 'rambla_sky': ('bg', BG), 'candombe_bg': ('bg', BG), 'cartero_bg': ('bg', BG), 'banderas_bg': ('bg', BG),
-    'mate_termo': ('sprite', (110, 330)), 'mate_termo_pour': ('sprite', (330, 200)), 'mate_gourd': ('sprite', (220, 260)),
+    'mate_termo': ('sprite', (110, 330), 'holes'), 'mate_termo_pour': ('sprite', (330, 200), 'holes'), 'mate_gourd': ('sprite', (220, 260)),
     'mate_steam': ('items', [(100, 100)] * 4, 'center'), 'mate_splash': ('items', [(100, 100)] * 4, 'center'),
     'rambla_skyline': ('strip', (1200, 220)), 'rambla_ground': ('strip', (600, 120)),
-    'rambla_runner': ('anim', [(96, 128)] * 6), 'rambla_runner_jump': ('anim', [(96, 128)] * 3), 'rambla_runner_fall': ('anim', [(128, 96)] * 3),
+    'rambla_runner': ('anim', [(96, 128)] * 5), 'rambla_runner_jump': ('anim', [(96, 128)] * 3), 'rambla_runner_fall': ('anim', [(128, 96)] * 3),
     'rambla_obstacles': ('items', [(64, 80), (140, 80), (110, 80), (96, 80)], 'bottom'),   # (the gull cell is 96x64 in the guide; 80 high here, the game expects one height)
     'rambla_meta': ('sprite', (520, 200)),
     'candombe_chico': ('sprite', (120, 160)), 'candombe_repique': ('sprite', (140, 170)), 'candombe_piano': ('sprite', (160, 200)), 'candombe_palmas': ('sprite', (120, 160)),
     'candombe_crowd': ('strip', (1200, 180)), 'candombe_spot': ('sprite', (200, 400)),
-    'cartero_envelope': ('sprite', (300, 200)), 'cartero_stamp': ('sprite', (220, 120)), 'cartero_bag': ('sprite', (200, 200)),
+    'cartero_envelope': ('sprite', (300, 200)), 'cartero_stamp': ('sprite', (220, 120)), 'cartero_bag': ('sprite', (200, 200), 'holes'),
     'cartero_stamps': ('items', [(80, 100)] * 4, 'center'),
     'banderas_cardback': ('fill', (90, 120)), 'banderas_frame': ('frame', (110, 80)),
     'ui_stars': ('items', [(64, 64)] * 2, 'center'), 'ui_sparkles': ('items', [(48, 48)] * 4, 'center'), 'ui_confetti': ('items', [(32, 32)] * 6, 'center'),
@@ -92,7 +92,7 @@ def build(name, spec, im_path):
     if kind == 'strip':
         return key(im_path, crop=False).resize(size, LANCZOS)
     if kind == 'sprite':
-        return fit(key(im_path), size)
+        return fit(key(im_path, holes=(len(spec) > 2 and spec[2] == 'holes')), size)
     if kind == 'fill':      # a card: the drawing fills the whole size
         k = key(im_path)
         return k.crop(bbox(k)).resize(size, LANCZOS)

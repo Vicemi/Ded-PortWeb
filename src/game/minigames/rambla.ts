@@ -257,7 +257,7 @@ export class MinigameRambla extends ArcadeGame {
     if (o.k === 'cono2') put(c, cv, sx + 24 + (16 - w) / 2, GY - hs);
     return true;
   }
-  /** the runner from the sheets (6 run, 3 jump, 3 fall frames); false = no art for this pose, the drawing by code is used */
+  /** the runner from the sheets (5 run, 3 jump, 3 fall frames); false = no art for this pose, the drawing by code is used */
   paintRunnerArt(c: any, x: number, y: number): boolean {
     if (!src('rambla_runner')) return false;
     const falling = this.slow > 0.15 || this.state === 'fail';
@@ -271,7 +271,7 @@ export class MinigameRambla extends ArcadeGame {
       const i = this.air ? (this.squash < -0.12 ? 0 : 1) : 2;
       return put(c, frame('rambla_runner_jump', 3, i, 48, 64), x - 24, y - 64);
     }
-    return put(c, frame('rambla_runner', 6, Math.floor((this.phase % (Math.PI * 2)) / (Math.PI * 2) * 6), 48, 64), x - 24, y - 64);
+    return put(c, frame('rambla_runner', 5, Math.floor((this.phase % (Math.PI * 2)) / (Math.PI * 2) * 5), 48, 64), x - 24, y - 64);
   }
   paintRunner(c: any): void {
     const x = RX, y = GY - this.h, air = this.air, ph = this.phase;

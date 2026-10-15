@@ -2,6 +2,13 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.1.1
+
+### Novedades
+- **Arte nuevo en los minijuegos**: Mate cebado (cocina, termo, calabaza, vapor y agua), Rambla (atardecer, skyline de Montevideo, rambla, corredora animada, obstáculos y arco de META), Cartero (correo antiguo, sobre, sello «ENTREGADA», bolso y sellos), Memoria de banderas (pizarrón y cartas) y estrellas, destellos y confeti, todo dibujado a mano en el estilo del juego.
+- **Testigos nuevos con dibujo propio**: el Matero y la Corredora (con su versión contenta).
+- **Dos ladrones nuevos con arte**: Joaco Piedrablanca "El Milanesero" y Benito Espuma "El Platanero" (parodias, nombres inventados), con sus medallas «Milanesa Fantasma» y «Espuma Turbia».
+
 ## 1.1.0
 
 ### Novedades
