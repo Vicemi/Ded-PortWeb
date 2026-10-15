@@ -2,6 +2,11 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.1.3
+
+### Novedades
+- **«Ritmo de candombe» con arte nuevo**: calle iluminada de Barrio Sur de fondo, los tres tambores (chico, repique y piano) pintados a mano, las palmas, el público bailando en silueta y el haz de luz del escenario.
+
 ## 1.1.2
 
 ### Novedades

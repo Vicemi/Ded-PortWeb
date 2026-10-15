@@ -30,6 +30,11 @@ SHEETS = {
         ('mg_mate_bg', (17, 16, 506, 316), ''), ('mg_mate_termo', (532, 20, 700, 314), ''), ('mg_mate_termo_pour', (742, 22, 1000, 205), ''),
         ('mg_mate_gourd', (790, 236, 1000, 472), ''), ('mg_mate_steam', (22, 358, 392, 470), ''), ('mg_mate_splash', (416, 358, 770, 470), 'cyan'),
     ],
+    'Assets_candombe.png': [   # (1024 wide: preview scale 1; every picture is on a grey-green panel: it is flattened to the chroma green)
+        ('mg_candombe_bg', (12, 12, 505, 148), ''), ('mg_candombe_chico', (537, 24, 616, 130), 'cyan'), ('mg_candombe_repique', (650, 24, 750, 130), 'cyan'),
+        ('mg_candombe_piano', (775, 14, 890, 130), 'cyan'), ('mg_candombe_palmas', (910, 18, 1000, 134), 'cyan'),
+        ('mg_candombe_crowd', (12, 176, 890, 266), 'cyan_all'), ('mg_candombe_spot', (912, 180, 998, 266), 'cyan'),
+    ],
     'Assets_minijuegos.png': [
         ('mg_ui_stars', (500, 36, 900, 220), ''), ('mg_ui_sparkles', (440, 318, 950, 462), ''), ('mg_ui_confetti', (400, 570, 1005, 690), ''),
     ],
