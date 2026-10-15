@@ -16,7 +16,6 @@ SHEETS = {
     1: ['primer_caso', 'barrio', 'seccional', None, 'inspector', 'leyenda', None, 'viajero'],
     2: ['recorrido', 'diecinueve', 'uruguay', 'repetido', 'cinco_presos', 'diez_presos', 'todos_presos', 'victor'],
     4: ['mate', 'xo', 'musica', 'gaucho', 'paladar', 'ojo', 'retro', 'rarezas'],
-    5: ['incriminado', 'falso_criminal', 'ojo_clinico', 'tres_trampas'],
     3: ['aaron', 'fausto', 'vera', 'nana', 'rita', 'byte', 'puntos_5k', 'puntos_20k'],
 }
 
@@ -53,6 +52,34 @@ def cut(path):
     return out
 
 
+SINGLES = {  # art_inbox/medal_<name>.png (one medal on green) -> achievement id
+    'trampa_incriminado': 'incriminado', 'trampa_falso_criminal': 'falso_criminal', 'trampa_ojo_clinico': 'ojo_clinico', 'trampa_tres_trampas': 'tres_trampas',
+    **{k: k for k in ('humanoide', 'churrito', 'streamer', 'cumbia', 'delivery', 'influencer', 'cripto', 'tribunero')},
+}
+
+
+def save(tile, mid):
+    w = max(1, round(tile.width * H / tile.height))
+    a = np.array(tile).astype(int)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    edge = ~ndimage.binary_erosion(a[..., 3] > 0, iterations=3)
+    spill = (g > r + 12) & (g > b + 12) & edge   # green of the background left on the borders (only at the edge)
+    a[..., 1] = np.where(spill, np.maximum(r, b), g)
+    im = Image.fromarray(a.clip(0, 255).astype(np.uint8), 'RGBA').resize((w, H), Image.LANCZOS)
+    im.save(os.path.join(OUT, 'ach_%s.png' % mid))
+    print('  ach_%s.png' % mid, im.size)
+
+
+def single(path, mid):
+    a = np.array(key(path))
+    lab, n = ndimage.label(a[..., 3] > 0)
+    if n > 1:   # a bar of the screenshot next to the medal is not part of it: only the biggest piece stays
+        big = 1 + int(np.argmax(ndimage.sum(np.ones_like(lab), lab, range(1, n + 1))))
+        a[..., 3] = np.where(lab == big, a[..., 3], 0)
+    ys, xs = np.where(a[..., 3] > 0)
+    save(Image.fromarray(a[ys.min():ys.max() + 1, xs.min():xs.max() + 1], 'RGBA'), mid)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     for n, ids in SHEETS.items():
@@ -64,15 +91,12 @@ def main():
         for tile, mid in zip(tiles, ids):
             if not mid:
                 continue
-            w = max(1, round(tile.width * H / tile.height))
-            a = np.array(tile).astype(int)
-            r, g, b = a[..., 0], a[..., 1], a[..., 2]
-            edge = ~ndimage.binary_erosion(a[..., 3] > 0, iterations=3)
-            spill = (g > r + 12) & (g > b + 12) & edge   # green of the background left on the borders (only at the edge)
-            a[..., 1] = np.where(spill, np.maximum(r, b), g)
-            im = Image.fromarray(a.clip(0, 255).astype(np.uint8), 'RGBA').resize((w, H), Image.LANCZOS)
-            im.save(os.path.join(OUT, 'ach_%s.png' % mid))
-            print('  ach_%s.png' % mid, im.size)
+            save(tile, mid)
+
+    for name, mid in SINGLES.items():
+        p = os.path.join(ROOT, 'art_inbox', 'medal_%s.png' % name)
+        if os.path.exists(p):
+            single(p, mid)
 
 
 if __name__ == '__main__':

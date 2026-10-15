@@ -19,6 +19,7 @@ const ANIMALS: [string, number, number, number][] = [
   ['ratón', MAMMAL, HERBIVORE, WALK], ['cuervo', BIRD, CARNIVORE, FLY], ['caballo', MAMMAL, HERBIVORE, WALK], ['hámster', MAMMAL, HERBIVORE, WALK],
   ['guazubirá', MAMMAL, HERBIVORE, WALK], ['chajá', BIRD, HERBIVORE, WALK], ['cardenal amarillo', BIRD, HERBIVORE, FLY],
   ['lagarto overo', REPTILE, CARNIVORE, WALK], ['pez betta', 4, CARNIVORE, SWIM],
+  ['gato', MAMMAL, CARNIVORE, WALK], ['perro', MAMMAL, CARNIVORE, WALK], ['loro', BIRD, HERBIVORE, FLY], ['carancho', BIRD, CARNIVORE, FLY],   // (appended: pets are saved by index)
 ];
 /** sports (name, category, team, ball) */
 const SPORTS: [string, number, boolean, boolean][] = [
@@ -71,6 +72,31 @@ const THIEVES: NewThief[] = [
   { id: 'aaron', sex: MALE, height: SHORT, hair: BRUNETTE, feature: SCAR, pet: 'pez betta', sport: 'ajedrez', name: 'Aaron Silva', nick: '"Elliot"', age: '27 años',
     desc: 'Hacker de primera que vive de noche con la capucha puesta y casi nunca mira a los ojos.\nSe infiltra en bancos y empresas para "borrar deudas", como el personaje de esa serie que ve una y otra vez.\nTiene cargos por delitos de ciberseguridad y en los ventiladores de su computadora se encontró polvo blanco.',
     rumors: ['Siempre lleva la capucha puesta.', 'Hallaron polvo blanco en su computadora.', 'Dicen que le dicen Elliot.'] },
+  // the thieves of the culture of today (parodies: made-up names and crimes)
+  { id: 'humanoide', sex: MALE, height: SHORT, hair: BRUNETTE, feature: TATOO, pet: 'chajá', sport: 'ajedrez', name: 'Facundo Clickbait', nick: '"El Humanoide"', age: '30 años',
+    desc: 'Hacía videos de indignación a pedido y cobraba por cada polémica.\nTodo era "un malentendido" hasta que faltó plata de la caja del canal.\nSe tatuó un botón de play en el antebrazo: si hay una cámara prendida, él está ahí.',
+    rumors: ['Hablaba mirando a una cámara que no estaba ahí.', 'Se quejó de que lo estaban "cancelando".', 'Decía que todo era un malentendido y pedía que lo suscribieran.'] },
+  { id: 'churrito', sex: MALE, height: TALL, hair: REDHEAD, feature: GLASSES, pet: 'cardenal amarillo', sport: 'surf', name: 'Churrito Tussy', nick: '"El Churrito"', age: '31 años',
+    desc: 'Cantaba en una banda de fiesta y vendía sobres de purpurina rosa en los recitales.\nLas autoridades dicen que no era solo purpurina.\nSiempre llega tarde: al escenario y a la comisaría.',
+    rumors: ['Llevaba una gorra roja y un pasamontañas blanco.', 'Dejó brillos rosados por todas partes.', 'Dicen que llegó tarde a su propio recital.'] },
+  { id: 'streamer', sex: MALE, height: SHORT, hair: BRUNETTE, feature: GLASSES, pet: 'lagarto overo', sport: 'handball', name: 'Nicolás Directo', nick: '"El Streamer"', age: '25 años',
+    desc: 'Transmitía en vivo sus noches en vela, y una noche transmitió también el robo sin darse cuenta.\nDuerme poco, toma energizantes y habla con gente que nadie ve.\nSu coartada: "estaba en directo".',
+    rumors: ['Llevaba auriculares y una lata de energizante.', 'Hablaba solo, como si lo estuvieran mirando.', 'Dicen que nunca duerme.'] },
+  { id: 'cumbia', sex: FEMALE, height: TALL, hair: BRUNETTE, feature: TATOO, pet: 'guazubirá', sport: 'baby fútbol', name: 'Gladys Plena', nick: '"La Reina de la Cumbia"', age: '45 años',
+    desc: 'Reina de los bailes de los sábados: cuando la música sube, nadie mira sus manos.\nCobraba el cachet por adelantado y se llevaba además la recaudación.\nSe tatuó una nota musical en el hombro y su cara está en todos los afiches.',
+    rumors: ['Brillaba toda de lentejuelas.', 'Cantaba con un micrófono en la mano mientras se iba.', 'Dicen que dejó una pista de baile desierta.'] },
+  { id: 'delivery', sex: MALE, height: SHORT, hair: BLONDE, feature: SCAR, pet: 'gato', sport: 'ciclismo', name: 'Ubaldo Rapidín', nick: '"El Delivery"', age: '30 años',
+    desc: 'Repartía pedidos en moto y entregaba cada uno menos el que le convenía.\nConoce todos los atajos y todas las puertas traseras de la ciudad.\nLa cicatriz de la ceja se la hizo en una caída en moto, "entregando a tiempo".',
+    rumors: ['Llevaba casco y una mochila cuadrada enorme.', 'Pasó volando en una moto con chaleco reflectivo.', 'Dijo que llegaba tarde a una entrega.'] },
+  { id: 'influencer', sex: FEMALE, height: TALL, hair: BLONDE, feature: TATOO, pet: 'perro', sport: 'pádel', name: 'Florencia Rambla', nick: '"La Influencer"', age: '28 años',
+    desc: 'Se sacó mil selfies en cada escena del crimen y las subió todas.\nAsegura que lo suyo no es robar: es "colaborar con marcas".\nSe tatuó un corazón en la muñeca y nunca sale de casa sin su mate.',
+    rumors: ['Se sacaba selfies con un palo.', 'Llevaba un mate y anteojos de sol sobre la cabeza.', 'Dicen que subió todo a las redes.'] },
+  { id: 'cripto', sex: MALE, height: TALL, hair: REDHEAD, feature: SCAR, pet: 'loro', sport: 'boxeo', name: 'Crespo Bitcoin', nick: '"El Cripto"', age: '35 años',
+    desc: 'Prometía duplicar tus ahorros en una semana; lo único que duplicaba eran las deudas ajenas.\nTiene tres celulares y una billetera rota.\nLa cicatriz es de una pelea cuando "se cayó el mercado".',
+    rumors: ['Tenía tres celulares en el bolsillo.', 'Hablaba de una moneda que "iba a explotar".', 'Dijo que invirtiera mis ahorros en algo seguro.'] },
+  { id: 'tribunero', sex: MALE, height: SHORT, hair: GREY_HAIRED, feature: MOLE, pet: 'carancho', sport: 'remo', name: 'Hugo Garra', nick: '"El Tribunero"', age: '50 años',
+    desc: 'No se perdió un partido en treinta años; en la tribuna aprendió a cantar fuerte y a desaparecer rápido.\nTodos conocen su bombo y su bufanda, pero nadie lo vio llevarse nada.\nTiene un lunar peludo en la mejilla y dice que lo heredó del bombo.',
+    rumors: ['Llevaba una bufanda celeste y blanca.', 'Tocaba un bombo mientras se alejaba.', 'Tenía la voz ronca de tanto cantar.'] },
 ];
 
 /** adds the new pets, sports and thieves to the lists of the datastore (the thieves whose pictures exist) */

@@ -54,6 +54,15 @@ export const ACHIEVEMENTS: Ach[] = [
   { id: 'falso_criminal', title: 'Falso Criminal', desc: 'Desenmascaraste al incriminado y atrapaste al verdadero culpable.', glyph: 'FC', tier: 1, check: never, solved: (c) => c.twist_state === 2 },
   { id: 'ojo_clinico', title: 'Ojo Clínico', desc: 'Leíste el nombre del verdadero culpable en un objeto y lo atrapaste.', glyph: 'OC', tier: 2, check: never, solved: (c) => c.twist_state === 2 && !!c.twist_hint },
   { id: 'tres_trampas', title: 'Nadie te Engaña', desc: 'Resolviste tres casos en los que habían incriminado a un inocente.', glyph: '3x', tier: 3, check: (p) => medalCount(p, 'ach_falso_criminal') >= 3 },
+  // the thieves of the culture of today
+  { id: 'humanoide', title: 'Cancelado', desc: 'Atrapaste a Facundo Clickbait, "El Humanoide": su canal ya no tiene suscriptores.', glyph: 'H', tier: 0, check: (p) => caught(p, 'Facundo Clickbait') },
+  { id: 'churrito', title: 'Fin de Fiesta', desc: 'Atrapaste a Churrito Tussy, "El Churrito": se acabó la purpurina.', glyph: 'CH', tier: 1, check: (p) => caught(p, 'Churrito Tussy') },
+  { id: 'streamer', title: 'Fuera de Línea', desc: 'Atrapaste a Nicolás Directo, "El Streamer": se cortó la transmisión.', glyph: 'S', tier: 0, check: (p) => caught(p, 'Nicolás Directo') },
+  { id: 'cumbia', title: 'Se Acabó el Baile', desc: 'Atrapaste a Gladys Plena, "La Reina de la Cumbia".', glyph: 'C', tier: 2, check: (p) => caught(p, 'Gladys Plena') },
+  { id: 'delivery', title: 'Pedido Entregado', desc: 'Atrapaste a Ubaldo Rapidín, "El Delivery": esta vez sí llegó a destino.', glyph: 'D', tier: 0, check: (p) => caught(p, 'Ubaldo Rapidín') },
+  { id: 'influencer', title: 'Sin Filtro', desc: 'Atrapaste a Florencia Rambla, "La Influencer": esta foto no va a las redes.', glyph: 'I', tier: 1, check: (p) => caught(p, 'Florencia Rambla') },
+  { id: 'cripto', title: 'Caída del Mercado', desc: 'Atrapaste a Crespo Bitcoin, "El Cripto": la suba nunca llegó.', glyph: 'B', tier: 0, check: (p) => caught(p, 'Crespo Bitcoin') },
+  { id: 'tribunero', title: 'Tarjeta Roja', desc: 'Atrapaste a Hugo Garra, "El Tribunero": expulsado de la cancha.', glyph: 'T', tier: 1, check: (p) => caught(p, 'Hugo Garra') },
 ];
 
 const TIERS = [
@@ -138,7 +147,7 @@ export function achievementsLayer(merits: any): any {
   layer.add(back);
   const name = merits.add_text_with_shadow(layer, 40, 316, font_18, '', [252, 193, 45], 520, 22, 2, 1, -1, 2);
   const text = merits.add_text_with_shadow(layer, 40, 340, font_14, 'LOGROS ' + n + ' DE ' + total + '. Pasá el mouse o tocá una medalla para ver cómo se consigue.', [255, 240, 220], 520, 48, 2, 1, -1, 2);
-  const n30 = ACHIEVEMENTS.length, big = n30 > 24, cols = n30 > 30 ? 12 : big ? 10 : 8, x0 = n30 > 30 ? 18 : big ? 22 : 30, y0 = 84, dx = n30 > 30 ? 47 : big ? 56 : 67, dy = n30 > 30 ? 66 : big ? 80 : 86, k = n30 > 30 ? 0.7 : big ? 0.8 : 1;
+  const n30 = ACHIEVEMENTS.length, big = n30 > 24, cols = n30 > 36 ? 14 : n30 > 30 ? 12 : big ? 10 : 8, x0 = n30 > 36 ? 20 : n30 > 30 ? 18 : big ? 22 : 30, y0 = 84, dx = n30 > 36 ? 40 : n30 > 30 ? 47 : big ? 56 : 67, dy = n30 > 36 ? 62 : n30 > 30 ? 66 : big ? 80 : 86, k = n30 > 36 ? 0.62 : n30 > 30 ? 0.7 : big ? 0.8 : 1;
   ACHIEVEMENTS.forEach((a, i) => {
     const got = have.has('ach_' + a.id), x = x0 + (i % cols) * dx, y = y0 + Math.floor(i / cols) * dy;
     const pic = k === 1 ? icon(a, got) : scaled(icon(a, got), k);

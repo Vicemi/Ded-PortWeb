@@ -2,6 +2,12 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.8
+
+### Novedades
+- **8 ladrones nuevos de la cultura de hoy** (todos parodias, con nombres y delitos inventados): Facundo Clickbait "El Humanoide", Churrito Tussy "El Churrito", Nicolás Directo "El Streamer", Gladys Plena "La Reina de la Cumbia", Ubaldo Rapidín "El Delivery", Florencia Rambla "La Influencer", Crespo Bitcoin "El Cripto" y Hugo Garra "El Tribunero". Con sus fichas policiales, mascotas y deportes nuevos (gato, perro, loro, carancho) y rumores de los testigos.
+- **12 medallas con dibujo propio**: una por cada ladrón nuevo (42 logros en total) y las 4 de la trampa «Incriminado», que antes tenían un dibujo provisorio.
+
 ## 1.0.7
 
 ### Correcciones
