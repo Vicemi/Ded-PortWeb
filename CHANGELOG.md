@@ -2,6 +2,11 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.7
+
+### Correcciones
+- El sticker del mate de Paysandú decía "IASA", pero ese club es de Montevideo: ahora dice Paysandú Bella Vista (los demás clubes —Tacuarembó FC, Deportivo Maldonado, Plaza Colonia, Rocha FC y Cerro Largo FC— están comprobados).
+
 ## 1.0.6
 
 ### Novedades

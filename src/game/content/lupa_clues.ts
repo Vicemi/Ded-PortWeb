@@ -4,9 +4,9 @@
 
 export interface ClueObject { id: string; types: string[]; lead: (n: any, club: string) => string }
 
-/** the club that a department is known for (only the ones that are certain); '' when unknown */
+/** the club that a department is known for (checked on the web: Paysandú Bella Vista, Tacuarembó FC, Deportivo Maldonado, Plaza Colonia, Rocha FC, Cerro Largo FC; IASA is from Montevideo, not Paysandú); '' when unknown */
 const CLUBS: Record<string, string> = {
-  'Paysand\xfa': 'IASA', 'Tacuaremb\xf3': 'Tacuaremb\xf3 FC', 'Maldonado': 'Deportivo Maldonado', 'Colonia': 'Plaza Colonia',
+  'Paysandú': 'Paysandú Bella Vista', 'Tacuarembó': 'Tacuarembó FC', 'Maldonado': 'Deportivo Maldonado', 'Colonia': 'Plaza Colonia',
   'Rocha': 'Rocha FC', 'Cerro Largo': 'Cerro Largo FC', 'Montevideo': 'Montevideo Wanderers',
 };
 
