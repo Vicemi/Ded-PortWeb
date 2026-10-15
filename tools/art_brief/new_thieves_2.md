@@ -8,8 +8,8 @@ Perfil: "Same character, same outfit and colors, now in RIGHT PROFILE VIEW (face
 
 | id | Nombre / apodo | look |
 |---|---|---|
-| polemico | Facundo Clickbait, "El Polémico" | man about 30, trendy beard, microphone and ring light, shirt with a big play-button logo, eyebrows raised in a fake-outraged expression (a controversial youtuber, generic, not a real person) |
-| banda | Rolo Estribillo, "El Letrista" | man about 28, leather vest with a band patch, guitar strap, messy hair, mischievous grin (singer of a rock band with silly lyrics, generic, not a real person) |
+| humanoide | Facundo Clickbait, "El Humanoide" | man about 30, trendy beard, ring-light reflection in his glasses, microphone, shirt with a big play-button logo, eyebrows raised in a fake-outraged expression, a smug smile; clearly a cartoon parody of a controversial youtuber (fictional, no real face) |
+| churrito | Churrito Tussy, "El Churrito" | the band character "El Churrito" of the Tussy Warriors, as a cartoon: if there is official art of the character, attach it to Gemini as the character reference; otherwise: young man with a cap and chain, pink sparkly accents (pink glitter on the jacket), mischievous grin, stage-party look |
 | streamer | Nicolás Directo, "El Streamer" | thin guy about 25, gaming headset around the neck, ring-light reflection in round glasses, hoodie with a cartoon controller, energy drink can in hand |
 | cumbia | Gladys Plena, "La Reina de la Cumbia" | woman about 45, voluminous curly dark hair, sequined top, big hoop earrings, microphone in hand, stage-light glow |
 | delivery | Ubaldo Rapidín, "El Delivery" | man about 30, motorbike helmet on, square thermal delivery backpack, reflective vest, sweaty, in a hurry |
@@ -18,6 +18,11 @@ Perfil: "Same character, same outfit and colors, now in RIGHT PROFILE VIEW (face
 | tribunero | Hugo Garra, "El Tribunero" | stocky man about 50, thick mustache, football scarf (blue and white stripes, no real club), drum in hand, hoarse-voice look |
 
 ## Medallas por capturar a cada uno (hoja 2 filas x 4, fondo verde, `art_inbox/raw_medals_6.jpg`)
-Mismo estilo que las medallas del juego (cinta corta blanca y celeste arriba, borde grueso oscuro). Orden: polemico, banda, streamer, cumbia, delivery, influencer, cripto, tribunero.
-1 BRONCE: micrófono con aro de luz y un botón de play · 2 PLATA: guitarra con rayo y una partitura con notas torcidas · 3 BRONCE: auriculares gamer y un joystick · 4 ORO: micrófono y un tambor de cumbia · 5 BRONCE: mochila térmica de reparto con una moto · 6 PLATA: palo de selfie con corazones y un mate · 7 BRONCE: moneda dorada con rayo y una billetera rota · 8 PLATA: bufanda de rayas y un bombo.
-Orden de corte en `tools/build_medals.py` (SHEETS 6): captura_polemico, captura_banda, captura_streamer, captura_cumbia, captura_delivery, captura_influencer, captura_cripto, captura_tribunero.
+Mismo estilo que las medallas del juego (cinta corta blanca y celeste arriba, borde grueso oscuro). Orden: humanoide, churrito, streamer, cumbia, delivery, influencer, cripto, tribunero.
+1 BRONCE: micrófono con aro de luz y un botón de play · 2 PLATA: gorra con cadena, brillos rosados y un micrófono · 3 BRONCE: auriculares gamer y un joystick · 4 ORO: micrófono y un tambor de cumbia · 5 BRONCE: mochila térmica de reparto con una moto · 6 PLATA: palo de selfie con corazones y un mate · 7 BRONCE: moneda dorada con rayo y una billetera rota · 8 PLATA: bufanda de rayas y un bombo.
+Orden de corte en `tools/build_medals.py` (SHEETS 6): captura_humanoide, captura_churrito, captura_streamer, captura_cumbia, captura_delivery, captura_influencer, captura_cripto, captura_tribunero.
+
+## Datos para el juego (los completo yo cuando lleguen las imágenes)
+- El Humanoide (`humanoide`): "Hacía videos de indignación a pedido y cobraba por cada polémica; todo era 'un malentendido' hasta que faltó plata de la caja del canal. Si hay cámara, él está ahí." Mascota: carpincho. Deporte: ajedrez rápido (streaming).
+- El Churrito (`churrito`): "Cantaba en una banda de fiesta y vendía sobres de purpurina rosa en los recitales; las autoridades dicen que no era solo purpurina. Siempre llega tarde... al escenario y a la comisaría." (guiño al Operativo Tusi; sin mostrar consumo).
+Aclaración: los dos son personajes de parodia con nombre ficticio y delitos inventados; no se usan hechos reales de nadie.
