@@ -16,6 +16,7 @@ import { pygame } from '../../runtime/prelude';
 import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
 import * as $self from './minigame';
+import { FxOverlay, showStars } from '../minigames/fx';
 
 export let WRONG_PLACE_DIALOG: any = 0;
 export let OPENING_DIALOG: any = 1;
@@ -263,12 +264,24 @@ export class Minigame {
     this.next.add_event_handler(ItemEvent.CLICK, py.bind(this, "option_click"));
     py.m(this.score_layer, "add", this.next);
     this.score_continue_visible = true;
+    this.show_result_stars();
     if (py.truthy(this.skip_scores_animation)) {
       this.stage.render();
       this.score_end_sound.play();
       this.skip_scores_animation = false;
     }
     return null;
+  }
+  /** presentation only: one to three stars pop up over the continue button of the score screen (the score is what decides, nothing changes in it) */
+  show_result_stars(): any {
+    const ratio = this.total / (100 + (this.maximum_time_score || 130));
+    showStars(this.stage, this.score_layer, this.score_font_24, ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1, 294, 309);
+    return null;
+  }
+  /** presentation only: the particles / floating texts / shake overlay of the classic minigames; each one calls it at the end of set_up_minigame so that it is above the board */
+  fx_attach(layer: any = null): any {
+    this.fx = new FxOverlay(this.stage, layer || this.layer, this.font_18);
+    return this.fx;
   }
   score_item_callback(item: any): any {
     let delay_between_update, final_value, increments, loop_length, score_texts, score_time, sound_loops: any;

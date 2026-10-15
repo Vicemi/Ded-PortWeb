@@ -148,6 +148,7 @@ export class RacerStage extends Stage {
 
   private handleEvents(): void {
     for (const e of pgevent.get()) {
+     try {
       if (e.type === KEYDOWN && e.key === K.ESCAPE) {
         if (this.phase === 'run') { this.dialog = !this.dialog; this.audioPause(this.dialog); }
       } else if (e.type === MOUSEMOTION && this.dialog) {
@@ -158,6 +159,7 @@ export class RacerStage extends Stage {
         if (this.inButton('yes', x, y)) { this.dialog = false; this.finish(0); }
         else if (this.inButton('no', x, y)) { this.dialog = false; this.audioPause(false); }
       }
+     } catch (err) { console.error('racer: error in an event handler (ignored):', err); if ((globalThis as { __DED_STRICT?: boolean }).__DED_STRICT) throw err; }
     }
   }
   private inButton(which: 'yes' | 'no', x: number, y: number): boolean {

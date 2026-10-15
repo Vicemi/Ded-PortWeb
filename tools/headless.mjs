@@ -34,6 +34,7 @@ if (process.env.DIGEST) {
 const storage = new Map();
 globalThis.localStorage = { getItem: (k) => (storage.has(k) ? storage.get(k) : null), setItem: (k, v) => storage.set(k, String(v)), removeItem: (k) => storage.delete(k), key: (i) => [...storage.keys()][i] ?? null, get length() { return storage.size; } };
 globalThis.window = globalThis;
+globalThis.__DED_STRICT = true;   // an exception in an event handler fails the scenario (the browser logs it and carries on)
 globalThis.addEventListener = () => undefined;
 globalThis.ImageData = ImageData;
 globalThis.document = { createElement: (t) => (t === 'canvas' ? createCanvas(1, 1) : {}) };

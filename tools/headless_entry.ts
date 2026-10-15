@@ -1,16 +1,24 @@
 // Runs the real game code in Node (no browser): canvas from @napi-rs/canvas, assets from public/assets. Used by the tests and for driving the game
 // through its screens while developing (see tools/headless.mjs).
 import { assetsComplete, initAssets } from '../src/engine/assets';
+import * as assetsMod from '../src/engine/assets';
+import * as mgart from '../src/game/minigames/mgart';
 import { K, event, input, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, KEYDOWN, KEYUP, setClock } from '../src/engine/pygame';
 import { createGame } from '../src/game/main';
 import type { Game } from '../src/engine/engine';
 import { lazy } from '../src/runtime/py';
 import * as newgames from '../src/game/minigames/newgames';
+import * as candombe from '../src/game/minigames/candombe';
+import { mixer } from '../src/engine/sounds';
+import * as extra from '../src/game/minigames/extra';
 import * as achievements from '../src/game/content/achievements';
 import * as twist from '../src/game/content/twist';
+import * as grace from '../src/game/content/grace';
 import * as py from '../src/runtime/py';
 import * as safefs from '../src/runtime/safefs';
 import * as autosave from '../src/game/autosave';
+import * as pygame from '../src/engine/pygame';
+import * as inputguard from '../src/game/inputguard';
 
 export interface Dev {
   game: Game;
@@ -30,12 +38,22 @@ export interface Dev {
   K: typeof K;
   /** the new minigames (hand-written) */
   newgames: typeof newgames;
+  candombe: typeof candombe;
+  mixer: typeof mixer;
+  /** the minigames of src/game/minigames/extra.ts (Matero, Corredora) */
+  extra: typeof extra;
   achievements: typeof achievements;
   twist: typeof twist;
+  grace: typeof grace;
   /** the file layer under the saves (see tools/scenarios/save_safety.mjs) */
   py: typeof py;
   safefs: typeof safefs;
   autosave: typeof autosave;
+  inputguard: typeof inputguard;
+  pygame: typeof pygame;
+  /** image registry (register_image for fakes) and the optional minigame art helpers (artStats counts the images drawn) */
+  assets: typeof assetsMod;
+  mgart: typeof mgart;
   /** a generated game module by path, e.g. mod('game/stages/phase0').Phase0Stage */
   mod(path: string): any;
 }
@@ -59,7 +77,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
     else event.post({ type, pos: [x, y], button });
   };
   const dev: Dev = {
-    game, canvas, K, newgames, achievements, twist, py, safefs, autosave,
+    game, canvas, K, newgames, candombe, mixer, extra, achievements, twist, grace, py, safefs, autosave, inputguard, pygame, assets: assetsMod, mgart,
     mod: (path) => lazy(path),
     go,
     move(x, y, frames = 3) { post(MOUSEMOTION, x, y); go(frames); },

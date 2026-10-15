@@ -12,6 +12,7 @@ import { Layer } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
 import { pygame } from '../../runtime/prelude';
+import { Surface } from '../../engine/pygame';
 import { random } from '../../runtime/py';
 import * as $self from './notes';
 
@@ -450,6 +451,28 @@ export class Notes extends Item {
     }
     return null;
   }
+  /** number of lines that a list entry takes when it is wrapped to the column (a long name can take 3 or more: the entries below must make room) */
+  note_lines(name: any): any {
+    const font = this.line_font, space = font.size(" ")[0];
+    let lines = 1, w = 0;
+    for (const word of String(name).split(" ")) {
+      const ww = font.size(word)[0];
+      if (w > 0 && w + space + ww > 188) { lines++; w = ww; } else { w = w > 0 ? w + space + ww : ww; }
+    }
+    return lines;
+  }
+  /** the hover image of an entry of 3 or more lines: the top and bottom of the big one with its middle repeated */
+  tall_hover(height: any): any {
+    this.tall_hovers = this.tall_hovers ?? {};
+    if (!this.tall_hovers[height]) {
+      const src = this.item_hoverbig_image, [w, h] = src.get_size(), s = new Surface(w, height, true), half = h >> 1;
+      s.blit(src.surface, [0, 0], [0, 0, w, half]);
+      s.blit(src.surface, [0, height - (h - half)], [0, half, w, h - half]);
+      for (let y = half; y < height - (h - half); y++) s.blit(src.surface, [0, y], [0, half - 1, w, 1]);
+      this.tall_hovers[height] = new assets.Image(s);
+    }
+    return this.tall_hovers[height];
+  }
   load_letter_page(page_number: any): any {
     let current_page, dot_item, has_items, hover_image, index, item, last_page, mask, new_notes, note, play_new_notes, text, text_height, text_width, text_x, text_y: any;
     for (item of py.iter(this.page_items)) {
@@ -472,12 +495,7 @@ export class Notes extends Item {
     last_page = true;
     play_new_notes = false;
     for (note of py.iter(this.letter_notes)) {
-      [text_width, text_height] = this.line_font.size(note.get_full_name());
-      if ((text_width > 188)) {
-        text_height = 44;
-      } else {
-        text_height = 22;
-      }
+      text_height = this.note_lines(note.get_full_name()) * 22;
       if ((py.add(text_y, text_height) > 380)) {
         if ((text_x < 100)) {
           text_x = 335;
@@ -490,8 +508,10 @@ export class Notes extends Item {
       if (py.eq(current_page, page_number)) {
         if ((text_height <= 30)) {
           hover_image = this.item_hoversmall_image;
-        } else {
+        } else if ((text_height <= 44)) {
           hover_image = this.item_hoverbig_image;
+        } else {
+          hover_image = this.tall_hover(text_height + 4);
         }
         mask = new ItemMask((text_x - 20), text_y, hover_image.get_size());
         mask.set_rollover(hover_image, this.rollover_sound);

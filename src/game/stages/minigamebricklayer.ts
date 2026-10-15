@@ -147,6 +147,7 @@ export class MinigameBricklayer extends Minigame {
     this.set_up_buttons();
     this.set_up_photo(photo_number);
     this.set_up_witness();
+    this.fx_attach();
     return null;
   }
   close_click(item: any, args: any): any {
@@ -442,6 +443,8 @@ export class MinigameBricklayer extends Minigame {
       if (py.truthy(moved)) {
         this.drag_sound.play();
       } else {
+        this.fx.shakeItems([item]);
+        this.fx.shake(2.5, 0.25);
         this.stage.click_sound.play();
       }
     }
@@ -456,6 +459,7 @@ export class MinigameBricklayer extends Minigame {
         py.setitem(py.getitem(this.grid, from_row), from_col, null);
         py.setitem(py.getitem(this.grid, to_row), to_col, piece);
         this.set_piece_pos(to_row, to_col, true);
+        this.fx.burst(114 + to_col * piece.get_width() + piece.get_width() / 2, 87 + to_row * piece.get_height() + piece.get_height() / 2, 5, ["#e8e0d0", "#ffffff", "#c9bfa8"], { speed: 45, size: 2, life: 0.4, g: 30 });
         this.check_minigame_solved();
         return true;
       }
@@ -484,6 +488,7 @@ export class MinigameBricklayer extends Minigame {
       this.stop_minigame(true);
       this.stage.render();
       this.right_sound.play();
+      this.fx.confetti(this.puzzle_image.get_width() / 2 + 114, 150, 60);
       animations.wait_locked(this.stage, 500, py.bind(this, "show_missing_piece"));
     }
     return null;
@@ -498,6 +503,8 @@ export class MinigameBricklayer extends Minigame {
     py.setitem(py.getitem(this.grid, piece.row), piece.col, piece);
     this.set_piece_pos(piece.row, piece.col);
     animations.fade_in_item(piece, 500);
+    this.fx.top();
+    this.fx.good(piece.get_left() + piece.get_width() / 2, piece.get_top() + piece.get_height() / 2, "", 22);
     animations.wait_locked(this.stage, 1500, py.bind(this, "show_missing_piece_callback"));
     this.stage.render();
     this.fade_sound.play();

@@ -21,24 +21,27 @@ SS = 3   # work at 3x and reduce: smooth edges like the original art
 FONT = 'C:/Windows/Fonts/arialbd.ttf'
 
 
-def key(path):
-    """the green background becomes transparent (flood from the borders, so green inside the drawing stays); the result is cropped to the drawing"""
-    im = np.array(Image.open(path).convert('RGB')).astype(int)
+def key(path, crop=True, holes=False):
+    """the green background becomes transparent (flood from the borders, so green inside the drawing stays); the result is cropped to the drawing
+    (crop=False keeps the size of the picture: strips and sheets; holes=True also clears green enclosed by the drawing: picture frames). `path` may be an Image."""
+    im = np.array((Image.open(path) if isinstance(path, str) else path).convert('RGB')).astype(int)
     r, g, b = im[..., 0], im[..., 1], im[..., 2]
     bg = (g > 140) & (g - r > 60) & (g - b > 60)
     lab, n = ndimage.label(bg)
     edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
-    mask = np.isin(lab, list(edge))
+    mask = bg if holes else np.isin(lab, list(edge))
     mask = ndimage.binary_dilation(mask, iterations=1)           # eat the fringe
     alpha = (~mask).astype(np.uint8) * 255
     # green spill on the remaining edge pixels
     spill = (g > r + 20) & (g > b + 20) & ndimage.binary_dilation(mask, iterations=3)
     im[..., 1] = np.where(spill, np.maximum(r, b) + 5, g)
     # green seen through glasses or between arm and body: a pale glass tint instead
-    hole = (alpha > 0) & (g > 170) & (g - r > 90) & (g - b > 90)
+    hole = (alpha > 0) & (g > 170) & (g - r > 90) & (g - b > 90) & (not holes)
     for c, v in enumerate((205, 215, 225)):
         im[..., c] = np.where(hole, v, im[..., c])
     rgba = np.dstack([im.clip(0, 255).astype(np.uint8), alpha])
+    if not crop:
+        return Image.fromarray(rgba, 'RGBA')
     ys, xs = np.where(alpha > 0)
     return Image.fromarray(rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1], 'RGBA')
 

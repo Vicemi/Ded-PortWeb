@@ -108,29 +108,29 @@ export class StageClue {
         } else {
           visiting = "visitarlo";
         }
-        message = py.add(py.add(py.add(py.add(py.add(py.add("Una postal ", article), " "), this.note_item.name), ". Seguramente el ladr\xf3n piensa "), visiting), ".");
+        message = py.add(py.add(py.add(py.add(py.add(py.add("Una postal ", article), " "), this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa "), visiting), ".");
       } else if ((this.note_item.type === "LAGOON")) {
-        message = py.add(py.add("Una postal de la ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Una postal de la ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarla.");
       } else if ((this.note_item.type === "RIVER")) {
-        message = py.add(py.add("Una postal del ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarlo.");
+        message = py.add(py.add("Una postal del ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarlo.");
       } else if ((this.note_item.type === "LOCATION")) {
-        message = py.add(py.add("Una postal de la localidad de ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Una postal de la localidad de ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarla.");
       } else {
         throw new py.Exception(py.add(py.add(py.add("Unknown item type ", this.note_item.type), " for clue "), this.clue.id));
       }
     } else if (((this.clue.id === "i510") || (this.clue.id === "i511"))) {
       if ((this.note_item.type === "HILL")) {
-        message = py.add(py.add(py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar ", this.note_item.article), " "), this.note_item.name), ".");
+        message = py.add(py.add(py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar ", this.note_item.article), " "), this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "LAGOON")) {
-        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar la ", this.note_item.name), ".");
+        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar la ", this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "RIVER")) {
-        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar el ", this.note_item.name), ".");
+        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar el ", this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "LOCATION")) {
-        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar la localidad de ", this.note_item.name), ".");
+        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar la localidad de ", this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "HISTORY_FACT")) {
-        message = py.add(py.add(py.add(py.add(py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar el sitio donde ", this.note_item.sentence_start), " "), this.note_item.article), " "), this.note_item.name), ".");
+        message = py.add(py.add(py.add(py.add(py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar el sitio donde ", this.note_item.sentence_start), " "), this.note_item.article), " "), this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "WRITER")) {
-        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar el lugar de nacimiento de ", this.note_item.name), ".");
+        message = py.add(py.add("Una nota. Al parecer el ladr\xf3n piensa visitar el lugar de nacimiento de ", this.note_item.get_full_name()), ".");
       } else {
         throw new py.Exception(py.add(py.add(py.add("Unknown item type ", this.note_item.type), " for clue "), this.clue.id));
       }
@@ -143,17 +143,17 @@ export class StageClue {
           marked = "marcado";
           visiting = "visitarlo";
         }
-        message = py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("Un libro de geograf\xeda que tiene ", marked), " "), this.note_item.article), " "), this.note_item.name), ". Seguramente el ladr\xf3n piensa "), visiting), ".");
+        message = py.add(py.add(py.add(py.add(py.add(py.add(py.add(py.add("Un libro de geograf\xeda que tiene ", marked), " "), this.note_item.article), " "), this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa "), visiting), ".");
       } else if ((this.note_item.type === "LAGOON")) {
-        message = py.add(py.add("Un libro de geograf\xeda que tiene marcada la ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Un libro de geograf\xeda que tiene marcada la ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarla.");
       } else if ((this.note_item.type === "RIVER")) {
-        message = py.add(py.add("Un libro de geograf\xeda que tiene marcado el ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarlo.");
+        message = py.add(py.add("Un libro de geograf\xeda que tiene marcado el ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarlo.");
       } else if ((this.note_item.type === "HISTORY_FACT")) {
-        message = py.add(py.add(py.add(py.add(py.add(py.add("Un libro de historia sobre ", this.note_item.article), " "), this.note_item.name), ". Seguramente el ladr\xf3n piensa visitar el sitio donde "), this.note_item.sentence_start), ".");
+        message = py.add(py.add(py.add(py.add(py.add(py.add("Un libro de historia sobre ", this.note_item.article), " "), this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitar el sitio donde "), this.note_item.sentence_start), ".");
       } else if ((this.note_item.type === "LOCATION")) {
-        message = py.add(py.add("Un libro de geograf\xeda que tiene marcada la localidad de ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Un libro de geograf\xeda que tiene marcada la localidad de ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarla.");
       } else if ((this.note_item.type === "WRITER")) {
-        message = py.add(py.add("Un libro de ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitar su lugar de nacimiento.");
+        message = py.add(py.add("Un libro de ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitar su lugar de nacimiento.");
       } else {
         throw new py.Exception(py.add(py.add(py.add("Unknown item type ", this.note_item.type), " for clue "), this.clue.id));
       }
@@ -164,17 +164,17 @@ export class StageClue {
         } else {
           visiting = "visitarlo";
         }
-        message = py.add(py.add(py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.name), "\". Seguramente el ladr\xf3n piensa "), visiting), ".");
+        message = py.add(py.add(py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.get_full_name()), "\". Seguramente el ladr\xf3n piensa "), visiting), ".");
       } else if ((this.note_item.type === "LAGOON")) {
-        message = py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.name), "\". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.get_full_name()), "\". Seguramente el ladr\xf3n piensa visitarla.");
       } else if ((this.note_item.type === "RIVER")) {
-        message = py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.name), "\". Seguramente el ladr\xf3n piensa visitarlo.");
+        message = py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.get_full_name()), "\". Seguramente el ladr\xf3n piensa visitarlo.");
       } else if ((this.note_item.type === "HISTORY_FACT")) {
-        message = py.add(py.add(py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.name), "\". Seguramente el ladr\xf3n piensa visitar el sitio donde "), this.note_item.sentence_start), ".");
+        message = py.add(py.add(py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.get_full_name()), "\". Seguramente el ladr\xf3n piensa visitar el sitio donde "), this.note_item.sentence_start), ".");
       } else if ((this.note_item.type === "LOCATION")) {
-        message = py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.name), " y sus habitantes\". Seguramente el ladr\xf3n piensa visitar esa localidad.");
+        message = py.add(py.add("Un CD con el t\xedtulo \"", this.note_item.get_full_name()), " y sus habitantes\". Seguramente el ladr\xf3n piensa visitar esa localidad.");
       } else if ((this.note_item.type === "WRITER")) {
-        message = py.add(py.add("Un CD con el t\xedtulo \"Vida y obra de ", this.note_item.name), "\". Seguramente el ladr\xf3n piensa visitar su lugar de nacimiento.");
+        message = py.add(py.add("Un CD con el t\xedtulo \"Vida y obra de ", this.note_item.get_full_name()), "\". Seguramente el ladr\xf3n piensa visitar su lugar de nacimiento.");
       } else {
         throw new py.Exception(py.add(py.add(py.add("Unknown item type ", this.note_item.type), " for clue "), this.clue.id));
       }
@@ -185,29 +185,29 @@ export class StageClue {
         } else {
           visiting = "visitarlo";
         }
-        message = py.add(py.add(py.add(py.add(py.add(py.add("Un mapa que tiene marcado ", this.note_item.article), " "), this.note_item.name), ". Seguramente el ladr\xf3n piensa "), visiting), ".");
+        message = py.add(py.add(py.add(py.add(py.add(py.add("Un mapa que tiene marcado ", this.note_item.article), " "), this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa "), visiting), ".");
       } else if ((this.note_item.type === "LAGOON")) {
-        message = py.add(py.add("Un mapa que tiene marcada la ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Un mapa que tiene marcada la ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarla.");
       } else if ((this.note_item.type === "RIVER")) {
-        message = py.add(py.add("Un mapa que tiene marcado el ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarlo.");
+        message = py.add(py.add("Un mapa que tiene marcado el ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarlo.");
       } else if ((this.note_item.type === "LOCATION")) {
-        message = py.add(py.add("Un mapa que tiene marcada la localidad de ", this.note_item.name), ". Seguramente el ladr\xf3n piensa visitarla.");
+        message = py.add(py.add("Un mapa que tiene marcada la localidad de ", this.note_item.get_full_name()), ". Seguramente el ladr\xf3n piensa visitarla.");
       } else {
         throw new py.Exception(py.add(py.add(py.add("Unknown item type ", this.note_item.type), " for clue "), this.clue.id));
       }
     } else if ((this.clue.id === "i528")) {
       if ((this.note_item.type === "HILL")) {
-        message = py.add(py.add(py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar ", this.note_item.article), " "), this.note_item.name), ".");
+        message = py.add(py.add(py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar ", this.note_item.article), " "), this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "LAGOON")) {
-        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar la ", this.note_item.name), ".");
+        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar la ", this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "RIVER")) {
-        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar el ", this.note_item.name), ".");
+        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar el ", this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "HISTORY_FACT")) {
-        message = py.add(py.add(py.add(py.add(py.add(py.add("Por lo que dice, el ladr\xf3n piensa visitar el sitio donde ", this.note_item.sentence_start), " "), this.note_item.article), " "), this.note_item.name), ".");
+        message = py.add(py.add(py.add(py.add(py.add(py.add("Por lo que dice, el ladr\xf3n piensa visitar el sitio donde ", this.note_item.sentence_start), " "), this.note_item.article), " "), this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "LOCATION")) {
-        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar la localidad de ", this.note_item.name), ".");
+        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar la localidad de ", this.note_item.get_full_name()), ".");
       } else if ((this.note_item.type === "WRITER")) {
-        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar el lugar de nacimiento de ", this.note_item.name), ".");
+        message = py.add(py.add("Un papel arrugado. Por lo que dice, el ladr\xf3n piensa visitar el lugar de nacimiento de ", this.note_item.get_full_name()), ".");
       } else {
         throw new py.Exception(py.add(py.add(py.add("Unknown item type ", this.note_item.type), " for clue "), this.clue.id));
       }
@@ -226,32 +226,32 @@ export class StageClue {
         verb = "est\xe1 ubicado";
       }
       article = py.add(py.m(py.getitem(article, 0), "upper"), py.slice(article, 1, null));
-      message = py.add(py.add(py.add(py.add(py.add(py.add(py.add(article, " &#c144,22,22!"), this.note_item.name), "&#c! "), verb), " en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+      message = py.add(py.add(py.add(py.add(py.add(py.add(py.add(article, " &#c144,22,22!"), this.note_item.get_full_name()), "&#c! "), verb), " en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
     } else if ((this.note_item.type === "LAGOON")) {
       if ((py.len(this.note_item.list_departments) > 1)) {
-        message = py.add(py.add(py.add(py.add("La &#c144,22,22!", this.note_item.name), " limita con el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+        message = py.add(py.add(py.add(py.add("La &#c144,22,22!", this.note_item.get_full_name()), " limita con el departamento de &#c144,22,22!"), dep.name), "&#c!.");
       } else {
-        message = py.add(py.add(py.add(py.add("La &#c144,22,22!", this.note_item.name), "&#c! est\xe1 ubicada en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+        message = py.add(py.add(py.add(py.add("La &#c144,22,22!", this.note_item.get_full_name()), "&#c! est\xe1 ubicada en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
       }
     } else if ((this.note_item.type === "RIVER")) {
       if ((py.len(this.note_item.list_departments) > 1)) {
-        message = py.add(py.add(py.add(py.add("El &#c144,22,22!", this.note_item.name), "&#c! pasa por el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+        message = py.add(py.add(py.add(py.add("El &#c144,22,22!", this.note_item.get_full_name()), "&#c! pasa por el departamento de &#c144,22,22!"), dep.name), "&#c!.");
       } else {
-        message = py.add(py.add(py.add(py.add("El &#c144,22,22!", this.note_item.name), "&#c! est\xe1 ubicado en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+        message = py.add(py.add(py.add(py.add("El &#c144,22,22!", this.note_item.get_full_name()), "&#c! est\xe1 ubicado en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
       }
     } else if ((this.note_item.type === "LOCATION")) {
-      message = py.add(py.add(py.add(py.add("La localidad de &#c144,22,22!", this.note_item.name), "&#c! est\xe1 situada en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+      message = py.add(py.add(py.add(py.add("La localidad de &#c144,22,22!", this.note_item.get_full_name()), "&#c! est\xe1 situada en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
     } else if ((this.note_item.type === "HISTORY_FACT")) {
       article = this.note_item.article;
       article = py.add(py.m(py.getitem(article, 0), "upper"), py.slice(article, 1, null));
-      message = py.add(py.add(py.add(py.add(py.add(py.add(py.add(article, " &#c144,22,22!"), this.note_item.name), "&#c! "), this.note_item.sentence_start), " en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+      message = py.add(py.add(py.add(py.add(py.add(py.add(py.add(article, " &#c144,22,22!"), this.note_item.get_full_name()), "&#c! "), this.note_item.sentence_start), " en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
     } else if ((this.note_item.type === "WRITER")) {
       if ((this.note_item.sex === "M")) {
         subject = "El escritor ";
       } else {
         subject = "La escritora ";
       }
-      message = py.add(py.add(py.add(py.add(py.add(subject, "&#c144,22,22!"), this.note_item.name), "&#c! naci\xf3 en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
+      message = py.add(py.add(py.add(py.add(py.add(subject, "&#c144,22,22!"), this.note_item.get_full_name()), "&#c! naci\xf3 en el departamento de &#c144,22,22!"), dep.name), "&#c!.");
     } else {
       message = "";
     }

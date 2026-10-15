@@ -20,6 +20,8 @@ const ANIMALS: [string, number, number, number][] = [
   ['guazubirá', MAMMAL, HERBIVORE, WALK], ['chajá', BIRD, HERBIVORE, WALK], ['cardenal amarillo', BIRD, HERBIVORE, FLY],
   ['lagarto overo', REPTILE, CARNIVORE, WALK], ['pez betta', 4, CARNIVORE, SWIM],
   ['gato', MAMMAL, CARNIVORE, WALK], ['perro', MAMMAL, CARNIVORE, WALK], ['loro', BIRD, HERBIVORE, FLY], ['carancho', BIRD, CARNIVORE, FLY],   // (appended: pets are saved by index)
+  ['gallina', BIRD, HERBIVORE, WALK],
+  ['pato', BIRD, HERBIVORE, SWIM],
 ];
 /** sports (name, category, team, ball) */
 const SPORTS: [string, number, boolean, boolean][] = [
@@ -27,6 +29,8 @@ const SPORTS: [string, number, boolean, boolean][] = [
   ['maratón', TERRESTRIAL, false, false], ['ajedrez', TERRESTRIAL, false, false], ['remo', AQUATIC, true, false], ['pesca', AQUATIC, false, false],
   ['equitación', TERRESTRIAL, false, false], ['boxeo', TERRESTRIAL, false, false], ['bochas', TERRESTRIAL, false, true], ['voleibol', TERRESTRIAL, true, true],
   ['surf', AQUATIC, false, false], ['pádel', TERRESTRIAL, true, true], ['handball', TERRESTRIAL, true, true],
+  ['pelota paleta', TERRESTRIAL, false, true],
+  ['dardos', TERRESTRIAL, false, false],   // (appended: sports are saved by index)
 ];
 
 interface NewThief { rumors?: string[]; id: string; sex: number; height: number; hair: number; feature: number; pet: string; sport: string; name: string; nick: string; age: string; desc: string }
@@ -97,6 +101,12 @@ const THIEVES: NewThief[] = [
   { id: 'tribunero', sex: MALE, height: SHORT, hair: GREY_HAIRED, feature: MOLE, pet: 'carancho', sport: 'remo', name: 'Hugo Garra', nick: '"El Tribunero"', age: '50 años',
     desc: 'No se perdió un partido en treinta años; en la tribuna aprendió a cantar fuerte y a desaparecer rápido.\nTodos conocen su bombo y su bufanda, pero nadie lo vio llevarse nada.\nTiene un lunar peludo en la mejilla y dice que lo heredó del bombo.',
     rumors: ['Llevaba una bufanda celeste y blanca.', 'Tocaba un bombo mientras se alejaba.', 'Tenía la voz ronca de tanto cantar.'] },
+  { id: 'milanesero', sex: MALE, height: TALL, hair: BLONDE, feature: GLASSES, pet: 'gallina', sport: 'pelota paleta', name: 'Joaco Piedrablanca', nick: '"El Milanesero"', age: '33 años',
+    desc: 'Vendía milanesas "100% veganas" por delivery y las promocionaba en videos con la cara más seria del mundo.\nCuando un cliente notó que sabían a carne, juró que era "soja con mucha personalidad"; cuando otro notó que no sabían a nada conocido, dijo que era "una receta ancestral".\nHasta hoy nadie sabe de qué estaban hechas, y él insiste en que no era carne... ni nada.',
+    rumors: ['Olía a milanesa recién frita.', 'Juraba que sus milanesas eran 100% veganas.', 'Dicen que nadie sabe de qué estaban hechas.'] },
+  { id: 'cervecero', sex: MALE, height: SHORT, hair: REDHEAD, feature: MOLE, pet: 'pato', sport: 'dardos', name: 'Benito Espuma', nick: '"El Platanero"', age: '45 años',
+    desc: 'Dueño de una cervecería artesanal y fanático de las bananas: siempre con una camisa llena de bananas.\nA algunos clientes les ponía "contenido extra" en la cerveza, y usaba sus botellas para pasar polvo blanco.\nLas burbujas de su Cerveza Jolgorio escondían algo más que gas.',
+    rumors: ['Llevaba una camisa amarilla llena de bananas.', 'Dejó una botella de Cerveza Jolgorio con la tapa abierta.', 'Dicen que algunas cervezas tenían un polvo blanco debajo de la espuma.'] },
 ];
 
 /** adds the new pets, sports and thieves to the lists of the datastore (the thieves whose pictures exist) */

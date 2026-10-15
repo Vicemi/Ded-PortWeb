@@ -23,5 +23,11 @@ export const LUPA_OBJECTS: { id: string; name: string; w: number; h: number }[] 
   { id: 'i620', name: 'radio a válvulas', w: 26, h: 26 },
   { id: 'i621', name: 'auricular y celular', w: 24, h: 23 },
   { id: 'i622', name: 'taza de café', w: 14, h: 18 },
-  { id: 'i623', name: 'mochila con la XO', w: 22, h: 24 }
+  { id: 'i623', name: 'mochila con la XO', w: 22, h: 24 },
+  { id: 'i624', name: 'empanada', w: 20, h: 13 },
+  { id: 'i625', name: 'martillo azul', w: 24, h: 20 },
+  { id: 'i626', name: 'bolsa de leche', w: 14, h: 20 },
+  { id: 'i627', name: 'torta frita', w: 18, h: 14 },
+  { id: 'i628', name: 'chancleta suelta', w: 20, h: 9 },
+  { id: 'i629', name: 'paraguas roto', w: 26, h: 12 }
 ];

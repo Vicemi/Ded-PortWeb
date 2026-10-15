@@ -3,7 +3,8 @@
   p2s01i<NNN>.png    the small object (what the room shows)           p2s01i<NNN>l.png   the same at twice the size (what the magnifier shows)
 
 The art is graded to sit next to the original items: the colours are desaturated and darkened to the level of the originals (measured on them), the outline is
-made dark and 1 px thick (2 px in the large one), a little grain and a warm shadow are added. usage: python tools/make_objects.py <sheet.jpg>
+made dark and 1 px thick (2 px in the large one), a little grain and a warm shadow are added. usage: python tools/make_objects.py <sheet.jpg>     the sheet (i600-i623) and also the single files art_inbox/obj_<id>.png that exist
+       python tools/make_objects.py                 only the single files art_inbox/obj_<id>.png (ids i624 and up: one object on a flat green background per file)
 The output goes to tools/extra_images; tools/objects.json has the ids, names and sizes (read by the game and by build_assets.py).
 """
 import io, json, os, sys
@@ -22,6 +23,14 @@ OBJECTS = [
     ('i612', 'botella de tannat', 26), ('i613', 'copa de vino', 20), ('i614', 'cámara de fotos', 24), ('i615', 'telescopio', 28), ('i616', 'libro de poemas', 22), ('i617', 'llavero', 22),
     ('i618', 'lupa vieja', 24), ('i619', 'reloj de bolsillo', 22), ('i620', 'radio a válvulas', 26), ('i621', 'auricular y celular', 24), ('i622', 'taza de café', 18), ('i623', 'mochila con la XO', 24),
 ]
+# the first 24 come from the sheet (the order of the sheet); the rest are single files art_inbox/obj_<id>.png (append new ones here, then in lupa_clues.OBJECT_JOKES)
+SHEET = len(OBJECTS)
+OBJECTS += [
+    ('i624', 'empanada', 20), ('i625', 'martillo azul', 24), ('i626', 'bolsa de leche', 20), ('i627', 'torta frita', 18), ('i628', 'chancleta suelta', 20), ('i629', 'paraguas roto', 26),
+]
+# size (w, h) of the small picture of the objects that have no art yet (a guess: the real one is written when the picture is made)
+GUESS = {'i624': (20, 13), 'i625': (24, 20), 'i626': (14, 20), 'i627': (18, 14), 'i628': (20, 9), 'i629': (26, 12)}
+INBOX = os.path.join(ROOT, 'art_inbox')
 
 
 def original_stats():
@@ -57,33 +66,48 @@ def cut_cells(sheet):
     boxes.sort(key=lambda b: (int(b[1] / (H / 4)), b[2]))
     if len(boxes) != 24:
         raise SystemExit('expected 24 objects, found %d' % len(boxes))
-    cells = []
-    for sl, _, _ in boxes:
-        sub = a[sl].astype(np.uint8)
-        subg = g[sl]
-        # background = the green connected to the border of the crop (so green inside an object survives)
-        lab2, _ = ndimage.label(subg)
-        border = set(np.unique(np.concatenate([lab2[0], lab2[-1], lab2[:, 0], lab2[:, -1]]))) - {0}
-        bg = np.isin(lab2, list(border))
-        # holes of the drawing (the inside of the lasso, the gap between keys...): green of the key colour that is not connected to the border
-        pure = (sub[:, :, 1] > 200) & (sub[:, :, 0] < 90) & (sub[:, :, 2] < 90)
-        labp, npure = ndimage.label(pure)
-        for i in range(1, npure + 1):
-            comp = labp == i
-            if comp.sum() >= 12:
-                bg |= ndimage.binary_dilation(comp, iterations=1)
-        alpha = (~bg).astype(np.uint8) * 255
-        alpha = cv2.GaussianBlur(alpha, (3, 3), 0)
-        # remove the green fringe of the antialiased edge
-        rgb = sub.copy().astype(np.float32)
-        edge = (alpha > 0) & (alpha < 255)
-        gch = rgb[:, :, 1]
-        lim = np.maximum(rgb[:, :, 0], rgb[:, :, 2])
-        rgb[:, :, 1] = np.where(edge, np.minimum(gch, lim), gch)
-        im = np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), alpha])
-        ys, xs = np.where(alpha > 20)
-        cells.append(Image.fromarray(im[ys.min():ys.max() + 1, xs.min():xs.max() + 1], 'RGBA'))
-    return cells
+    return [key_cell(a, g, sl) for sl, _, _ in boxes]
+
+
+def key_cell(a, g, sl):
+    """one object (RGBA, cropped to the drawing) from the region `sl` of the RGB array `a`; `g` is the mask of the key green of the whole picture"""
+    sub = a[sl].astype(np.uint8)
+    subg = g[sl]
+    # background = the green connected to the border of the crop (so green inside an object survives)
+    lab2, _ = ndimage.label(subg)
+    border = set(np.unique(np.concatenate([lab2[0], lab2[-1], lab2[:, 0], lab2[:, -1]]))) - {0}
+    bg = np.isin(lab2, list(border))
+    # holes of the drawing (the inside of the lasso, the gap between keys...): green of the key colour that is not connected to the border
+    pure = (sub[:, :, 1] > 200) & (sub[:, :, 0] < 90) & (sub[:, :, 2] < 90)
+    labp, npure = ndimage.label(pure)
+    for i in range(1, npure + 1):
+        comp = labp == i
+        if comp.sum() >= 12:
+            bg |= ndimage.binary_dilation(comp, iterations=1)
+    alpha = (~bg).astype(np.uint8) * 255
+    alpha = cv2.GaussianBlur(alpha, (3, 3), 0)
+    # remove the green fringe of the antialiased edge
+    rgb = sub.copy().astype(np.float32)
+    edge = (alpha > 0) & (alpha < 255)
+    gch = rgb[:, :, 1]
+    lim = np.maximum(rgb[:, :, 0], rgb[:, :, 2])
+    rgb[:, :, 1] = np.where(edge, np.minimum(gch, lim), gch)
+    im = np.dstack([np.clip(rgb, 0, 255).astype(np.uint8), alpha])
+    ys, xs = np.where(alpha > 20)
+    return Image.fromarray(im[ys.min():ys.max() + 1, xs.min():xs.max() + 1], 'RGBA')
+
+
+def cut_single(path):
+    """the one object of a file (flat green background), as an RGBA image cropped to the drawing"""
+    a = np.array(Image.open(path).convert('RGB')).astype(np.int16)
+    g = (a[:, :, 1] > 150) & (a[:, :, 0] < 110) & (a[:, :, 2] < 110)
+    fg = ndimage.binary_closing(~g, iterations=3)
+    ys, xs = np.where(ndimage.binary_opening(fg, iterations=2))
+    if len(ys) == 0:
+        raise SystemExit('no drawing found in ' + path)
+    pad = 4
+    sl = (slice(max(0, ys.min() - pad), ys.max() + 1 + pad), slice(max(0, xs.min() - pad), xs.max() + 1 + pad))
+    return key_cell(a, g, sl)
 
 
 def grade(im, stats, scale):
@@ -121,13 +145,27 @@ def grade(im, stats, scale):
 
 
 def main():
-    sheet = Image.open(sys.argv[1])
-    cells = cut_cells(sheet)
     stats = original_stats()
     print('original items: S %.0f V %.0f dark %.0f' % stats)
     os.makedirs(OUT, exist_ok=True)
-    meta = []
-    for (oid, name, side), im in zip(OBJECTS, cells):
+    made = []   # (id, name, side, picture) of this run
+    if len(sys.argv) > 1:
+        cells = cut_cells(Image.open(sys.argv[1]))
+        made += [(o[0], o[1], o[2], im) for o, im in zip(OBJECTS[:SHEET], cells)]
+    for oid, name, side in OBJECTS[SHEET:]:
+        f = os.path.join(INBOX, 'obj_%s.png' % oid)
+        if os.path.exists(f):
+            made.append((oid, name, side, cut_single(f)))
+    if not made:
+        print('no art found (sheet or art_inbox/obj_<id>.png): only the lists are regenerated')
+    # sizes of the pictures that exist (tools/objects.json keeps the ones of the earlier runs), a guess for the objects that have no art yet
+    prev = {}
+    try:
+        prev = {o['id']: o for o in json.load(open(os.path.join(ROOT, 'tools', 'objects.json'), encoding='utf-8'))}
+    except FileNotFoundError:
+        pass
+    sizes = {oid: (o['w'], o['h']) for oid, o in prev.items()}
+    for oid, name, side, im in made:
         r = side / max(im.size)
         w, h = max(1, round(im.width * r)), max(1, round(im.height * r))
         for scale, suffix in ((1, ''), (2, 'l')):
@@ -139,19 +177,25 @@ def main():
             al = np.where(al > 140, 255, np.where(al > 60, 150, 0)).astype(np.uint8)
             arr = np.array(g); arr[:, :, 3] = al
             Image.fromarray(arr, 'RGBA').save(os.path.join(OUT, 'p2s01%s%s.png' % (oid, suffix)))
-        meta.append({'id': oid, 'name': name, 'w': w, 'h': h})
+        sizes[oid] = (w, h)
+        print('made', oid, name, w, 'x', h)
+    # the game lists every object (it only uses the ones whose pictures are in the image packs)
+    meta = [{'id': oid, 'name': name, 'w': sizes.get(oid, GUESS.get(oid, (side, side)))[0], 'h': sizes.get(oid, GUESS.get(oid, (side, side)))[1]} for oid, name, side in OBJECTS]
     json.dump(meta, open(os.path.join(ROOT, 'tools', 'objects.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     rows = (',' + chr(10)).join("  { id: '%s', name: '%s', w: %d, h: %d }" % (o['id'], o['name'], o['w'], o['h']) for o in meta)
     head = "// generated by tools/make_objects.py (the new objects of the magnifying glass game)" + chr(10) + "export const LUPA_OBJECTS: { id: string; name: string; w: number; h: number }[] = [" + chr(10)
     open(os.path.join(ROOT, 'src', 'game', 'content', 'lupa_objects_data.ts'), 'w', encoding='utf-8').write(head + rows + chr(10) + "];" + chr(10))
+    if not made:
+        return
     # a contact sheet to look at the result next to the original items
-    S = Image.new('RGBA', (6 * 130, 4 * 130), (110, 110, 110, 255))
-    for i, ((oid, _, _), _) in enumerate(zip(OBJECTS, cells)):
+    S = Image.new('RGBA', (6 * 130, ((len(made) + 5) // 6) * 130), (110, 110, 110, 255))
+    for i, (oid, _, _, _) in enumerate(made):
         a = Image.open(os.path.join(OUT, 'p2s01%sl.png' % oid)); b = Image.open(os.path.join(OUT, 'p2s01%s.png' % oid))
         x, y = (i % 6) * 130, (i // 6) * 130
         S.alpha_composite(a.resize((a.width * 2, a.height * 2), Image.NEAREST), (x + 4, y + 2))
         S.alpha_composite(b.resize((b.width * 2, b.height * 2), Image.NEAREST), (x + 4, y + 80))
-    S.save(os.path.join(ROOT, 'research', 'shots', 'new_objects.png'))
+    os.makedirs(os.path.join(ROOT, 'research', 'shots'), exist_ok=True)
+    S.save(os.path.join(ROOT, 'research', 'shots', 'new_objects.png' if len(sys.argv) > 1 else 'new_objects_singles.png'))
 
 
 if __name__ == '__main__':

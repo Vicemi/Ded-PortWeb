@@ -119,6 +119,16 @@ export class Map extends Item {
       for (d of py.iter(posible_deps)) {
         py.getitem(this.department_data, py.m(this.stage.game.datastore.list_departments, "index", d)).inactive = false;
       }
+      // Always selectable: the department you stand in, the one of the first lair (it is drawn as active), and every department a clue note names
+      // (a river can cross several): otherwise a department the clue points to could be greyed out.
+      const always = [case_.last_department_visited, py.getitem(case_.list_departments, 0)];
+      for (const sc of py.iter(py.slice(case_.list_stage_clues ?? [], null, 3))) {
+        for (const nd of sc.note_item.get_departments()) always.push(nd);
+      }
+      for (const dd of always) {
+        const md = this.department_data.find((x: any) => x.department === dd);
+        if (md) md.inactive = false;
+      }
       this.set_last_visited_departments();
     }
     return null;

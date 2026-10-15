@@ -146,6 +146,8 @@ export function extraPictures(Picture: any): any[] {
 
 // ---------------------------------------------------------------------------------------------------------------------------------- new kinds of witness
 import { NEW_WITNESSES } from '../minigames/newgames';
+import { EXTRA_WITNESSES } from '../minigames/extra';
+Object.assign(NEW_WITNESSES, EXTRA_WITNESSES);   // Matero (mate.ts) and Corredora (rambla.ts): same registry, their own files
 /** is it one of the new witnesses of the investigation (they have their own minigame)? */
 export function isNewWitness(name: string): boolean { return name in NEW_WITNESSES; }
 /** the minigame of a new witness */

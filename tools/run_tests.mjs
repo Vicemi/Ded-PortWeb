@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
-const scenarios = ['reload', 'magnifier', 'thieves', 'witnessview', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'hub', 'phase2', 'lupa_objects', 'lupa_clues', 'twist', 'witness_new', 'logros', 'credits', 'newgames@NG=flags', 'newgames@NG=candombe', 'newgames@NG=trivia', 'racer', 'racer4', 'racer4', 'endgame', 'save_safety', 'endgame_persist', 'oldsaves', 'detectives', 'minigames', 'monkey'];  // newgame is repeated: every run generates a random case
+const scenarios = ['reload', 'magnifier', 'thieves', 'witnessview', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'newgame', 'hub', 'phase2', 'lupa_objects', 'lupa_clues', 'grace', 'twist', 'twist_review', 'clue_notes', 'notes_many', 'witness_new', 'logros', 'credits', 'newgames@NG=flags', 'newgames@NG=candombe', 'candombe', 'candombe_sync', 'newgames@NG=trivia', 'arcade@NG=mate', 'arcade@NG=rambla+route', 'racer', 'racer4', 'racer4', 'endgame', 'save_safety', 'autosave_checkpoints', 'input_recovery', 'endgame_persist', 'oldsaves', 'detectives', 'minigames', 'minigame_art', 'monkey', 'notes_audit', 'map_dept'];  // newgame is repeated: every run generates a random case
 let failed = 0;
 for (const entry of scenarios) {
   const [s, envs] = entry.split('@');           // 'name@VAR=value': the scenario with an environment variable

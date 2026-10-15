@@ -63,6 +63,8 @@ export const ACHIEVEMENTS: Ach[] = [
   { id: 'influencer', title: 'Sin Filtro', desc: 'Atrapaste a Florencia Rambla, "La Influencer": esta foto no va a las redes.', glyph: 'I', tier: 1, check: (p) => caught(p, 'Florencia Rambla') },
   { id: 'cripto', title: 'Caída del Mercado', desc: 'Atrapaste a Crespo Bitcoin, "El Cripto": la suba nunca llegó.', glyph: 'B', tier: 0, check: (p) => caught(p, 'Crespo Bitcoin') },
   { id: 'tribunero', title: 'Tarjeta Roja', desc: 'Atrapaste a Hugo Garra, "El Tribunero": expulsado de la cancha.', glyph: 'T', tier: 1, check: (p) => caught(p, 'Hugo Garra') },
+  { id: 'milanesero', title: 'Milanesa Fantasma', desc: 'Atrapaste a Joaco Piedrablanca, "El Milanesero": nadie sabe de qué eran sus milanesas "veganas".', glyph: 'M', tier: 1, check: (p) => caught(p, 'Joaco Piedrablanca') },
+  { id: 'cervecero', title: 'Espuma Turbia', desc: 'Atrapaste a Benito Espuma, "El Platanero": su cerveza escondía algo más que gas.', glyph: 'P', tier: 1, check: (p) => caught(p, 'Benito Espuma') },
 ];
 
 const TIERS = [

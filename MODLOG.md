@@ -57,3 +57,9 @@ Diario del port web de *División Especial de Detectives* (Trojan Chicken, activ
 - **Autosave** (`src/game/autosave.ts`): al ocultar/cerrar la página guarda el caso abierto si hay una fase en pantalla y no empezó una pantalla final (`stage.ending_started`). Las medallas/puntos/logros del caso ganado se guardan al mostrar la pantalla final (`EndGame.add_medal`).
 - **Pruebas**: `save_safety`, `endgame_persist`, `oldsaves` (archivos de `tools/scenarios/fixtures/`, formato 1.0.x), `detectives`, `minigames`.
 - **Escritorio (Rust)**: `saves.rs` no reemplaza una partida con archivos por una sin archivos y conserva `.bak` solo cuando el contenido cambia.
+
+## Pulido visual de los minijuegos (1.1.0)
+- **Solo presentación** (las reglas y la dificultad de los 4 clásicos no cambian). `src/game/minigames/fx.ts` junta lo común: easing, texto con las fuentes del juego (son atlas de bitmaps: `textCanvas`/`gtext` cachean cada texto), pool de partículas sin alocar por cuadro, textos flotantes, sacudida/destello, estrellas, y `FxOverlay` (una superficie 600x450 sobre el minijuego; un `ItemImage` que no recibe clics).
+- **Frame cache**: una superficie solo marca el cuadro como cambiado cuando se le pide `.ctx` (sube `ver`). `FxOverlay` y los tableros de Banderas/Cartas solo tocan su canvas mientras algo se mueve, así que un minijuego quieto se sigue saltando (`tools/digest_check.mjs newgames@NG=flags minigames` da `same`).
+- **Banderas y Cartas** (`newgames.ts`) dibujan todo el tablero en un canvas repintado por un temporizador (`new_minigame_anim`, 33 ms, se detiene solo si el minijuego se cierra); la zona táctil incluye la mitad del hueco entre tarjetas. Los clásicos usan `Minigame.fx_attach()` (en `stages/minigame.ts`, al final de su `set_up_minigame`) y `show_result_stars()` en la pantalla de puntaje.
+- Escenarios para ver los efectos: `tools/scenarios/mg_states.mjs` (NG=flags|trivia) y `mg_orig_states.mjs` (MG=bricklayer|gardener|librarian|shoptender).

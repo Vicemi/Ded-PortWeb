@@ -16,6 +16,7 @@ import * as endgame from './endgame';
 import * as folder from './folder';
 import { gc } from '../../runtime/prelude';
 import * as help from './help';
+import * as grace from '../content/grace';
 const mainmenu: any = py.lazy("game/stages/mainmenu");
 import * as map from './map';
 import * as merits from './merits';
@@ -583,6 +584,11 @@ export class Phase0Stage extends StageIso {
       this.render();
       this.click_sound.play();
       this.notes.close_notes();
+    }
+    // the arrow keys turn the pages of the notes book
+    if (py.eq(e.type, KEYDOWN) && (py.eq(e.key, pygame.K_LEFT) || py.eq(e.key, pygame.K_RIGHT))) {
+      const b = py.eq(e.key, pygame.K_LEFT) ? this.notes.previous_button : this.notes.next_button;
+      if (b.get_visible()) this.notes.button_click(b, null);
     }
     return null;
   }
@@ -1191,6 +1197,13 @@ export class Phase0Stage extends StageIso {
       } else {
         this.checking_ending = false;
         if ((this.game.datastore.user_character_progress.case.time_spend >= this.game.datastore.user_character_progress.case.time_limit)) {
+          // very advanced players get one more night (content/grace.ts)
+          if (!py.truthy(this._Phase0Stage__ending_visible) && grace.grant(this.game.datastore.user_character_progress.case)) {
+            this.time_limit = this.game.datastore.user_character_progress.case.time_limit;
+            grace.showDialog(this);
+            this.save_progress(false);
+            return null;
+          }
           if (!py.truthy(this._Phase0Stage__ending_visible)) {
             this._Phase0Stage__ending_visible = true;
             this.show_time_up_end_game();

@@ -66,6 +66,7 @@ export class Stage {
   private closed_handler: ((stage: Stage) => void) | null = null;
   private last_click: number | null = null;
   private locks = 0;
+  private locked_since = 0;
   private background: Image_ | null = null;
   private background_color: readonly number[] = [0, 0, 0];
   private timers: TimerData[] = [];
@@ -206,7 +207,7 @@ export class Stage {
   }
 
   lock_ui(): void { this.locks++; this.mouse_update = true; }
-  unlock_ui(): void { this.locks--; this.mouse_update = true; }
+  unlock_ui(): void { if (this.locks > 0) this.locks--; this.mouse_update = true; }
   update_mouse(): void { this.mouse_update = true; }
 
   // ------------------------------------------------------------------------------------------------------------------------ hit tests
@@ -419,7 +420,14 @@ export class Stage {
     else event_handler = this.dialogs[this.dialogs.length - 1][1];
     const mouse_rel = [0, 0];
     let mouse_motion_args: [number, number, [number, number, number], number, number] | null = null;
+    if (this.locks > 0) {
+      // a lock that is never released (an exception in an animation) would leave the interface dead for good
+      const now = time.get_ticks();
+      if (this.locked_since === 0) this.locked_since = now;
+      else if (now - this.locked_since > 10000) { console.warn('stage: interface lock stuck, releasing'); this.locks = 0; this.locked_since = 0; }
+    } else this.locked_since = 0;
     for (const ev of pgevent.get()) {
+     try {
       let processed = false;
       if (ev.type === MOUSEMOTION) {
         mouse_rel[0] += ev.rel![0]; mouse_rel[1] += ev.rel![1];
@@ -462,6 +470,7 @@ export class Stage {
       }
       if (!processed && event_handler !== null) event_handler(ev);
       if (!processed) this.process_mouse_keys(ev);
+     } catch (err) { console.error('stage: error in an event handler (ignored, the next events still run):', err); if ((globalThis as { __DED_STRICT?: boolean }).__DED_STRICT) throw err; }
     }
     if (mouse_motion_args) this.on_mouse_move(...mouse_motion_args);
     if (this.mouse_update) { this.mouse_update = false; this.render(true); } else this.render(false);

@@ -54,7 +54,7 @@ def cut(path):
 
 SINGLES = {  # art_inbox/medal_<name>.png (one medal on green) -> achievement id
     'trampa_incriminado': 'incriminado', 'trampa_falso_criminal': 'falso_criminal', 'trampa_ojo_clinico': 'ojo_clinico', 'trampa_tres_trampas': 'tres_trampas',
-    **{k: k for k in ('humanoide', 'churrito', 'streamer', 'cumbia', 'delivery', 'influencer', 'cripto', 'tribunero')},
+    **{k: k for k in ('humanoide', 'churrito', 'streamer', 'cumbia', 'delivery', 'influencer', 'cripto', 'tribunero', 'milanesero', 'cervecero')},
 }
 
 

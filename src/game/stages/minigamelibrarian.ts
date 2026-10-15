@@ -17,6 +17,7 @@ const randint = py.random.randint;
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
 import * as $self from './minigamelibrarian';
+import { heat_rgb } from '../minigames/fx';
 
 export class MinigameLibrarian extends Minigame {
   constructor(stage: any, phase1content: any, witness: any) {
@@ -108,6 +109,7 @@ export class MinigameLibrarian extends Minigame {
     this.rightmark_image = assets.load_image("p1_minigame_librarian_rightmark.png");
     this.result_layer = new Layer();
     this.stage.add_layer(this.result_layer);
+    this.fx_attach();
     return null;
   }
   set_up_timer(): any {
@@ -119,6 +121,7 @@ export class MinigameLibrarian extends Minigame {
     timer_ringer_image = assets.load_image("p1_minigame_shoptender_timer_ringer_001.png");
     timer_backbar_item = new ItemImage(92, 111, timer_backbar_image, null);
     this.timer_line_item = new ItemRect(97, 118, 11, 128, null, 0, "", [0, 0, 0], [236, 14, 36]);
+    this.timer_line_item.set_background(heat_rgb(1));
     this.adjustement_value = py.fdiv(py.float(this.timer_line_item.get_height()), this.timer_complete_time);
     this.timer_topbar_item = new ItemImage(94, 104, timer_topbar_image, null);
     timer_barshadow_item = new ItemImage(90, 110, timer_barshadow_image, null);
@@ -214,7 +217,10 @@ export class MinigameLibrarian extends Minigame {
     this.timer_topbar_item.set_top(py.add(this.timer_topbar_item.get_top(), 1));
     this.timer_line_item.set_top(py.add(this.timer_line_item.get_top(), 1));
     this.timer_line_item.set_height((this.timer_line_item.get_height() - 1));
+    this.timer_line_item.set_background(heat_rgb(this.timer_line_item.get_height() / 128));   // presentation: green, amber, red as the time goes
+    if (this.timer_line_item.get_height() < 26 && this.timer_line_item.get_height() > 1) this.fx.flash('255,40,40', 0.3, 0.14);
     if ((this.timer_line_item.get_height() === 1)) {
+      this.fx.shake(5, 0.7);
       this.stop_minigame(false);
       this.stop_minigame_music(0);
       this.start_bell_animation();
@@ -591,6 +597,8 @@ export class MinigameLibrarian extends Minigame {
       if (((word_to_add != null) && !py.contains(this.correct_word_list, word_to_add))) {
         this.add_correct_word(word_to_add);
         this.start_result_animation(true);
+        this.fx.good(300, [289, 312, 332, 352, 375][py.min(4, this.correct_words - 1)] + 12, "+" + py.len(word_to_add));
+        if (this.correct_words >= 5) this.fx.confetti(290, 200, 50);
         this.stage.render();
         this.correct_choice.play();
         this.check_for_minigame_finished();
@@ -599,6 +607,8 @@ export class MinigameLibrarian extends Minigame {
           this.wrong_words = this.wrong_words + 1;
         }
         this.start_result_animation(false);
+        this.fx.shakeItems(this.typed_letter_items);
+        this.fx.bad(290, 215, word_to_add != null ? "Repetida" : "No existe", 4);
         this.stage.render();
         this.incorrect_choice.play();
       }

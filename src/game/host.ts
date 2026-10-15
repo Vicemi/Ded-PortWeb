@@ -2,10 +2,11 @@
 // 40 frames per second loop.
 import { initAssets } from '../engine/assets';
 import type { Game } from '../engine/engine';
-import { ACTIVEEVENT, KEYDOWN, KEYUP, K, KMOD_LALT, KMOD_LCTRL, KMOD_LSHIFT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, event, input, setClock, time } from '../engine/pygame';
+import { KEYDOWN, KEYUP, KMOD_LALT, KMOD_LCTRL, KMOD_LSHIFT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, event, input, setClock, time } from '../engine/pygame';
 import { mixer } from '../engine/sounds';
 import { restoreUserFiles, userFiles, validUserFile } from '../runtime/py';
-import { blockAutosave, flushProgress } from './autosave';
+import { Autosaver, blockAutosave, flushProgress } from './autosave';
+import { KeyTracker, Watchdog, acceptsKey, releaseAllInput } from './inputguard';
 import { ItemText } from '../engine/items';
 import { createGame } from './main';
 
@@ -31,19 +32,9 @@ export interface Controller {
   importSave(text: string): number;
   /** saves the open case now (the page is being hidden / closed) */
   flush(): void;
-  state: { loaded: boolean; progress: number; quit: boolean; error: string | null; racing: boolean; touch: boolean; typing: boolean };
-}
-
-const KEY_NAMES: Record<string, number> = {
-  Enter: K.RETURN, Escape: K.ESCAPE, Backspace: K.BACKSPACE, Tab: K.TAB, Delete: K.DELETE, ArrowUp: K.UP, ArrowDown: K.DOWN, ArrowLeft: K.LEFT, ArrowRight: K.RIGHT,
-  Home: K.HOME, End: K.END, PageUp: K.PAGEUP, PageDown: K.PAGEDOWN, ' ': K.SPACE, F10: K.F10,
-};
-
-function pygameKey(e: KeyboardEvent): number {
-  if (/^Numpad\d$/.test(e.code)) return K.KP0 + Number(e.code[6]);
-  if (e.key in KEY_NAMES) return KEY_NAMES[e.key];
-  if (e.key.length === 1) return e.key.toLowerCase().charCodeAt(0);
-  return 0;
+  /** gets the input back after a stall: releases every key, refocuses the canvas, restarts the loop */
+  recover(why: string): void;
+  state: { loaded: boolean; progress: number; quit: boolean; error: string | null; racing: boolean; touch: boolean; typing: boolean; /** counts the checkpoint saves (the page flashes its "guardado" mark when it grows) */ saved: number };
 }
 
 function modifiers(e: KeyboardEvent): number {
@@ -51,13 +42,23 @@ function modifiers(e: KeyboardEvent): number {
 }
 
 export function startHost(canvas: HTMLCanvasElement, assetBase: string): Controller {
-  const state = { loaded: false, progress: 0, quit: false, error: null as string | null, racing: false, touch: false, typing: false };
+  const state = { loaded: false, progress: 0, quit: false, error: null as string | null, racing: false, touch: false, typing: false, saved: 0 };
   let virtual = false;
   let vnow = 0;
   let raf = 0;
   let stopped = false;
   let last = 0;
   let lastPos: [number, number] = [0, 0];
+  // every listener on window / document is removed by stop() (a remounted page, e.g. React StrictMode, would otherwise double every key)
+  const cleanups: (() => void)[] = [];
+  const on = <T extends Event>(t: EventTarget, type: string, fn: (e: T) => void): void => {
+    // one failing handler must never break the others: log and carry on
+    const safe = (e: Event): void => { try { fn(e as T); } catch (err) { console.error(`host: ${type} handler failed:`, err); } };
+    t.addEventListener(type, safe); cleanups.push(() => t.removeEventListener(type, safe));
+  };
+  const tracker = new KeyTracker();
+  let autosaver: Autosaver | null = null;
+  const watchdog = new Watchdog(() => performance.now());
 
   const send = (type: 'move' | 'down' | 'up', x: number, y: number, button: number): void => {
     x = Math.max(0, Math.min(599, Math.floor(x))); y = Math.max(0, Math.min(449, Math.floor(y)));
@@ -109,7 +110,9 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
       return Object.keys(files).length;
     },
     flush() { flushProgress(ctl.game); },
-    stop() { stopped = true; cancelAnimationFrame(raf); },
+    /** forget held keys, put the keyboard focus back on the game, restart the loop (the watchdog and the focus / blur handlers use it) */
+    recover(why) { recoverInput(why); },
+    stop() { stopped = true; cancelAnimationFrame(raf); clearInterval(wdTimer); for (const c of cleanups.splice(0)) c(); },
   };
 
   const toGame = (e: MouseEvent): [number, number] => {
@@ -136,7 +139,7 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
   // two fingers = pinch zoom of the page (DedGame.tsx): the game does not see those touches
   const fingers = new Set<number>();
   let gesture = false;
-  canvas.addEventListener('pointerdown', (e) => {
+  on<PointerEvent>(canvas, 'pointerdown', (e) => {
     if (e.pointerType === 'touch') {
       fingers.add(e.pointerId);
       if (fingers.size > 1) {
@@ -156,7 +159,7 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     send('down', x, y, e.button);
     if (state.touch && ctl.game) { try { ctl.game.tick(); } catch (er) { console.error(er); } }
   });
-  canvas.addEventListener('pointermove', (e) => { if (gesture || (e.pointerType === 'touch' && fingers.size > 1)) return; const [x, y] = toGame(e); send('move', x, y, -1); });
+  on<PointerEvent>(canvas, 'pointermove', (e) => { if (gesture || (e.pointerType === 'touch' && fingers.size > 1)) return; const [x, y] = toGame(e); send('move', x, y, -1); });
   let hoverReset = false;
   const afterTick = (): void => {
     if (!hoverReset) return;
@@ -182,32 +185,64 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     syncKeyboard();
     afterTick();
   };
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
-  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  on<PointerEvent>(canvas, 'pointerup', release);
+  on<PointerEvent>(canvas, 'pointercancel', release);
+  on(canvas, 'contextmenu', (e) => e.preventDefault());
 
-  const onKey = (down: boolean) => (e: KeyboardEvent): void => {
-    const t = e.target;
-    if (t !== canvas && !(t instanceof HTMLElement && t.dataset.gameInput)) return;
-    if (down) mixer.unlock();
+  const mods = (e: KeyboardEvent): number => modifiers(e);
+  on<KeyboardEvent>(window, 'keydown', (e) => {
+    if (!acceptsKey(e.target, e.key)) return;
+    mixer.unlock();
     if ((e.ctrlKey || e.metaKey) && !e.altKey) return; // browser shortcuts
-    const code = pygameKey(e);
+    const code = tracker.press(e);
     if (code === 0) return;
     e.preventDefault();
-    if (down && e.repeat) return;
-    const uni = e.key.length === 1 ? e.key : '';
-    sendKey(code, down, down ? uni : '', modifiers(e));
-  };
-  window.addEventListener('keydown', onKey(true));
-  window.addEventListener('keyup', onKey(false));
-  window.addEventListener('blur', () => { input.pressed.clear(); });
+    if (e.repeat) return;
+    sendKey(code, true, e.key.length === 1 ? e.key : '', mods(e));
+  });
+  on<KeyboardEvent>(window, 'keyup', (e) => {
+    // a key-up is always delivered when the game believes the key is down (Ctrl pressed in between, the focus moved, Shift released first...)
+    const code = tracker.release(e);
+    if (code === 0) return;
+    const held = input.pressed.has(code);
+    if (!held && !acceptsKey(e.target, e.key)) return;
+    if (acceptsKey(e.target, e.key)) e.preventDefault();
+    sendKey(code, false, '', mods(e));
+  });
+  // the key-ups of a window that lost the focus never arrive: let go of everything (the game gets the key-ups) and take the focus back when it returns
+  const letGo = (): void => { tracker.clear(); releaseAllInput(); };
+  on(window, 'blur', letGo);
+  on(window, 'focus', () => { if (!textInput || document.activeElement !== textInput) canvas.focus({ preventScroll: true }); });
+  // a click on a toolbar button / a closed dialog leaves the focus on that button: give it back to the game
+  on<PointerEvent>(window, 'pointerup', (e) => {
+    const t = e.target as HTMLElement | null;
+    if (t && t !== canvas && t.tagName !== 'INPUT' && !t.dataset?.gameInput) setTimeout(() => { if (!stopped) canvas.focus({ preventScroll: true }); }, 0);
+  });
   // the page can be killed right after it is hidden (phone app switch): save what happened since the last checkpoint
-  const onHide = (): void => { if (document.visibilityState === 'hidden') ctl.flush(); };
-  document.addEventListener('visibilitychange', onHide);
-  window.addEventListener('pagehide', () => ctl.flush());
-  window.addEventListener('beforeunload', () => ctl.flush());
-  document.addEventListener('freeze', () => ctl.flush());
+  on(document, 'visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { letGo(); ctl.flush(); } else { watchdog.tickSeen(); canvas.focus({ preventScroll: true }); }
+  });
+  on(window, 'pagehide', () => { letGo(); ctl.flush(); });
+  on(window, 'beforeunload', () => ctl.flush());
+  on(document, 'freeze', () => ctl.flush());
 
+  const recoverInput = (why: string): void => {
+    console.warn('host: input recovery (' + why + ')');
+    tracker.clear(); releaseAllInput();
+    event.clear();
+    hoverReset = false; fingers.clear(); gesture = false;
+    try { canvas.focus({ preventScroll: true }); } catch { /* none */ }
+    if (!stopped && !virtual) { cancelAnimationFrame(raf); last = time.get_ticks(); raf = requestAnimationFrame(loop); }
+    watchdog.tickSeen();
+  };
+  // watchdog: no tick for 2 s while visible, or an event nobody reads for 2 s -> recover, silently
+  const wdTimer = window.setInterval(() => {
+    if (stopped || virtual || !ctl.game) return;
+    const v = watchdog.check(document.visibilityState === 'visible');
+    if (v !== 'ok') recoverInput(v);
+  }, 1000);
+
+  let failing = 0;   // consecutive ticks that threw: only a game that is really broken (5 s) shows the error screen
   const loop = (): void => {
     if (stopped) return;
     raf = requestAnimationFrame(loop);
@@ -215,8 +250,9 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
     const now = time.get_ticks();
     if (now - last >= 1000 / FPS - 2) {
       last = now;
-      try { ctl.game.tick(); } catch (e) { console.error(e); state.error = String(e); }
-      afterTick();
+      watchdog.tickSeen();
+      try { ctl.game.tick(); failing = 0; } catch (e) { console.error(e); if (++failing > 200) state.error = String(e); }
+      try { afterTick(); autosaver?.poll(); state.saved = autosaver?.saves ?? 0; } catch (e) { console.error('host: autosave/afterTick failed:', e); }
       const sn = (ctl.game as unknown as { stage?: { constructor: { name: string } } }).stage?.constructor?.name;
       state.racing = sn === 'RacerStage';
     }
@@ -228,6 +264,7 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
       await initAssets(assetBase, (p) => { state.progress = p; });
       ctl.game = createGame(canvas);
       ctl.game.onQuit = () => { state.quit = true; };
+      autosaver = new Autosaver(() => ctl.game, () => performance.now());
       state.loaded = true;
       last = time.get_ticks();
       raf = requestAnimationFrame(loop);

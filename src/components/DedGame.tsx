@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { startHost, type Controller } from '../game/host';
 import { mixer } from '../engine/sounds';
 import { K } from '../engine/pygame';
+import { musicCredits } from '../game/content/credit';
 import { storageFailed } from '../runtime/py';
 import { isDesktop, restoreFromHost, startAutosave, toHost } from '../desktop';
 import { installUpdateUi } from '../desktop-update';
@@ -35,6 +36,8 @@ export default function DedGame() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<string | null>(null);
   const warned = useRef(false);
+  const savedSeen = useRef(0);
+  const [saved, setSaved] = useState(0);
   const [zoom, setZoom] = useState({ s: 1, x: 0, y: 0 });
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
@@ -54,6 +57,7 @@ export default function DedGame() {
       setQuit(ctl.state.quit);
       setRacing(ctl.state.racing);
       setTouch(ctl.state.touch);
+      if (ctl.state.saved !== savedSeen.current) { savedSeen.current = ctl.state.saved; setSaved(ctl.state.saved); }
       if (!warned.current && storageFailed()) { warned.current = true; setNote('El navegador no deja guardar (almacenamiento lleno o bloqueado). Usa el botón 💾 para guardar tu progreso en un archivo.'); }
     }, 100);
     canvasRef.current?.focus();
@@ -189,6 +193,7 @@ export default function DedGame() {
         <button className="ded-btn" aria-label="Créditos" onClick={() => setInfo(true)}>i</button>
       </div>}
       <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={(e) => void loadProgress(e.target.files?.[0])} />
+      {saved > 0 && <div key={saved} className="ded-saved" role="status" aria-label="Progreso guardado">guardado ✓</div>}
       {note && <div className="ded-note" role="status" onClick={() => setNote(null)}>{note}</div>}
       {info && (
         <div className="ded-modal" onClick={() => setInfo(false)}>
@@ -197,6 +202,8 @@ export default function DedGame() {
             <p>Un juego de <b>Trojan Chicken</b> para las laptops XO del programa Plan Ceibal / One Laptop per Child (actividad Sugar).</p>
             <p>Tu progreso se guarda en este navegador. Con 💾 puedes bajarlo a un archivo y con 📂 volver a cargarlo (por si cambias de equipo o se borran los datos del navegador).</p>
             <p>Edición actualizada recreada por <b><a href="https://vicemi.dev" target="_blank" rel="noreferrer">Vicemi Dev (vicemi.dev)</a></b>, con nuevos personajes, minijuegos, medallas, música y contenido adicional sobre el Uruguay actual. Incluye todos los recursos originales del juego.</p>
+            {musicCredits().map((l, i) => <p key={i} style={{ fontSize: '0.85em' }}>{l}</p>)}
+            <p style={{ fontSize: '0.85em' }}>Todos los personajes agregados en esta edición son ficticios y de parodia: sus nombres, historias y delitos son inventados y no se refieren a personas reales.</p>
             <button className="ded-close" onClick={() => setInfo(false)}>Cerrar</button>
           </div>
         </div>

@@ -64,7 +64,9 @@ export function save_character(datastore: any, c: any, cp: any, game: any, stage
   } else {
     py.m(character_data, "append", ["cluesidentified", "0"]);
   }
-  py.m(character_data, "append", ["twist", cp.case.twist_real ? py.str(py.m(datastore.list_thieves, "index", cp.case.twist_real)) : "-1", py.str(cp.case.twist_state || 0), cp.case.twist_hint ? "1" : "0"]);
+  py.m(character_data, "append", ["twist", cp.case.twist_real ? py.str(py.m(datastore.list_thieves, "index", cp.case.twist_real)) : "-1", py.str(cp.case.twist_state || 0), cp.case.twist_hint ? "1" : "0"].concat(twist_seen_columns(cp.case, datastore)));
+  // the extra night of the time grace was used (content/grace.ts); the extended time limit is saved in "timelimit"
+  if (cp.case.grace_used) py.m(character_data, "append", ["grace", "1"]);
   thieves = ["thieves"];
   for (thief of py.iter(cp.case.list_thieves)) {
     py.m(thieves, "append", py.str(py.m(datastore.list_thieves, "index", thief)));
@@ -272,6 +274,7 @@ export function open_character(datastore: any, charinfo: any): any {
     list_target_cities = [];
     list_thieves = [];
     let twist_line: any = null;
+    let grace_used = false;
     list_sel_feat = [];
     list_posible_deps = [];
     list_wit_statements = [];
@@ -354,6 +357,8 @@ export function open_character(datastore: any, charinfo: any): any {
         }
       } else if ((type === "twist")) {
         twist_line = line;
+      } else if ((type === "grace")) {
+        grace_used = py.getitem(line, 1) === "1";
       } else if ((type === "thieves")) {
         for (t of py.iter(py.slice(line, 1, null))) {
           py.m(list_thieves, "append", py.getitem(datastore.list_thieves, py.int(t)));
@@ -613,13 +618,19 @@ export function open_character(datastore: any, charinfo: any): any {
     }
     if (case_ != null) {
       // the twist of the case (saves of older versions have none)
-      case_.twist_state = 0; case_.twist_real = null; case_.twist_hint = false;
+      case_.grace_used = grace_used;
+      case_.twist_state = 0; case_.twist_real = null; case_.twist_hint = false; case_.twist_seen = [];
       try {
         if (twist_line != null) {
           const ri = py.int(py.getitem(twist_line, 1));
           case_.twist_real = ri >= 0 ? py.getitem(datastore.list_thieves, ri) : null;
           case_.twist_state = case_.twist_real ? py.int(py.getitem(twist_line, 2)) : 0;
           case_.twist_hint = py.getitem(twist_line, 3) === "1";
+          // extra columns (older saves have none): pairs of object id and index of the suspect that it named
+          for (let q = 4; q + 1 < py.len(twist_line); q += 2) {
+            const t = py.getitem(datastore.list_thieves, py.int(py.getitem(twist_line, q + 1)));
+            if (t && /^i[0-9]+$/.test(py.getitem(twist_line, q))) case_.twist_seen.push({ id: py.getitem(twist_line, q), name: t.name });
+          }
         }
       } catch ($err: any) { case_.twist_state = 0; case_.twist_real = null; }
     }
@@ -664,6 +675,15 @@ export function delete_character(char_id: any): any {
     }
   }
   return null;
+}
+/** the odd objects seen (twist.ts) as extra columns of the "twist" line: object id and index of the suspect that it named */
+function twist_seen_columns(case_: any, datastore: any): any {
+  const cols: any[] = [];
+  for (const x of case_.twist_seen ?? []) {
+    const i = datastore.list_thieves.findIndex((t: any) => t.name === x.name);
+    if (i >= 0) cols.push(x.id, String(i));
+  }
+  return cols;
 }
 export function save_note(list: any, note: any, datastore: any): any {
   let dep, item_type: any;
@@ -747,18 +767,24 @@ export class CaseGenerator {
   }
   generate_department_clues(department: any): any {
     let added_clues, candidates, clues, notes, type, types: any;
-    types = py.list(this.datastore.list_clue_types);
-    random.shuffle(types);
-    notes = [];
-    for (type of py.iter(types)) {
-      if ((type.type === "MUSICIAN")) {
-        continue;
+    // Retry while the three notes also fit another department (e.g. three rivers that all cross it): the answer must be only this one.
+    for (let attempt = 0; attempt < 50; attempt++) {
+      types = py.list(this.datastore.list_clue_types);
+      random.shuffle(types);
+      notes = [];
+      for (type of py.iter(types)) {
+        if ((type.type === "MUSICIAN")) {
+          continue;
+        }
+        candidates = py.getitem(py.getitem(this.datastore.department_type_index, department.name), type.type);
+        if (py.truthy(candidates)) {
+          py.m(notes, "append", random.choice(candidates));
+        }
+        if ((py.len(notes) === 3)) {
+          break;
+        }
       }
-      candidates = py.getitem(py.getitem(this.datastore.department_type_index, department.name), type.type);
-      if (py.truthy(candidates)) {
-        py.m(notes, "append", random.choice(candidates));
-      }
-      if ((py.len(notes) === 3)) {
+      if (notes.length === 3 && notes.every((n: any) => n.get_departments().includes(department)) && this.datastore.list_departments.every((d: any) => d === department || !notes.every((n: any) => n.get_departments().includes(d)))) {
         break;
       }
     }

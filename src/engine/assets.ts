@@ -160,10 +160,16 @@ export function load_text(file_name: string): string {
 export function has_data(file_name: string): boolean { return file_name in store.data; }
 
 // ---------------------------------------------------------------------------------------------------------------------------------- images
+/** images drawn by code (no file): name -> factory, built on first use; see register_image */
+const synth = new Map<string, { make: () => Surface; surface: Surface | null }>();
+/** registers a picture that is drawn by code instead of coming from the packs (load_image / has_image see it like any other) */
+export function register_image(file_name: string, make: () => Surface): void { synth.set(file_name, { make, surface: null }); }
 function decodeSurface(file_name: string): Surface {
   const cached = decoded.get(file_name)?.deref();
   if (cached) return cached;
   const e = store.index[file_name];
+  const sy = e ? undefined : synth.get(file_name);   // a real picture of the same name wins
+  if (sy) return (sy.surface ||= sy.make());
   if (!e) throw new Error(`Cannot load image: images/${file_name}`);
   const pak = store.paks[e[0]];
   const bytes = pak ? pak.subarray(e[1], e[1] + e[2]) : e[0] === 1 && partial && covered(partial, e[1], e[2]) ? partial.buf.subarray(e[1], e[1] + e[2]) : fetchNow(e[0], e[1], e[2]);
@@ -179,7 +185,9 @@ function decodeSurface(file_name: string): Surface {
 export function load_surface(file_name: string): Surface { return decodeSurface(file_name); }
 export function load_mask(file_name: string): Surface { return decodeSurface(file_name); }
 export function load_image(file_name: string): Image_ { return new Image_(load_surface(file_name), file_name); }
-export function has_image(file_name: string): boolean { return file_name in store.index; }
+/** the URL of public/assets (empty before initAssets) */
+export function assets_base(): string { return store.base; }
+export function has_image(file_name: string): boolean { return file_name in store.index || synth.has(file_name); }
 
 export function load_font(file_name: string, size: number): Font {
   const e = store.fonts[`${file_name}@${size}`];

@@ -14,6 +14,7 @@ const randint = py.random.randint;
 import { random } from '../../runtime/py';
 import * as statcodes from '../data/statcodes';
 import * as $self from './minigameshoptender';
+import { heat_rgb } from '../minigames/fx';
 
 export class MinigameShoptender extends Minigame {
   constructor(stage: any, phase1content: any, witness: any) {
@@ -59,6 +60,7 @@ export class MinigameShoptender extends Minigame {
     this.set_up_timer();
     this.set_up_witness();
     this.set_up_counters();
+    this.fx_attach();
     return null;
   }
   set_up_counters(): any {
@@ -119,6 +121,7 @@ export class MinigameShoptender extends Minigame {
     timer_ringer_image = assets.load_image("p1_minigame_shoptender_timer_ringer_001.png");
     timer_backbar_item = new ItemImage(144, 129, timer_backbar_image, null);
     this.timer_line_item = new ItemRect(149, 136, 11, 128, null, 0, "", [0, 0, 0], [236, 14, 36]);
+    this.timer_line_item.set_background(heat_rgb(1));
     this.adjustement_value = py.fdiv(py.float(this.timer_line_item.get_height()), this.timer_complete_time);
     this.timer_topbar_item = new ItemImage(146, 122, timer_topbar_image, null);
     timer_barshadow_item = new ItemImage(142, 128, timer_barshadow_image, null);
@@ -145,7 +148,10 @@ export class MinigameShoptender extends Minigame {
     this.timer_topbar_item.set_top(py.add(this.timer_topbar_item.get_top(), 1));
     this.timer_line_item.set_top(py.add(this.timer_line_item.get_top(), 1));
     this.timer_line_item.set_height((this.timer_line_item.get_height() - 1));
+    this.timer_line_item.set_background(heat_rgb(this.timer_line_item.get_height() / 128));   // presentation: green, amber, red as the time goes
+    if (this.timer_line_item.get_height() < 26 && this.timer_line_item.get_height() > 1) this.fx.flash('255,40,40', 0.3, 0.14);
     if ((this.timer_line_item.get_height() === 1)) {
+      this.fx.shake(5, 0.7);
       this.stop_minigame(false);
       this.stop_minigame_music(0);
       this.start_bell_animation();
@@ -358,6 +364,9 @@ export class MinigameShoptender extends Minigame {
         this.correct_answers = this.correct_answers + 1;
         py.getitem(this.success_symbols_list, py.m(this.symbol_list, "index", item)).set_visible(true);
         this.update_counters(true);
+        this.fx.good(207 + 50 * py.m(this.symbol_list, "index", item) + 22, 326, "¡Bien!");
+        this.fx.burst(217 + 34 * (this.actual_counter - 1) + 12, 100, 12, undefined, { kind: 1, size: 2.6, up: 20 });
+        if (this.correct_answers === 5) this.fx.confetti(290, 150, 50);
         this.correct_choice.play();
         this.check_for_minigame_finished();
         this.stage.lock_ui();
@@ -370,6 +379,8 @@ export class MinigameShoptender extends Minigame {
         this.check_for_minigame_finished();
         this.set_wrong_symbol_list(true);
         this.update_counters(false);
+        this.fx.shakeItems(this.number_lines_list.concat(this.symbol_list_wrong));
+        this.fx.bad(207 + 50 * py.m(this.symbol_list, "index", item) + 22, 326, "Error", 4);
         this.stage.render();
         this.incorrect_choice.play();
         this.wait_wrong_symbol_key = animations.wait_locked(this.stage, 500, py.bind(this, "set_wrong_symbol_list"));

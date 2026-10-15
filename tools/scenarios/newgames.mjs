@@ -29,7 +29,7 @@ export default async (dev) => {
       for (const c of cards) (by[c.flag] ||= []).push(c);
       for (const list of Object.values(by)) {
         for (let i = 0; i + 1 < list.length; i += 2) {
-          for (const c of [list[i], list[i + 1]]) dev.click(c.get_left() + 10, c.get_top() + 10, 12);
+          for (const c of [list[i], list[i + 1]]) { const [x, y] = m.screenPos(c); dev.click(x, y, 12); }
           dev.go(10);
         }
       }
@@ -37,7 +37,8 @@ export default async (dev) => {
     } else if (name === 'candombe') {
       // hit every note on time (the clock is virtual: 25 ms per frame)
       const t = () => m.now();
-      for (let i = 0; i < 2000 && !m.minigame_solved; i++) {
+      m.newRun();   // the run may have started while the dialogs were clicked through
+      for (let i = 0; i < 4000 && !m.minigame_solved; i++) {
         const now = t();
         for (const n of m.notes) if (n.state === 0 && Math.abs(n.t - now) < 30) m.hit(n.lane);
         dev.go(1);
@@ -46,8 +47,8 @@ export default async (dev) => {
     } else {
       for (let i = 0; i < 12 && !m.minigame_solved; i++) {
         const q = m.questions[m.index]; if (!q) break;
-        dev.click(BX() + 100, 74 + 124 + ((q.answer + 1) % 4) * 36 + 10, 10);   // a wrong one first
-        dev.click(BX() + 100, 74 + 124 + q.answer * 36 + 10, 60);
+        { const [x, y] = m.screenPos((q.answer + 1) % 4); dev.click(x, y, 10); }   // a wrong one first
+        { const [x, y] = m.screenPos(q.answer); dev.click(x, y, 60); }
         if (i === 0) dev.save(name + '_5answer');
       }
     }

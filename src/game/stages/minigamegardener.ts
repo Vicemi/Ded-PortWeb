@@ -167,6 +167,7 @@ export class MinigameGardener extends Minigame {
     this.stage.add_layer(this.grid_layer);
     this.stage.add_layer(this.grid_selection_layer);
     this.stage.add_layer(this.grid_goodjob_layer);
+    this.fx_attach(this.grid_goodjob_layer);
     this.stage.set_prerender_buffer(this.grid_layer);
     return null;
   }
@@ -525,6 +526,7 @@ export class MinigameGardener extends Minigame {
       old_filled_items = this.get_items_filled();
       has_filled_item = this.has_selection_filled_item(item_type, old_filled_items);
       if (py.truthy(has_filled_item)) {
+        this.fx.bad(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1], "Ya está", 3);
         this.stage.render();
         this.wrong_sound.play();
         return false;
@@ -562,6 +564,8 @@ export class MinigameGardener extends Minigame {
       }
       new_filled_items = this.update_items_text(old_filled_items);
       this.stage.render();
+      const dirt = this.stage.get_xy(py.fdiv(py.float(py.add(from_row, to_row)), 2), py.fdiv(py.float(py.add(from_col, to_col)), 2));
+      this.fx.burst(dirt[0], dirt[1], 9, ["#8a5a2b", "#b07a3c", "#5a3a18", "#7bbf4a"], { speed: 80, size: 2.5, life: 0.5, up: 30, g: 320 });
       this.shovel_sound.play();
       if ((py.len(new_filled_items) > 0)) {
         center_row = py.fdiv(py.float(py.add(from_row, to_row)), 2);
@@ -573,6 +577,7 @@ export class MinigameGardener extends Minigame {
         for (item of py.iter(new_filled_items)) {
           if ((item.percentage !== 0)) {
             this.start_goodjob_animation(item, x, y);
+            this.fx.good(x, y + 24, "", 16);
             x = py.add(x, separation);
           }
         }
@@ -703,6 +708,7 @@ export class MinigameGardener extends Minigame {
       }
     }
     if (py.truthy(solved)) {
+      this.fx.confetti(300, 210, 70);
       this.stop_minigame(true);
       this.grid_selection_layer.empty();
       animations.wait_locked(this.stage, 2000, py.bind(this, "minigame_solved_callback"));

@@ -45,21 +45,23 @@ export function startAutosave(ctl: Controller): () => void {
   let last = '';
   const snapshot = (): string => { const o = JSON.parse(ctl.exportSave()); delete o.saved; return JSON.stringify(o); };
   const send = (force: boolean): void => {
+    if (force) ctl.flush();   // "save now" / closing: the open case goes into the page storage first (the checkpoints and hide events already did it otherwise)
     const now = snapshot();
     if (!force && now === last) return;
     last = now;
     toHost('save', ctl.exportSave());
   };
   last = snapshot();
-  const id = window.setInterval(() => send(false), 10000);
+  const id = window.setInterval(() => send(false), 3000);
   const onHide = (): void => { if (document.visibilityState === 'hidden') send(false); };
   const onUnload = (): void => send(false);
   document.addEventListener('visibilitychange', onHide);
   window.addEventListener('beforeunload', onUnload);
+  window.addEventListener('pagehide', onUnload);
   window.__dedSaveNow = () => send(true);
   window.__dedSaveAs = () => toHost('saveas', ctl.exportSave());
   window.__dedImport = (text: string) => { ctl.importSave(text); location.reload(); };
   const onKey = (e: KeyboardEvent): void => { if (e.key === 'F11') { e.preventDefault(); toHost('fullscreen'); } };
   window.addEventListener('keydown', onKey);
-  return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onHide); window.removeEventListener('beforeunload', onUnload); window.removeEventListener('keydown', onKey); };
+  return () => { window.clearInterval(id); document.removeEventListener('visibilitychange', onHide); window.removeEventListener('beforeunload', onUnload); window.removeEventListener('pagehide', onUnload); window.removeEventListener('keydown', onKey); };
 }
