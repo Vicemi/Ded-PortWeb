@@ -2,6 +2,7 @@
 // dictionaries, string methods, the standard modules the game used (random, math, os, time, uuid, bisect, collections, string, base64...).
 // Values are plain JS values: ints and floats are numbers, str is string (latin-1 characters like the original byte strings), list and tuple are
 // arrays, dict is PyDict, None is null.
+import * as safefs from './safefs';
 
 export class PyException extends Error {
   constructor(public msg: any = '', public args: any[] = []) { super(typeof msg === 'string' ? msg : String(msg)); }
@@ -573,24 +574,36 @@ export const uuid = {
 /** names of the files that ship with the game (data/...): the assets module registers them */
 let packaged: ((path: string) => boolean) | null = null;
 export function setPackagedFiles(f: (path: string) => boolean): void { packaged = f; }
-const FS_PREFIX = 'ded.fs:';
 const memfs = new Map<string, string>();
 function fsGet(p: string): string | null {
   if (memfs.has(p)) return memfs.get(p)!;
-  try { return localStorage.getItem(FS_PREFIX + p); } catch { return null; }
+  return safefs.read(p);
 }
-function fsSet(p: string, v: string): void {
+/** writes a file: kept in memory always, stored (validated, with backups) when the browser lets us; `deliberate` = an import, which may lower the progress */
+function fsSet(p: string, v: string, deliberate = false): void {
+  if (!safefs.validWrite(p, v)) { safefs.status.rejected++; console.warn('save refused (invalid content):', p); return; }
   memfs.set(p, v);
-  try { localStorage.setItem(FS_PREFIX + p, v); } catch { /* storage unavailable: kept in memory */ }
+  safefs.write(p, v, deliberate);
 }
-/** every file the game wrote (characters, scores, settings) */
+/** every file the game wrote (characters, scores, settings) that is usable */
 export function userFiles(): Record<string, string> {
   const out: Record<string, string> = {};
-  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i)!; if (k.startsWith(FS_PREFIX)) out[k.slice(FS_PREFIX.length)] = localStorage.getItem(k) ?? ''; } } catch { /* none */ }
-  for (const [k, v] of memfs) out[k] = v;
+  for (const n of new Set([...safefs.names(), ...memfs.keys()])) { const t = fsGet(n); if (t !== null && safefs.validRead(n, t)) out[n] = t; }
   return out;
 }
-export function restoreUserFiles(files: Record<string, string>): void { for (const [k, v] of Object.entries(files)) fsSet(k, v); }
+/** puts files back (import / the save of the desktop folder). replace: they win over what is stored; newer: only what is missing or has more progress */
+export function restoreUserFiles(files: Record<string, string>, mode: 'replace' | 'newer' = 'replace'): void {
+  for (const [k, v] of Object.entries(files)) {
+    if (mode === 'replace') { fsSet(k, v, true); continue; }
+    const cur = fsGet(k);
+    if (cur === null || !safefs.validRead(k, cur) || (safefs.isCharFile(k) && safefs.compare(k, v, cur) > 0)) fsSet(k, v);
+  }
+}
+/** false when the browser would not store the last save (full / blocked): the progress is only in memory until the player saves a file */
+export const storageFailed = (): boolean => safefs.status.failed;
+export const validUserFile = safefs.validRead;
+/** tests: forget what this run wrote, as a freshly loaded page would */
+export function forgetMemoryFiles(): void { memfs.clear(); }
 export class PyFile {
   private pos = 0;
   private buf = '';
@@ -629,12 +642,11 @@ export const os = {
   },
   mkdir: (_p: string): void => undefined,
   makedirs: (_p: string): void => undefined,
-  remove: (p: string): void => { memfs.delete(p); try { localStorage.removeItem(FS_PREFIX + p); } catch { /* none */ } },
+  remove: (p: string): void => { memfs.delete(p); safefs.remove(p); },
   listdir: (p: string): string[] => {
     const out = new Set<string>();
     const pre = p === '' ? '' : p + '/';
-    const names: string[] = [...memfs.keys()];
-    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i)!; if (k.startsWith(FS_PREFIX)) names.push(k.slice(FS_PREFIX.length)); } } catch { /* none */ }
+    const names: string[] = [...memfs.keys(), ...safefs.names()];
     for (const n of names) if (n.startsWith(pre)) out.add(n.slice(pre.length).split('/')[0]);
     return Array.from(out);
   },

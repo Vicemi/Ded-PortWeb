@@ -38,6 +38,7 @@ export class EndReason {
 export class EndGame {
   constructor(stage: any, reason: any) {
     this.stage = stage;
+    if (!py.eq(reason, EndReason.ARRIVED_WRONG_LOCATION)) this.stage.ending_started = true;   // autosave.ts: no checkpoint save of the phase from here on
     this.reason = reason;
     this.layer = new Layer();
     this.font_13 = assets.load_font("evilgeniusbb_reg.ttf", 13);
@@ -209,7 +210,10 @@ export class EndGame {
       uy_medals = uy_medals + 1;
       this.won_uy_medal = true;
     }
-    this.new_achievements = content_extend.grantAchievements(character_progress, this.stage.game.datastore);
+    this.new_achievements = content_extend.grantAchievements(character_progress, this.stage.game.datastore, case_);
+    // medals, score and the solved case are saved now (not when the score screens end): closing the page in between must not lose them
+    this.stage.game.datastore.user_character_stage = null;
+    this.stage.game.datastore.save_character("nc", true);
     return null;
   }
   build_continue_button(fast: any = false): any {
@@ -522,6 +526,7 @@ export class EndGame {
       hide_background = false;
     }
     if ((py.eq(this.reason, EndReason.ARRIVED_LOCATION) && py.truthy(this.case_solved) && (this.caught_thief == null))) {
+      this.stage.ending_started = false;
       this.stage.set_phase(3);
     } else {
       this.stage.blind_dialog(this.layer, animations.BlindDirection.HIDE_DOWN, hide_background, [], py.bind(this, "blind_next_callback"));

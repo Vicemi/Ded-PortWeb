@@ -6,7 +6,11 @@ import * as assets from '../../engine/assets';
 import * as animations from '../../engine/animations';
 
 interface Progress { score: number; resolved_cases: number; medals: { name: string; count: number }[]; captured_thieves: { name: string }[]; list_departments_solved: any[] }
-interface Ach { id: string; title: string; desc: string; glyph: string; tier: 0 | 1 | 2 | 3; check: (p: Progress, total: number) => boolean }
+interface Ach { id: string; title: string; desc: string; glyph: string; tier: 0 | 1 | 2 | 3; check: (p: Progress, total: number) => boolean; /** the medals of the clue objects: given when a case is solved, from the clues that the player found in it */ solved?: (c: any) => boolean }
+/** the ids of the clues found in a case */
+const foundIds = (c: any): string[] => Array.from(c?.clues_found ?? []);
+const withObject = (...ids: string[]) => (c: any) => foundIds(c).some((i) => ids.includes(i));
+const never = () => false;
 
 const caught = (p: Progress, name: string) => p.captured_thieves.some((t) => t.name === name);
 const depCount = (p: Progress, n: number) => p.medals.filter((m) => !m.name.startsWith('ach_') && m.name !== 'uy' && m.name !== 'tut' && m.count > 0).length >= n;
@@ -36,6 +40,15 @@ export const ACHIEVEMENTS: Ach[] = [
   { id: 'byte', title: 'Conexión Perdida', desc: 'Atrapaste a Byte Ceibal, el que hackeaba las XO.', glyph: 'B', tier: 1, check: (p) => caught(p, 'Byte Ceibal') },
   { id: 'puntos_5k', title: 'Chivito al Plato', desc: 'Llegaste a 5.000 puntos.', glyph: '5K', tier: 0, check: (p) => p.score >= 5000 },
   { id: 'puntos_20k', title: 'Campeón del Centenario', desc: 'Llegaste a 20.000 puntos.', glyph: '20K', tier: 2, check: (p) => p.score >= 20000 },
+  // the clue objects of the updated edition (a case solved with one of them among the clues found)
+  { id: 'mate', title: 'Cebador de Pistas', desc: 'Resolviste un caso con el mate o el termo entre tus pistas.', glyph: 'M', tier: 0, check: never, solved: withObject('i600', 'i601') },
+  { id: 'xo', title: 'Contraseña Olvidada', desc: 'Resolviste un caso con la XO entre tus pistas: el fondo de pantalla lo dijo todo.', glyph: 'XO', tier: 1, check: never, solved: withObject('i623') },
+  { id: 'musica', title: 'Guitarra y Tambor', desc: 'Resolviste un caso con la guitarra o el tambor de candombe entre tus pistas.', glyph: 'G', tier: 0, check: never, solved: withObject('i603', 'i604') },
+  { id: 'gaucho', title: 'Rastro Gaucho', desc: 'Resolviste un caso con el poncho, el lazo, el cuchillo o la boina entre tus pistas.', glyph: 'P', tier: 1, check: never, solved: withObject('i608', 'i609', 'i610', 'i611') },
+  { id: 'paladar', title: 'Paladar Oriental', desc: 'Resolviste un caso con el alfajor, el chivito, el dulce de leche o el tannat entre tus pistas.', glyph: 'A', tier: 1, check: never, solved: withObject('i605', 'i606', 'i607', 'i612') },
+  { id: 'ojo', title: 'Ojo de Lince', desc: 'Resolviste un caso con la cámara, el telescopio, la lupa vieja o el llavero entre tus pistas.', glyph: 'O', tier: 1, check: never, solved: withObject('i614', 'i615', 'i617', 'i618') },
+  { id: 'retro', title: 'Tecnología de Época', desc: 'Resolviste un caso con la radio, el reloj o el celular entre tus pistas.', glyph: 'R', tier: 1, check: never, solved: withObject('i619', 'i620', 'i621') },
+  { id: 'rarezas', title: 'Coleccionista de Rarezas', desc: 'Resolviste un caso donde las 3 pistas eran objetos nuevos.', glyph: '3', tier: 2, check: never, solved: (c) => foundIds(c).filter((i) => /^i6\d\d$/.test(i)).length >= 3 },
 ];
 
 const TIERS = [
@@ -90,13 +103,13 @@ function drawnIcon(a: Ach, got: boolean): any {
 }
 
 /** gives the new achievements to the character; returns the titles of the new ones */
-export function grantAchievements(progress: Progress, ds: any): string[] {
+export function grantAchievements(progress: Progress, ds: any, solvedCase?: any): string[] {
   const total = ds && ds.list_thieves ? ds.list_thieves.length : 999;
   const news: string[] = [];
   for (const a of ACHIEVEMENTS) {
     const key = 'ach_' + a.id;
     if (progress.medals.some((m) => m.name === key)) continue;
-    if (a.check(progress, total)) { (progress as any).add_medal(key); news.push(a.title); }
+    if (a.solved ? (solvedCase && a.solved(solvedCase)) : a.check(progress, total)) { (progress as any).add_medal(key); news.push(a.title); }
   }
   return news;
 }
@@ -119,11 +132,11 @@ export function achievementsLayer(merits: any): any {
   back.add_event_handler(ItemEvent.CLICK, (item: any, args: any) => merits.logros_back_click(item, args));
   layer.add(back);
   const name = merits.add_text_with_shadow(layer, 40, 346, font_18, '', [252, 193, 45], 520, 22, 2, 1, -1, 2);
-  const text = merits.add_text_with_shadow(layer, 40, 368, font_14, 'LOGROS ' + n + ' DE ' + total + '. Pasá el mouse sobre una medalla para ver cómo se consigue.', [255, 240, 220], 520, 22, 2, 1, -1, 2);
-  const cols = 8, x0 = 30, y0 = 84, dx = 67, dy = 86;
+  const text = merits.add_text_with_shadow(layer, 40, 368, font_14, 'LOGROS ' + n + ' DE ' + total + '. Pasá el mouse o tocá una medalla para ver cómo se consigue.', [255, 240, 220], 520, 22, 2, 1, -1, 2);
+  const big = ACHIEVEMENTS.length > 24, cols = big ? 10 : 8, x0 = big ? 22 : 30, y0 = 84, dx = big ? 56 : 67, dy = big ? 80 : 86, k = big ? 0.8 : 1;
   ACHIEVEMENTS.forEach((a, i) => {
     const got = have.has('ach_' + a.id), x = x0 + (i % cols) * dx, y = y0 + Math.floor(i / cols) * dy;
-    const pic = icon(a, got);
+    const pic = k === 1 ? icon(a, got) : scaled(icon(a, got), k);
     const it = new ItemImage(x + Math.round((dx - 4 - pic.get_width()) / 2), y, pic);
     it.add_event_handler(ItemEvent.MOUSE_ENTER, () => {
       merits.stage.render(); merits.rollover_sound.stop(); merits.rollover_sound.play();
@@ -133,6 +146,13 @@ export function achievementsLayer(merits: any): any {
     layer.add(it);
   });
   return layer;
+}
+
+function scaled(img: any, k: number): any {
+  const c = img.surface.canvas, w = Math.round(c.width * k), h = Math.round(c.height * k);
+  const s = new pygame.Surface([w, h], pygame.SRCALPHA, 32);
+  s.ctx.drawImage(c, 0, 0, w, h);
+  return new assets.Image(s);
 }
 
 /** the button of the medals screen */
@@ -148,7 +168,7 @@ export function logrosItems(merits: any): any[] {
   const progress = merits.stage.game.datastore.user_character_progress;
   const have = new Set<string>(progress.medals.map((m: any) => m.name));
   const items: any[] = [];
-  const size = 24, gap = 2, total = ACHIEVEMENTS.length, x0 = Math.round((600 - (size + gap) * total) / 2);
+  const total = ACHIEVEMENTS.length, size = Math.min(24, Math.floor(570 / total) - 2), gap = 2, x0 = Math.round((600 - (size + gap) * total) / 2);
   ACHIEVEMENTS.forEach((a, i) => {
     const got = have.has('ach_' + a.id);
     const big = icon(a, got).surface.canvas;

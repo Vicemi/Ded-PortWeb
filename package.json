@@ -1,7 +1,7 @@
 {
   "name": "ded-web",
   "type": "module",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "División Especial de Detectives (Trojan Chicken, OLPC) portado a la web: Astro + React + Canvas",
   "engines": {
     "node": ">=22.12.0"

@@ -11,13 +11,25 @@ const scenario = process.argv[2];
 const outdir = path.resolve(process.argv[3] || path.join(root, 'research', 'shots'));
 fs.mkdirSync(outdir, { recursive: true });
 
-const bundle = path.join(root, 'research', '.headless.mjs');
+// one bundle per process: scenarios may run in parallel (or next to another agent / test run)
+const bundle = path.join(root, 'research', `.headless-${process.pid}.mjs`);
+process.on('exit', () => { try { fs.unlinkSync(bundle); } catch { /* gone */ } });
 await build({
   entryPoints: [path.join(root, 'tools', 'headless_entry.ts')], bundle: true, platform: 'node', format: 'esm', outfile: bundle, sourcemap: 'inline', logLevel: 'error',
   define: { 'import.meta.env.DEV': 'false', 'import.meta.env.BASE_URL': '"/"' }, external: ['@napi-rs/canvas'],
   banner: { js: "import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);" },
 });
 
+// DIGEST=<file>: write a hash of the window after every tick (deterministic: seeded Math.random); DED_NOCACHE=1: paint every frame in full.
+// Run a scenario with and without DED_NOCACHE and diff the files to prove the frame cache paints the same pixels.
+if (process.env.DED_NOCACHE) globalThis.__DED_NOCACHE = true;
+if (process.env.DIGEST) {
+  globalThis.__DED_DIGEST = [];
+  let seed = 12345;
+  Date.now = () => 1.76e12;
+  Math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+  process.on('exit', () => fs.writeFileSync(process.env.DIGEST, globalThis.__DED_DIGEST.join(String.fromCharCode(10))));
+}
 // ---- browser shims
 const storage = new Map();
 globalThis.localStorage = { getItem: (k) => (storage.has(k) ? storage.get(k) : null), setItem: (k, v) => storage.set(k, String(v)), removeItem: (k) => storage.delete(k), key: (i) => [...storage.keys()][i] ?? null, get length() { return storage.size; } };

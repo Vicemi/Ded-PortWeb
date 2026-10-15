@@ -1,0 +1,10 @@
+{
+ "game": "ded",
+ "format": 1,
+ "saved": "2026-01-01T00:00:00.000Z",
+ "files": {
+  "data/characters.dat": "1;1;Ana;1;M;Durazno;0",
+  "data/c1.dat": "stage;nc\ninfo;4\nuuid;20fa41c1-52a1-4ddc-b34d-fb2cf3c3f2e7\ncasenum;2989181-4\nlair;7\nlastvisited;7\ncrimeloc;39\nstolenobj;0\ntimelimit;13\ntimespend;0\ncluesfound;i603;i614;i621\nwrongwitness;0\nthief;11\narrestorder;11\ncaughtthief;1\ncluesidentified;0\nthieves;19;23;11;3;28;25;13;1;15\ndepartments;18;7\ntargetcities;3;2\nwitnesses;6;0;3;0;5;0;2;0;0;0;1;0;1;0;0;0\nstatements;2;16;-1;1;2;9;-1;5;2;10;-1;14\nvisitedwit\nfolderwit\nposdepts;2;7;13\nthieflair;9;9\nclues;10;3;7;WRITER;20;1;7;LOCATION;27;3;7;HILL\nselectedfeatures;0;0;0;0\ndepsolved;18\nmggardenerhelp;0\nmgshoptenderhelp;0\nmglibrarianhelp;0\nmgbricklayerhelp;0\nphase2help;0\nphase3help;0\nidentikithelp;0\nshowfolder;0\nshownotesanimation;0\nscore;2600\nresolvedcases;1\nmedals;treintaytres;1;ach_primer_caso;1\nnotes\nnewnotes\nbricklayerpics\nlasthelpstep;1\ncapturedthieves;11",
+  "data/highscores.dat": "total;Ana;20fa41c1-52a1-4ddc-b34d-fb2cf3c3f2e7;2600"
+ }
+}

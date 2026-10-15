@@ -42,6 +42,11 @@ fn is_valid(text: &str) -> bool {
     serde_json::from_str::<serde_json::Value>(text).map(|v| v.get("game").and_then(|g| g.as_str()) == Some("ded") && v.get("files").map(|f| f.is_object()).unwrap_or(false)).unwrap_or(false)
 }
 
+/// el objeto `files` de una partida (None si el texto no es una partida)
+fn files_of(text: &str) -> Option<serde_json::Value> {
+    serde_json::from_str::<serde_json::Value>(text).ok()?.get("files").cloned()
+}
+
 /// guarda la partida de forma segura: escribe un archivo temporal, conserva el anterior como .bak y hace una copia con fecha cada 10 minutos
 pub fn save_progress(base: &Path, text: &str) {
     if !is_valid(text) {
@@ -53,10 +58,18 @@ pub fn save_progress(base: &Path, text: &str) {
     }
     let main = dir.join("progress.json");
     let tmp = dir.join("progress.tmp");
+    let old = fs::read_to_string(&main).ok().and_then(|t| files_of(&t));
+    let new = files_of(text);
+    let count = |v: &Option<serde_json::Value>| v.as_ref().and_then(|f| f.as_object()).map(|o| o.len()).unwrap_or(0);
+    // una partida sin archivos nunca reemplaza a una que los tiene (por ejemplo, un navegador con los datos borrados)
+    if count(&new) == 0 && count(&old) > 0 {
+        return;
+    }
     if fs::write(&tmp, text).is_err() {
         return;
     }
-    if main.exists() {
+    // la copia .bak es la versión anterior distinta: guardar dos veces lo mismo no la pisa
+    if main.exists() && old != new {
         let _ = fs::copy(&main, dir.join("progress.bak.json"));
     }
     if fs::rename(&tmp, &main).is_err() {

@@ -72,6 +72,23 @@ export class Game implements GameLike {
   private pending_hide: { until: number; callback: ((l: Layer | null) => void) | null; blind: boolean } | null = null;
   onQuit: (() => void) | null = null;
 
+  /** Frame-rate governor (browsers only, not the headless tests): when a tick that paints is too slow for a phone, only one tick in 2 (or 3) paints; the
+   *  game logic, timers and sounds still run at every tick. */
+  governor = typeof requestAnimationFrame === 'function';
+  private draw_every = 1;
+  private tick_no = 0;
+  private paint_cost = 0;
+  private slow_ticks = 0;
+  private fast_ticks = 0;
+  /** false on the ticks that must not paint */
+  draw_allowed(): boolean { return this.draw_every === 1 || this.tick_no % this.draw_every === 0; }
+  private govern(ms: number): void {
+    this.paint_cost = this.paint_cost * 0.85 + ms * 0.15;
+    const c = this.paint_cost, e = this.draw_every;
+    if (e < 3 && c > (e === 1 ? 24 : 42)) { if (++this.slow_ticks >= 12) { this.draw_every = e + 1; this.slow_ticks = 0; this.paint_cost = c / 2; } } else this.slow_ticks = 0;
+    if (e > 1 && c < (e === 2 ? 11 : 19)) { if (++this.fast_ticks >= 120) { this.draw_every = e - 1; this.fast_ticks = 0; } } else this.fast_ticks = 0;
+  }
+
   constructor(public title: string, default_mouse_cursor: string | null = null, loading_image: string | null = null) {
     this.empty_sound = load_sound('Silence.ogg');
     this.window = new Surface(SCREEN_WIDTH, SCREEN_HEIGHT, false);
@@ -110,7 +127,12 @@ export class Game implements GameLike {
     this.fps_times.push(now);
     while (this.fps_times.length > 40) this.fps_times.shift();
     if (this.fps_times.length > 1) this.fps_value = (this.fps_times.length - 1) * 1000 / (now - this.fps_times[0]);
-    (this.stage as Stage).notify_tick();
+    this.tick_no++;
+    if (this.governor && this.draw_allowed()) {
+      const t0 = performance.now();
+      (this.stage as Stage).notify_tick();
+      this.govern(performance.now() - t0);
+    } else (this.stage as Stage).notify_tick();
   }
   /** pygame.time.wait: nothing runs (events pile up) for this long */
   block(ms: number): void { this.blocked_until = Math.max(this.blocked_until, time.get_ticks() + ms); }
@@ -141,7 +163,10 @@ export class Game implements GameLike {
   get_development_mode(): boolean { return this.development_mode; }
   set_development_mode(v: boolean): void { this.development_mode = v; }
   get_current_stage(): Stage | null { return this.stage instanceof Stage ? this.stage : null; }
-  set_current(stage: Stage): void { this.stage = stage; }
+  set_current(stage: Stage): void {
+    if (this.stage instanceof Stage && this.stage !== stage) this.stage.release_frame_cache();
+    this.stage = stage;
+  }
 
   set_stage(stage: Stage, show_loading = false, loading_image: string | null = null): void {
     const next = new ChangeStageDummy(this, this.stage, stage);

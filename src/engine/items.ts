@@ -33,6 +33,25 @@ export function bound<T extends Function>(obj: object, fn: T): T {
   return b as unknown as T;
 }
 
+// ------------------------------------------------------------------------------------------------------------------------------ draw signature
+/** Everything that decides what a layer paints, as a flat list. Two equal signatures paint the same pixels, so the stage can skip the layer (see
+ *  Stage.draw_frame). `dynamic` = something draws in a way that cannot be summarised (custom draw functions): the layer is always painted. */
+export class DrawSig {
+  o: unknown[] = [];
+  n: number[] = [];
+  dynamic = false;
+  reset(): void { this.o.length = 0; this.n.length = 0; this.dynamic = false; }
+  equals(p: DrawSig): boolean {
+    const a = this.o, b = p.o, x = this.n, y = p.n;
+    if (a.length !== b.length || x.length !== y.length) return false;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+    return true;
+  }
+  color(c: Color | null): void { if (c === null) this.n.push(-1); else this.n.push(c.length, c[0], c[1], c[2], c.length > 3 ? c[3] : 255); }
+  surface(sf: Surface | null): void { if (sf === null) this.o.push(null); else { this.o.push(sf); this.n.push(sf.ver, sf.alpha); } }
+}
+
 // ------------------------------------------------------------------------------------------------------------------------------ Item
 export class CustomDraw {
   surface: Surface | null;
@@ -95,6 +114,16 @@ export class Item {
     else this._layer = layer;
   }
   get_stage(): Stage | null { return this._layer ? this._layer.get_stage() : null; }
+  /** adds to `s` everything that decides how this item is painted (after update()) */
+  drawSig(s: DrawSig): void {
+    if (this.draw_function !== null) { s.dynamic = true; return; }
+    const a = this.area;
+    s.surface(this.surface);
+    s.n.push(Math.trunc(this._left), Math.trunc(this._top), (this as unknown as { get_alpha?: () => number }).get_alpha?.() ?? 255);
+    if (a === null) s.n.push(-99999, 0, 0, 0);
+    else if (a instanceof Rect) s.n.push(a.x, a.y, a.w, a.h);
+    else s.n.push(a[0], a[1], a[2], a[3]);
+  }
   /** (called every frame before drawing) */
   update(_frame_delay: number): Rect {
     const w = this.visible ? this._width : 0, h = this.visible ? this._height : 0;
@@ -372,6 +401,7 @@ export class ItemMask extends Item {
     return false;
   }
   update(_frame_delay: number): Rect { return this.rect; }
+  drawSig(_s: DrawSig): void { /* paints nothing */ }
   get_at(x: number, y: number): [number, number, number, number] { return this.mask!.get_at(x, y); }
 }
 
@@ -599,6 +629,11 @@ export class ItemText extends Item {
     return fit;
   }
   private mark_text_to_update(): void { this.text_surface = null; this.set_dirty(); }
+  drawSig(s: DrawSig): void {
+    if (this.text_surface === null) { s.dynamic = true; return; }
+    s.surface(this.text_surface);
+    s.n.push(this.get_left() + this.dx, this.get_top() + this.dy, this._alpha);
+  }
   private draw_item(target: CustomDraw): void {
     if (this.text_surface === null) this.render_text_();
     const s = this.text_surface!;
@@ -675,6 +710,12 @@ export class ItemRect extends Item {
     return super.update(frame_delay);
   }
   private update_text(): void { this.render_text_(); this.set_dirty(); }
+  drawSig(s: DrawSig): void {
+    if (this.text_w !== this._width || this.text_h !== this._height) { s.dynamic = true; return; }
+    s.n.push(this._left, this._top, this._width, this._height);
+    s.color(this.background); s.color(this.border);
+    s.surface(this.text_surface);
+  }
   is_over(x: number, y: number, _ignore_clip = false): boolean {
     const b = this.get_bounds();
     if (this.background !== null) return b.x <= x && x < b.x + b.w && b.y <= y && y < b.y + b.h;
@@ -768,6 +809,18 @@ export class Layer {
   is_inside_clip(x: number, y: number): boolean { return this._clip === null || this._clip.collidepoint(x, y); }
 
   update(frame_delay: number): void { for (const item of this.items) item.update(frame_delay); }
+
+  /** fills `s` with everything that decides what draw() paints */
+  drawSig(s: DrawSig): void {
+    s.reset();
+    const clip = this._clip;
+    s.n.push(this._visible ? 1 : 0, this._alpha, clip ? clip.x : -99999, clip ? clip.y : 0, clip ? clip.w : 0, clip ? clip.h : 0);
+    for (const item of this.items) {
+      if (!item.visible) continue;
+      s.o.push(item);
+      item.drawSig(s);
+    }
+  }
 
   /** draws the items; with a layer alpha the layer is first rendered on its own surface */
   draw(surface: Surface): void {

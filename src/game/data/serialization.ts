@@ -249,6 +249,8 @@ export function save_character(datastore: any, c: any, cp: any, game: any, stage
   assets.save_data(file_name, character_data);
   return null;
 }
+// lines of the character file that are not part of the case being played: if one of them cannot be read it is skipped, the case stays
+const PROGRESS_LINES = new Set(["info", "uuid", "score", "resolvedcases", "medals", "notes", "newnotes", "bricklayerpics", "lasthelpstep", "capturedthieves", "depsolved", "mggardenerhelp", "mgshoptenderhelp", "mglibrarianhelp", "mgbricklayerhelp", "phase2help", "phase3help", "identikithelp", "showfolder", "shownotesanimation"]);
 export function open_character(datastore: any, charinfo: any): any {
   let arrest_order_thief, bricklayer_help_seen, bricklayer_pictures_seen, c_dep, c_id, c_uuid, captured_thieves, case_, case_number, category, caught_thief, char, char_progress, character_data, city, clue, clues_found, clues_identified, crime_loc, ct, d, dep_index, department, file_name, gardener_help_seen, generate_new_case, identikit_help, identikit_statement, index, intro_statement, item_type, janitor_statement, k, last_dep_lair, last_dep_visited, last_help_step_seen, layout, librarian_help_seen, line, list_clues, list_dep, list_dep_solved, list_folder_witnesses, list_posible_deps, list_sel_feat, list_target_cities, list_thieves, list_visited_witnesses, list_wit_statements, list_witnesses, location_statement, medal, medals, new_notes, note_item, notes, pending_witness_statements, phase2_help, phase3_help, place_holder, resolved_cases, score, set_elements, shoptender_help_seen, show_folder, show_notes_animation, size, stage, statement_index, stolen_obj, t, tc, thief, thief_index, thief_lair_set, time_limit, time_spend, type, value, w, w_s, wit_ori, witness, wrong_witness_visited: any;
   file_name = get_character_file_name(charinfo.id);
@@ -304,6 +306,7 @@ export function open_character(datastore: any, charinfo: any): any {
     generate_new_case = false;
     for (line of py.iter(character_data)) {
       type = py.getitem(line, 0);
+      try {
       if ((type === "stage")) {
         stage = py.getitem(line, 1);
       } else if ((type === "info")) {
@@ -561,12 +564,33 @@ export function open_character(datastore: any, charinfo: any): any {
           k = k + 1;
         }
       }
+      } catch ($err: any) {
+        // a line this version cannot read (an index it does not know, a damaged line): the progress lines are skipped, a broken case is regenerated
+        if (!PROGRESS_LINES.has(type)) generate_new_case = true;
+        py.print("Skipped a damaged line of the save (" + type + "): " + $err);
+      }
     }
-    for ([witness, statement_index] of py.iter(pending_witness_statements)) {
-      if ((statement_index >= 0)) {
-        witness.witness_statement = py.getitem(datastore.list_statements, statement_index);
-      } else {
-        witness.witness_statement = py.getitem(list_wit_statements, ((-statement_index) - 1));
+    try {
+      for ([witness, statement_index] of py.iter(pending_witness_statements)) {
+        if ((statement_index >= 0)) {
+          witness.witness_statement = py.getitem(datastore.list_statements, statement_index);
+        } else {
+          witness.witness_statement = py.getitem(list_wit_statements, ((-statement_index) - 1));
+        }
+      }
+    } catch ($err: any) {
+      generate_new_case = true;
+    }
+    if (!py.contains(["p1", "p2", "p3", "nc"], stage)) {
+      generate_new_case = true;
+    }
+    if ((c_dep == null)) {
+      c_dep = py.getitem(datastore.list_departments, 0);
+      for (d of py.iter(datastore.list_departments)) {
+        if (py.eq(d.name, charinfo.location)) {
+          c_dep = d;
+          break;
+        }
       }
     }
     if ((c_uuid == null)) {
@@ -574,11 +598,16 @@ export function open_character(datastore: any, charinfo: any): any {
     }
     char = new datamodel.Character(charinfo, c_dep, c_uuid);
     char_progress = new datamodel.CharacterProgress(char, score, resolved_cases, medals, list_dep_solved, gardener_help_seen, shoptender_help_seen, gardener_help_seen, bricklayer_help_seen, phase2_help, phase3_help, identikit_help, show_folder, show_notes_animation, notes, new_notes, bricklayer_pictures_seen, last_help_step_seen, captured_thieves);
-    if (py.truthy(generate_new_case)) {
+    case_ = null;
+    if (!py.truthy(generate_new_case)) {
+      try {
+        case_ = new datamodel.Case(case_number, last_dep_lair, last_dep_visited, crime_loc, stolen_obj, time_limit, time_spend, clues_found, wrong_witness_visited, thief, arrest_order_thief, clues_identified, list_thieves, list_witnesses, list_wit_statements, list_visited_witnesses, list_folder_witnesses, list_dep, list_target_cities, list_posible_deps, thief_lair_set, list_clues, list_sel_feat, caught_thief);
+      } catch ($err: any) {
+        case_ = null;
+      }
+    }
+    if ((case_ == null)) {
       stage = null;
-      case_ = null;
-    } else {
-      case_ = new datamodel.Case(case_number, last_dep_lair, last_dep_visited, crime_loc, stolen_obj, time_limit, time_spend, clues_found, wrong_witness_visited, thief, arrest_order_thief, clues_identified, list_thieves, list_witnesses, list_wit_statements, list_visited_witnesses, list_folder_witnesses, list_dep, list_target_cities, list_posible_deps, thief_lair_set, list_clues, list_sel_feat, caught_thief);
     }
     char_progress.set_case(case_);
     return [char, char_progress, stage];

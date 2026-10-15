@@ -10,7 +10,7 @@ Port web (Astro + React + Canvas) de *División Especial de Detectives*, juego d
 - Hecho con ayuda de IA (Claude, Anthropic).
 
 ## Progreso
-Se guarda en el navegador (localStorage). Los botones 💾 / 📂 descargan y cargan un archivo `.json` con todo el progreso (detectives, puntajes), para respaldarlo o pasarlo a otro equipo.
+Se guarda en el navegador (localStorage). Los botones 💾 / 📂 descargan y cargan un archivo `.json` con todo el progreso (detectives, puntajes), para respaldarlo o pasarlo a otro equipo. Cada archivo del juego tiene copia de respaldo automática (ver `MODLOG.md`, *Guardado seguro*).
 
 ## Uso
 ```bash

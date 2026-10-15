@@ -1,6 +1,7 @@
 // framework/assets.py: loading images, data files, fonts and sounds. The original reads them synchronously from disk; here everything is
 // downloaded once at start (init) and decoded synchronously on demand, so the rest of the port can call load_image() exactly like the game did.
 import { decodeImage } from './codecs';
+import { assetUrl, cacheGet, cachePut, cachedGet, download } from './net';
 import { Font, type FontEntry } from './font';
 import { Surface, transform, type Rect } from './pygame';
 import { mixer, Sound, Channel } from './sounds';
@@ -30,46 +31,85 @@ let restLoading: Promise<void> = Promise.resolve();
 /** resolves when every image is downloaded (the game does not wait for it: see decodeSurface) */
 export function assetsComplete(): Promise<void> { return restLoading; }
 
-async function download(url: string, onProgress?: (fraction: number) => void): Promise<Uint8Array> {
-  const r = await fetch(url);
-  const total = Number(r.headers.get('content-length')) || 0;
-  const reader = r.body!.getReader();
-  const chunks: Uint8Array[] = [];
-  let got = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value); got += value.length;
-    if (total) onProgress?.(Math.min(1, got / total));
-  }
-  const out = new Uint8Array(got);
-  let o = 0;
-  for (const c of chunks) { out.set(c, o); o += c.length; }
-  onProgress?.(1);
-  return out;
+/** the big pack of images being downloaded in 1 MB pieces (4 at a time, in file order); a piece that is here can be read already */
+interface Partial_ { buf: Uint8Array; done: Uint8Array; piece: number }
+const PIECE = 1 << 20;
+const covered = (p: Partial_, off: number, len: number): boolean => {
+  for (let i = Math.floor(off / p.piece), e = Math.floor((off + len - 1) / p.piece); i <= e; i++) if (!p.done[i]) return false;
+  return true;
+};
+let partial: Partial_ | null = null;
+
+async function downloadPieces(url: string, size: number): Promise<Uint8Array> {
+  const n = Math.ceil(size / PIECE);
+  const p: Partial_ = { buf: new Uint8Array(size), done: new Uint8Array(n), piece: PIECE };
+  partial = p;
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < n) {
+      const i = next++, start = i * PIECE, end = Math.min(size, start + PIECE) - 1;
+      for (let attempt = 0; ; attempt++) {
+        try {
+          const r = await fetch(url, { headers: { Range: `bytes=${start}-${end}` } });
+          if (r.status !== 206) throw new Error('no range support');
+          const b = new Uint8Array(await r.arrayBuffer());
+          if (b.length !== end - start + 1) throw new Error('short piece');
+          p.buf.set(b, start); p.done[i] = 1;
+          break;
+        } catch (e) { if (attempt >= 3) throw e; await new Promise((res) => setTimeout(res, 400 * (attempt + 1))); }
+      }
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  return p.buf;
 }
 
-/** Downloads the packed game files: the small `boot` pack of images first (the game can start with it), the rest in the background.
- *  `base` = URL of public/assets. */
+/** Downloads the packed game files: everything the game needs to start is requested at once, with one progress bar for all of it. The small `boot`
+ *  pack of images is enough to start; the big one is downloaded in the background (or taken from the cache). `base` = URL of public/assets. */
 export async function initAssets(base: string, onProgress?: (fraction: number) => void): Promise<void> {
-  const get = async <T,>(file: string): Promise<T> => (await fetch(`${base}/${file}`)).json() as Promise<T>;
-  const [index, data, fonts, sounds, racer] = await Promise.all([
+  const parts = new Map<string, [number, number]>();
+  let shown = 0;
+  const report = (name: string) => (loaded: number, total: number): void => {
+    parts.set(name, [loaded, total]);
+    let l = 0, t = 0;
+    for (const [a, b] of parts.values()) { l += a; t += b; }
+    shown = Math.max(shown, t ? l / t : 0);
+    onProgress?.(Math.min(shown, 0.99));
+  };
+  const text = new TextDecoder();
+  const get = async <T,>(file: string): Promise<T> => JSON.parse(text.decode(await cachedGet(`${base}/${file}`, report(file)))) as T;
+  const restUrl = assetUrl(`${base}/images_rest.pak`);
+  // the big pack: from the cache, or by pieces when the server supports ranges (HEAD), else the game waits for it whole
+  const restInfo = (async (): Promise<{ cached: Uint8Array | null; size: number }> => {
+    const cached = await cacheGet(restUrl);
+    if (cached) return { cached, size: cached.length };
+    try {
+      const h = await fetch(restUrl, { method: 'HEAD' });
+      const size = Number(h.headers.get('content-length')) || 0;
+      return { cached: null, size: h.headers.get('accept-ranges') === 'bytes' && size > PIECE ? size : 0 };
+    } catch { return { cached: null, size: 0 }; }
+  })();
+  const [index, data, fonts, sounds, racer, atlasBytes, boot, rest] = await Promise.all([
     get<Store['index']>('images.json'), get<Store['data']>('data.json'),
     get<Record<string, FontEntry>>('fonts.json'), get<Record<string, number>>('sounds.json'), get<any>('racer.json'),
+    cachedGet(`${base}/fonts.png`, report('fonts.png')), cachedGet(`${base}/images_boot.pak`, report('images_boot.pak')), restInfo,
   ]);
   store.base = base; store.index = index; store.data = data; store.fonts = fonts; store.racer = racer;
   mixer.init(`${base}/sounds`, sounds);
   // the atlas of the glyphs (decoded here: <img>.decode() can stall in background tabs)
-  const png = decodeImage('fonts.png', new Uint8Array(await (await fetch(`${base}/fonts.png`)).arrayBuffer()));
+  const png = decodeImage('fonts.png', atlasBytes);
   store.atlas = Surface.fromRGBA(png.w, png.h, png.data, true);
-  // the game reads a missing image with a synchronous range request: that is only safe when the server really supports ranges, otherwise wait for every image
-  let ranges = false;
-  try { ranges = (await fetch(`${base}/images_rest.pak`, { method: 'HEAD' })).headers.get('accept-ranges') === 'bytes'; } catch { /* unknown */ }
-  const waitAll = !ranges;
-  store.paks[0] = await download(`${base}/images_boot.pak`, waitAll ? (f) => onProgress?.(f * 0.05) : onProgress);
-  const rest = download(`${base}/images_rest.pak`, waitAll ? (f) => onProgress?.(0.05 + f * 0.95) : undefined).then((b) => { store.paks[1] = b; });
-  restLoading = rest.catch((e) => { console.warn('background download failed, images are fetched one by one', e); });
-  if (waitAll) await rest;
+  store.paks[0] = boot;
+  if (rest.cached) { store.paks[1] = rest.cached; return; }
+  if (rest.size > 0) {
+    // (the game does not wait: an image that is not here yet is read from the pieces already downloaded, or fetched on its own, see decodeSurface)
+    restLoading = downloadPieces(restUrl, rest.size).then((b) => { store.paks[1] = b; partial = null; void cachePut(restUrl, b); })
+      .catch((e) => { console.warn('background download failed, images are fetched one by one', e); });
+    return;
+  }
+  // no ranges: wait for every image, there is no other way to read one
+  const whole = await download(restUrl, report('images_rest.pak'));
+  store.paks[1] = whole; void cachePut(restUrl, whole);
 }
 
 /** an image that is not downloaded yet (the player was faster than the background download): fetched on the spot with a synchronous range request */
@@ -77,7 +117,7 @@ function fetchNow(pak: number, off: number, len: number): Uint8Array | null {
   if (typeof XMLHttpRequest === 'undefined') return null;
   try {
     const x = new XMLHttpRequest();
-    x.open('GET', `${store.base}/images_${pak === 0 ? 'boot' : 'rest'}.pak`, false);
+    x.open('GET', assetUrl(`${store.base}/images_${pak === 0 ? 'boot' : 'rest'}.pak`), false);
     x.overrideMimeType('text/plain; charset=x-user-defined');
     x.setRequestHeader('Range', `bytes=${off}-${off + len - 1}`);
     x.send();
@@ -126,7 +166,7 @@ function decodeSurface(file_name: string): Surface {
   const e = store.index[file_name];
   if (!e) throw new Error(`Cannot load image: images/${file_name}`);
   const pak = store.paks[e[0]];
-  const bytes = pak ? pak.subarray(e[1], e[1] + e[2]) : fetchNow(e[0], e[1], e[2]);
+  const bytes = pak ? pak.subarray(e[1], e[1] + e[2]) : e[0] === 1 && partial && covered(partial, e[1], e[2]) ? partial.buf.subarray(e[1], e[1] + e[2]) : fetchNow(e[0], e[1], e[2]);
   if (!bytes) throw new Error(`Cannot load image: images/${file_name}`);
   const r = decodeImage(file_name, bytes);
   const s = Surface.fromRGBA(r.w, r.h, r.data, r.bits32);

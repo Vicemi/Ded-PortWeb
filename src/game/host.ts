@@ -4,7 +4,8 @@ import { initAssets } from '../engine/assets';
 import type { Game } from '../engine/engine';
 import { ACTIVEEVENT, KEYDOWN, KEYUP, K, KMOD_LALT, KMOD_LCTRL, KMOD_LSHIFT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, event, input, setClock, time } from '../engine/pygame';
 import { mixer } from '../engine/sounds';
-import { restoreUserFiles, userFiles } from '../runtime/py';
+import { restoreUserFiles, userFiles, validUserFile } from '../runtime/py';
+import { blockAutosave, flushProgress } from './autosave';
 import { ItemText } from '../engine/items';
 import { createGame } from './main';
 
@@ -28,6 +29,8 @@ export interface Controller {
   exportSave(): string;
   /** loads a file made by exportSave (throws when it is not one); returns the number of files restored */
   importSave(text: string): number;
+  /** saves the open case now (the page is being hidden / closed) */
+  flush(): void;
   state: { loaded: boolean; progress: number; quit: boolean; error: string | null; racing: boolean; touch: boolean; typing: boolean };
 }
 
@@ -97,12 +100,15 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
       if (o.game !== 'ded' || o.format !== 1 || !o.files || typeof o.files !== 'object') throw new Error('No es un archivo de progreso de este juego');
       const files: Record<string, string> = {};
       for (const [k, v] of Object.entries(o.files)) {
-        if (typeof v !== 'string' || !/^[\w.\- ]+(\/[\w.\- ]+)*$/.test(k) || k.includes('..')) throw new Error('El archivo de progreso está dañado');
+        if (typeof v !== 'string' || !/^[\w.\- ]+(\/[\w.\- ]+)*$/.test(k) || k.includes('..') || !validUserFile(k, v)) throw new Error('El archivo de progreso está dañado');
         files[k] = v;
       }
+      if (!Object.keys(files).length) throw new Error('El archivo de progreso está vacío');
+      blockAutosave();
       restoreUserFiles(files);
       return Object.keys(files).length;
     },
+    flush() { flushProgress(ctl.game); },
     stop() { stopped = true; cancelAnimationFrame(raf); },
   };
 
@@ -162,6 +168,12 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
       fingers.delete(e.pointerId);
       if (gesture) { if (fingers.size === 0) gesture = false; return; }
     }
+    if (e.type === 'pointercancel') {
+      // the system took the touch (scroll, edge swipe, call): let go outside the game so it is not taken as a tap on whatever is under the finger
+      event.post({ type: MOUSEMOTION, pos: [-50, -50], rel: [0, 0], buttons: [0, 0, 0] }); input.pos = [-50, -50]; lastPos = [-50, -50];
+      input.buttons[0] = 0; event.post({ type: MOUSEBUTTONUP, pos: [-50, -50], button: 1 });
+      return;
+    }
     const [x, y] = toGame(e);
     send('up', x, y, e.button);
     // a finger that is lifted is not hovering anything any more
@@ -189,6 +201,12 @@ export function startHost(canvas: HTMLCanvasElement, assetBase: string): Control
   window.addEventListener('keydown', onKey(true));
   window.addEventListener('keyup', onKey(false));
   window.addEventListener('blur', () => { input.pressed.clear(); });
+  // the page can be killed right after it is hidden (phone app switch): save what happened since the last checkpoint
+  const onHide = (): void => { if (document.visibilityState === 'hidden') ctl.flush(); };
+  document.addEventListener('visibilitychange', onHide);
+  window.addEventListener('pagehide', () => ctl.flush());
+  window.addEventListener('beforeunload', () => ctl.flush());
+  document.addEventListener('freeze', () => ctl.flush());
 
   const loop = (): void => {
     if (stopped) return;

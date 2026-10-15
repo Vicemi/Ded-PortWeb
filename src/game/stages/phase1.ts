@@ -27,6 +27,7 @@ import { random } from '../../runtime/py';
 import * as text from '../../engine/textutil';
 import * as web from '../../runtime/web';
 import * as witness from './witness';
+import * as content_lupa from '../content/lupa_objects';
 import * as $self from './phase1';
 
 export class Phase1Content extends phase0.PhaseContent {
@@ -188,6 +189,7 @@ export class Phase1Content extends phase0.PhaseContent {
     }
     clues_found = py.slice(case_.clues_found, null, null);
     if ((py.len(clues_found) > 0)) {
+      content_lupa.registerDefinitions();
       this.stage.prepare_items_set(this.stage, true);
       clues = py.slice(case_.list_stage_clues, null, 3);
       for (clue_found of py.iter(clues_found)) {

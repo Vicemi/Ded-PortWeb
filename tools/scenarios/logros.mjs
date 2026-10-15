@@ -13,6 +13,12 @@ export default async (dev) => {
   if (news.length < 5) throw new Error('few achievements: ' + news);
   if (ex.grantAchievements(prog, ds).length) throw new Error('granted twice');
   if (!prog.medals.some((m) => m.name === 'ach_victor')) throw new Error('victor not granted');
+  // the medals of the clue objects come from the clues found in the solved case (and never from the panel)
+  prog.case.clues_found = ['i601', 'i623', 'i620'];
+  if (ex.grantAchievements(prog, ds).some((t) => /Cebador|Contraseña|Tecnología/.test(t))) throw new Error('object medals given without a solved case');
+  const objs = ex.grantAchievements(prog, ds, prog.case);
+  if (objs.length !== 4 || !prog.medals.some((m) => m.name === 'ach_xo')) throw new Error('object medals: ' + objs);
+  if (process.env.ACH_ALL) prog.case.clues_found = ['i603', 'i609', 'i605', 'i614'], ex.grantAchievements(prog, ds, prog.case);
   const M = dev.mod('game/stages/merits').Merits;
   const m = new M(dev.game.stage);
   m.show_merits();

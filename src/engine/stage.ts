@@ -1,4 +1,5 @@
 // framework/stage.py: Stage (events, timers, dialogs, music, mouse cursor), StageIso (isometric grid of ItemCell) and the iso item definitions.
+import { FrameCache } from './framecache';
 import { CustomSound, Image_, load_data, load_image, load_mask } from './assets';
 import {
   ACTIVEEVENT, KEYDOWN, K, KMOD_ALT, KMOD_CTRL, KMOD_LSHIFT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION, QUIT, USEREVENT, Rect, Surface, event as pgevent, input,
@@ -42,6 +43,7 @@ export interface GameLike {
   set_stage(stage: Stage, show_loading?: boolean, loading_image?: string | null): void;
   draw_fps(): void;
   update_display(): void;
+  draw_allowed(): boolean;
   get_empty_sound(): CustomSound;
 }
 
@@ -623,6 +625,12 @@ export class Stage {
     } finally { this.rendering--; }
   }
 
+  /** when set, only this part of the target surface is drawn (the rest keeps its old pixels): the magnifier of phase 2 reads a small window of a big stage */
+  render_limit: Rect | null = null;
+  private fc: FrameCache | null = null;
+  /** frees the frame cache (the stage is not on screen any more) */
+  release_frame_cache(): void { this.fc = null; }
+  private paint_list: Layer[] = [];
   private draw_frame(): void {
     const target = this.target_surface ?? this.game.window;
     const frame_delay = this.game.get_frame_delay();
@@ -630,14 +638,39 @@ export class Stage {
     const loading_layer = this.target_surface === null ? this.game.loading_layer : null;
     if (loading_layer) loading_layer.update(frame_delay);
     if (this.mouse_layer) this.mouse_layer.update(frame_delay);
-    this.draw_background(target);
-    for (const l of this.layers) if (l.get_visible()) l.draw(target);
-    if (loading_layer) loading_layer.draw(target);
-    else if (this.mouse_layer && !input.touch) this.mouse_layer.draw(target);
-    if (this.target_surface === null) {
+    const limit = this.render_limit;
+    const on_screen = this.target_surface === null;
+    if (on_screen && !this.game.draw_allowed()) return;
+    const list = this.paint_list;
+    list.length = 0;
+    for (const l of this.layers) if (l.get_visible()) list.push(l);
+    if (loading_layer) list.push(loading_layer);
+    else if (this.mouse_layer && !input.touch) list.push(this.mouse_layer);
+    // the frame cache: skip what did not change since the last frame (see framecache.ts)
+    const fc = this.fc ?? (this.fc = new FrameCache());
+    const cacheable = limit === null && !(on_screen && this.game.get_show_fps()) && !FrameCache.disabled;
+    let from = 0, snap = 0;
+    if (cacheable) {
+      const bg = fc.bgScratch();
+      bg.reset();
+      if (this.background === null) bg.color(this.background_color); else bg.surface(this.background.surface);
+      fc.compare(list, bg);
+      if (fc.canSkip(target, list.length)) return;
+      from = fc.start(target);
+      snap = fc.prefixToCache(list.length);
+    } else fc.drop();
+    if (limit !== null) target.set_limit(limit);
+    if (from === 0) this.draw_background(target);
+    for (let i = from; i < list.length; i++) {
+      list[i].draw(target);
+      if (i + 1 === snap) fc.snapshot(target, snap);
+    }
+    if (limit !== null) target.set_limit(null);
+    if (on_screen) {
       if (this.game.get_show_fps()) this.game.draw_fps();
       this.game.update_display();
     }
+    if (cacheable) fc.done(target);
   }
   private draw_background(surface: Surface): void {
     surface.set_clip(null);

@@ -430,7 +430,7 @@ export class Phase2Content extends phase0.PhaseContent {
     this.music_loop = assets.load_music("p2_music_loop.ogg");
     this.magnifier_taken = false;
     this.clues_count = 0;
-    content_lupa.enableNewObjects(PLACE_HOLDER_TAGS, [PlaceHolderType.NORMALITEM, PlaceHolderType.BELOWITEM, PlaceHolderType.INSIDEITEM, PlaceHolderType.OUTSIDEITEM]);
+    content_lupa.enableNewObjects(PLACE_HOLDER_TAGS, [PlaceHolderType.NORMALITEM, PlaceHolderType.BELOWITEM, PlaceHolderType.INSIDEITEM, PlaceHolderType.OUTSIDEITEM], [PlaceHolderType.NORMALCLUE, PlaceHolderType.BELOWCLUE, PlaceHolderType.INSIDECLUE, PlaceHolderType.OUTSIDECLUE]);
     this.build_tags_dictionary();
     return null;
   }
@@ -665,8 +665,8 @@ export class Phase2Content extends phase0.PhaseContent {
       box = new ItemImage(62, 198, image);
       py.m(dialog, "add", box);
       message = "Esto no parece ser una pista interesante...";
-      const found = content_lupa.objectName(item.get_type ? item.get_type() : "");
-      if (found) message = "Encontraste: " + found + ". No parece ser una pista interesante...";
+      const found = content_lupa.objectJoke(item.get_type ? item.get_type() : "");
+      if (found) message = found;
       message = text.to_upper(message);
       text_item = new ItemText(122, 239, font, 12, message, [0, 0, 0], null, 210, 30, 2, 2);
       py.m(dialog, "add", text_item);
@@ -756,10 +756,12 @@ export class Phase2Content extends phase0.PhaseContent {
   }
   draw_magnifier(item: any, target: any): any {
     let back_x, back_y, delta_x, delta_y, x, y: any;
-    this.large_stage.render();
     x = item.get_left();
     y = item.get_top();
     [back_x, back_y] = this.get_amplified_pos(x, y);
+    // only the lens window of the 2x stage is read below: draw just that (same pixels, ~100x fewer)
+    this.large_stage.render_limit = new Rect(back_x + 23, back_y + 21, 101, 99);
+    this.large_stage.render();
     delta_x = 35;
     delta_y = 21;
     target.blit_stage(this.large_stage, [py.add(x, delta_x), py.add(y, delta_y)], new Rect(py.add(back_x, delta_x), py.add(back_y, delta_y), 76, 18));

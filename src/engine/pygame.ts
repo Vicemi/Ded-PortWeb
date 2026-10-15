@@ -66,7 +66,10 @@ function newCanvas(w: number, h: number): Canvas {
 /** pygame.Surface on top of a canvas. `srcalpha` = pygame.SRCALPHA (per-pixel alpha); surfaces without it are opaque. */
 export class Surface {
   canvas: Canvas;
-  ctx: CanvasRenderingContext2D;
+  private _ctx: CanvasRenderingContext2D;
+  /** counts the changes of the pixels: any access to `ctx` counts as one (the frame cache of the stage compares it) */
+  ver = 0;
+  get ctx(): CanvasRenderingContext2D { this.ver++; return this._ctx; }
   readonly srcalpha: boolean;
   private clipRect: Rect | null = null;
   private clipOn = false;
@@ -78,9 +81,9 @@ export class Surface {
   constructor(w: number, h: number, srcalpha = true, canvas?: Canvas) {
     this.srcalpha = srcalpha;
     this.canvas = canvas ?? newCanvas(w, h);
-    this.ctx = this.canvas.getContext('2d', { willReadFrequently: true, alpha: true })!;
-    this.ctx.imageSmoothingEnabled = false;
-    if (!canvas && !srcalpha && w > 0 && h > 0) { this.ctx.fillStyle = '#000'; this.ctx.fillRect(0, 0, w, h); }
+    this._ctx = this.canvas.getContext('2d', { willReadFrequently: true, alpha: true })!;
+    this._ctx.imageSmoothingEnabled = false;
+    if (!canvas && !srcalpha && w > 0 && h > 0) { this._ctx.fillStyle = '#000'; this._ctx.fillRect(0, 0, w, h); }
   }
   /** a surface that already has its pixels (images) */
   static fromRGBA(w: number, h: number, data: Uint8ClampedArray, srcalpha: boolean): Surface {
@@ -97,11 +100,20 @@ export class Surface {
   set_alpha(a: number): void { this.alpha = a; }
 
   // ---- clip
+  /** a hard limit (stage render_limit) intersected with every clip: pixels outside are never drawn, and blits that fall outside are skipped */
+  private limitRect: Rect | null = null;
+  set_limit(r: Rect | null): void { this.limitRect = r; this.applyClip(); }
   set_clip(r: Rect | null): void {
-    if (this.clipOn) { this.ctx.restore(); this.clipOn = false; }
     this.clipRect = r;
+    this.applyClip();
+  }
+  private applyClip(): void {
+    if (this.clipOn) { this._ctx.restore(); this.clipOn = false; }
+    let r = this.clipRect;
+    const l = this.limitRect;
+    if (l) r = r ? r.clip(l) : l;
     if (r) {
-      this.ctx.save(); this.ctx.beginPath(); this.ctx.rect(r.x, r.y, r.w, r.h); this.ctx.clip();
+      this._ctx.save(); this._ctx.beginPath(); this._ctx.rect(r.x, r.y, r.w, r.h); this._ctx.clip();
       this.clipOn = true;
     }
   }
@@ -110,7 +122,8 @@ export class Surface {
   // ---- drawing
   /** fill(color, rect): replaces the pixels (no blending), like SDL_FillRect */
   fill(color: Color, rect?: Rect | readonly number[] | null): void {
-    const c = this.ctx;
+    const c = this._ctx;
+    this.ver++;
     const r = rect ? Rect.from(rect as Rect | readonly number[]) : new Rect(0, 0, this.canvas.width, this.canvas.height);
     const a = this.srcalpha && color.length >= 4 ? color[3] : 255;
     this.pix = null;
@@ -127,8 +140,16 @@ export class Surface {
   blit(src: Surface | Canvas, dest: readonly number[] | Rect, area?: Rect | readonly number[] | null): void {
     const sc = src instanceof Surface ? src.canvas : src;
     const dx = trunc(dest instanceof Rect ? dest.x : dest[0]), dy = trunc(dest instanceof Rect ? dest.y : dest[1]);
+    // entirely outside of the surface / clip / limit: nothing would change
+    const cw = this.canvas.width, ch = this.canvas.height;
+    const bw = area ? (area instanceof Rect ? area.w : area[2]) : sc.width, bh = area ? (area instanceof Rect ? area.h : area[3]) : sc.height;
+    if (dx >= cw || dy >= ch || dx + bw <= 0 || dy + bh <= 0) return;
+    const cl = this.clipRect, li = this.limitRect;
+    if (cl && (dx >= cl.x + cl.w || dy >= cl.y + cl.h || dx + bw <= cl.x || dy + bh <= cl.y)) return;
+    if (li && (dx >= li.x + li.w || dy >= li.y + li.h || dx + bw <= li.x || dy + bh <= li.y)) return;
     this.pix = null;
-    const c = this.ctx;
+    this.ver++;
+    const c = this._ctx;
     const a = src instanceof Surface ? src.alpha : 255;
     if (a !== 255) c.globalAlpha = a / 255;
     if (area) {
@@ -142,7 +163,7 @@ export class Surface {
   }
   /** blit with an extra alpha factor 0..255 multiplied in */
   blit_alpha(src: Surface, dest: readonly number[], alpha: number, area?: Rect | readonly number[] | null): void {
-    const c = this.ctx;
+    const c = this._ctx;
     c.globalAlpha = Math.max(0, Math.min(1, alpha / 255));
     this.blit(src, dest, area);
     c.globalAlpha = 1;
@@ -157,6 +178,15 @@ export class Surface {
     s.alpha = this.alpha;
     return s;
   }
+  /** replaces every pixel with those of `src` (same size; the clip must be off) */
+  paste(src: Surface): void {
+    if (this.canvas.width === 0 || this.canvas.height === 0) return;
+    const c = this._ctx;
+    this.pix = null; this.ver++;
+    c.save(); c.globalAlpha = 1; c.globalCompositeOperation = 'copy';
+    c.drawImage(src.canvas, 0, 0);
+    c.restore();
+  }
   /** pygame.Surface.subsurface (a copy: the game never draws through a subsurface back into the parent) */
   subsurface(r: Rect): Surface {
     const s = new Surface(r.w, r.h, this.srcalpha);
@@ -167,16 +197,17 @@ export class Surface {
   pixels(): Uint8ClampedArray {
     if (!this.pix) {
       const w = this.canvas.width, h = this.canvas.height;
-      this.pix = w > 0 && h > 0 ? this.ctx.getImageData(0, 0, w, h).data : new Uint8ClampedArray(0);
+      this.pix = w > 0 && h > 0 ? this._ctx.getImageData(0, 0, w, h).data : new Uint8ClampedArray(0);
     }
     return this.pix;
   }
   setPixels(data: Uint8ClampedArray): void {
     const w = this.canvas.width, h = this.canvas.height;
     if (w > 0 && h > 0) {
-      this.ctx.save(); this.ctx.globalCompositeOperation = 'copy';
-      this.ctx.putImageData(new ImageData(data as Uint8ClampedArray<ArrayBuffer>, w, h), 0, 0);
-      this.ctx.restore();
+      this.ver++;
+      this._ctx.save(); this._ctx.globalCompositeOperation = 'copy';
+      this._ctx.putImageData(new ImageData(data as Uint8ClampedArray<ArrayBuffer>, w, h), 0, 0);
+      this._ctx.restore();
     }
     this.pix = data;
   }

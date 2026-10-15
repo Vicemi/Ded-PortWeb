@@ -15,6 +15,7 @@ H = 74                      # height of the pictures in the game (the original s
 SHEETS = {
     1: ['primer_caso', 'barrio', 'seccional', None, 'inspector', 'leyenda', None, 'viajero'],
     2: ['recorrido', 'diecinueve', 'uruguay', 'repetido', 'cinco_presos', 'diez_presos', 'todos_presos', 'victor'],
+    4: ['mate', 'xo', 'musica', 'gaucho', 'paladar', 'ojo', 'retro', 'rarezas'],
     3: ['aaron', 'fausto', 'vera', 'nana', 'rita', 'byte', 'puntos_5k', 'puntos_20k'],
 }
 

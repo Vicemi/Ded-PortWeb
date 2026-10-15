@@ -11,6 +11,7 @@ import * as stats from '../../runtime/stats';
 import { sys } from '../../runtime/prelude';
 import { uuid } from '../../runtime/py';
 import * as version from '../../runtime/version';
+import { CLUE_OBJECTS } from '../content/lupa_clues';
 import * as $self from './datastore';
 
 export let BASE_REQUEST_URL: any = "http://ws.trojanchicken.com/ded/uy/";
@@ -1487,6 +1488,8 @@ export class Datastore {
     py.m(list_clues, "append", cd);
     cd = new datamodel.Clue("i528", [hill_type, lagoon_type, river_type, history_fact_type, location_type, writer_type]);
     py.m(list_clues, "append", cd);
+    // the objects of the updated edition: appended after the original ones, saves store the clues by index
+    for (const o of CLUE_OBJECTS) py.m(list_clues, "append", new datamodel.Clue(o.id, o.types.map((t: string) => this.get_clue_type(t))));
     return list_clues;
   }
   get_clue_type(type: any): any {

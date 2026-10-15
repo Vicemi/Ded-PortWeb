@@ -143,8 +143,7 @@ export class RacerStage extends Stage {
     this.lastTick = now;
     this.handleEvents();
     if (!this.dialog && this.phase !== 'quit') { this.clock += dt; this.update(dt); }
-    this.draw();
-    this.game.update_display();
+    if (this.game.draw_allowed()) { this.draw(); this.game.update_display(); }
   }
 
   private handleEvents(): void {

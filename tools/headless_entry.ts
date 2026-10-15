@@ -7,6 +7,9 @@ import type { Game } from '../src/engine/engine';
 import { lazy } from '../src/runtime/py';
 import * as newgames from '../src/game/minigames/newgames';
 import * as achievements from '../src/game/content/achievements';
+import * as py from '../src/runtime/py';
+import * as safefs from '../src/runtime/safefs';
+import * as autosave from '../src/game/autosave';
 
 export interface Dev {
   game: Game;
@@ -27,6 +30,10 @@ export interface Dev {
   /** the new minigames (hand-written) */
   newgames: typeof newgames;
   achievements: typeof achievements;
+  /** the file layer under the saves (see tools/scenarios/save_safety.mjs) */
+  py: typeof py;
+  safefs: typeof safefs;
+  autosave: typeof autosave;
   /** a generated game module by path, e.g. mod('game/stages/phase0').Phase0Stage */
   mod(path: string): any;
 }
@@ -39,7 +46,9 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
   const canvas = (globalThis as any).document.createElement('canvas');
   const game = createGame(canvas);
   let last: [number, number] = [0, 0];
-  const go = (n: number): void => { for (let i = 0; i < n; i++) { t += 25; game.tick(); } };
+  const digest = (globalThis as any).__DED_DIGEST as number[] | undefined;
+  const hash = (): number => { const p = game.window.pixels(); let h = 2166136261; for (let i = 0; i < p.length; i += 7) h = Math.imul(h ^ p[i], 16777619); return h >>> 0; };
+  const go = (n: number): void => { for (let i = 0; i < n; i++) { t += 25; game.tick(); if (digest) digest.push(hash()); } };
   const post = (type: number, x: number, y: number, button = 1): void => {
     input.pos = [x, y];
     const rel: [number, number] = [x - last[0], y - last[1]];
@@ -48,7 +57,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
     else event.post({ type, pos: [x, y], button });
   };
   const dev: Dev = {
-    game, canvas, K, newgames, achievements,
+    game, canvas, K, newgames, achievements, py, safefs, autosave,
     mod: (path) => lazy(path),
     go,
     move(x, y, frames = 3) { post(MOUSEMOTION, x, y); go(frames); },

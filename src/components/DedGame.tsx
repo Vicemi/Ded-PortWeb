@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { startHost, type Controller } from '../game/host';
 import { mixer } from '../engine/sounds';
 import { K } from '../engine/pygame';
+import { storageFailed } from '../runtime/py';
 import { isDesktop, restoreFromHost, startAutosave, toHost } from '../desktop';
 import { installUpdateUi } from '../desktop-update';
 
@@ -33,6 +34,7 @@ export default function DedGame() {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [note, setNote] = useState<string | null>(null);
+  const warned = useRef(false);
   const [zoom, setZoom] = useState({ s: 1, x: 0, y: 0 });
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
@@ -52,6 +54,7 @@ export default function DedGame() {
       setQuit(ctl.state.quit);
       setRacing(ctl.state.racing);
       setTouch(ctl.state.touch);
+      if (!warned.current && storageFailed()) { warned.current = true; setNote('El navegador no deja guardar (almacenamiento lleno o bloqueado). Usa el botón 💾 para guardar tu progreso en un archivo.'); }
     }, 100);
     canvasRef.current?.focus();
     const detach = ctl.attachTextInput(inputRef.current!);

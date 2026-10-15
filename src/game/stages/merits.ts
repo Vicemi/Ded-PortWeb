@@ -130,6 +130,8 @@ export class Merits {
       if ((medal.name === "uy")) {
         medal_uy = medal;
       } else if (py.truthy(py.m(medal.name, "startswith", "ach_"))) {
+      } else if (!py.contains(MEDALS_DATA, medal.name)) {
+        // a medal this version does not draw (unknown name in the save): skipped instead of breaking the screen
       } else {
         this.add_tiny_medal(medal.name, medal.count, font_18);
       }

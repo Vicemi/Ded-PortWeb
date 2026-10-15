@@ -1,7 +1,7 @@
 // The bridge with the desktop version (desktop/ : a Rust program that shows the game in its own window). It is only active inside that window, where the
 // host sets window.__DED_DESKTOP__ and gives window.ipc. The saves live in the installation folder: the host hands the last one to the page before the game
 // starts (restoreFromHost) and the page sends every change back (startAutosave). On the web nothing here does anything.
-import { restoreUserFiles } from './runtime/py';
+import { restoreUserFiles, validUserFile } from './runtime/py';
 import type { Controller } from './game/host';
 
 declare global {
@@ -22,14 +22,21 @@ function parseSave(text: string): Record<string, string> {
   const o = JSON.parse(text) as { game?: string; format?: number; files?: Record<string, unknown> };
   if (o.game !== 'ded' || o.format !== 1 || !o.files || typeof o.files !== 'object') throw new Error('not a save');
   const files: Record<string, string> = {};
-  for (const [k, v] of Object.entries(o.files)) if (typeof v === 'string' && /^[\w.\- ]+(\/[\w.\- ]+)*$/.test(k) && !k.includes('..')) files[k] = v;
+  for (const [k, v] of Object.entries(o.files)) if (typeof v === 'string' && /^[\w.\- ]+(\/[\w.\- ]+)*$/.test(k) && !k.includes('..') && validUserFile(k, v)) files[k] = v;
   return files;
 }
 
-/** the save of the installation folder goes into the storage of the page (before the game reads its files) */
+/**
+ * The save of the installation folder goes into the storage of the page (before the game reads its files).
+ * window.__DED_SAVE__ is the file as it was when the program started, so it is used once per run (a reload keeps the sessionStorage) and never over
+ * newer progress: the host copy only fills what the page lacks or has less progress than it.
+ */
 export function restoreFromHost(): void {
   if (!isDesktop() || !window.__DED_SAVE__) return;
-  try { restoreUserFiles(parseSave(window.__DED_SAVE__)); } catch { /* damaged file: the game starts clean */ }
+  try { if (sessionStorage.getItem('ded.restored')) return; sessionStorage.setItem('ded.restored', '1'); } catch { /* no sessionStorage: restore anyway */ }
+  try {
+    restoreUserFiles(parseSave(window.__DED_SAVE__), 'newer');
+  } catch { /* damaged file: the game starts with what the page has */ }
 }
 
 /** sends the save to the host every time it changes, when the window hides and on demand; returns a function that stops it */

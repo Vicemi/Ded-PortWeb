@@ -1,6 +1,7 @@
 // pygame.mixer on top of Web Audio: Sound objects, mixing channels, channel 0 reserved for the music (as the original game does), fades,
 // queued sounds and the "end of sound" event.
 import { event as pgEvent } from './pygame';
+import { cachedGet } from './net';
 
 class MixerImpl {
   ctx: AudioContext | null = null;
@@ -16,6 +17,29 @@ class MixerImpl {
     this.base = base;
     this.lengths = lengths;
     this.channels = Array.from({ length: numChannels }, (_, i) => new Channel(this, i));
+    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+      // iPhones only start audio from a finished tap (touchend / click), not from the pointerdown the game listens to; and they stop the audio
+      // when the page is hidden or a call comes in: wake it up with the next gesture, and let it sleep while the page is hidden
+      const wake = (): void => { if (this.ctx && this.ctx.state !== 'running' && !document.hidden) void this.ctx.resume().catch(() => undefined); else if (!this.ctx) this.unlock(); };
+      for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, wake, { passive: true, capture: true });
+      document.addEventListener('visibilitychange', () => {
+        if (!this.ctx) return;
+        if (document.hidden) void this.ctx.suspend().catch(() => undefined); else void this.ctx.resume().catch(() => undefined);
+      });
+    }
+  }
+  /** decoded music is big (a minute of stereo = ~25 MB): only the last few long sounds stay decoded; the others are decoded again when needed */
+  private longs: Sound[] = [];
+  noteLong(s: Sound): void {
+    const i = this.longs.indexOf(s);
+    if (i >= 0) this.longs.splice(i, 1);
+    this.longs.push(s);
+    while (this.longs.length > 3) {
+      const victim = this.longs.find((v) => v !== s && !this.channels.some((c) => c.uses(v)));
+      if (!victim) break;
+      this.longs.splice(this.longs.indexOf(victim), 1);
+      victim.release();
+    }
   }
   /** Web Audio can only start from a user gesture: called on the first click / key press */
   unlock(): void {
@@ -65,21 +89,23 @@ export class Sound {
       if (!ctx) return Promise.resolve();
       this.loading = (async () => {
         try {
-          const r = await fetch(`${this.m.base}/${this.name}`);
-          const bytes = await r.arrayBuffer();
+          const bytes = await cachedGet(`${this.m.base}/${this.name}`);
           try {
-            this.buffer = await ctx.decodeAudioData(bytes.slice(0));
+            this.buffer = await ctx.decodeAudioData(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
           } catch (e) {
             // browsers without Ogg Vorbis (older Safari): the same sound as AAC
             if (!this.name.endsWith('.ogg')) throw e;
-            const r2 = await fetch(`${this.m.base}/${this.name.slice(0, -4)}.m4a`);
-            this.buffer = await ctx.decodeAudioData(await r2.arrayBuffer());
+            const b2 = await cachedGet(`${this.m.base}/${this.name.slice(0, -4)}.m4a`);
+            this.buffer = await ctx.decodeAudioData(b2.buffer.slice(b2.byteOffset, b2.byteOffset + b2.byteLength) as ArrayBuffer);
           }
+          if (this.buffer.duration > 12) this.m.noteLong(this);
         } catch (e) { console.warn('cannot decode sound', this.name, e); this.loading = null; }
       })();
     }
     return this.loading;
   }
+  /** forgets the decoded audio (decode() brings it back) */
+  release(): void { this.buffer = null; this.loading = null; }
   get_length(): number { return this.buffer ? this.buffer.duration : this.length; }
   set_volume(v: number): void { this.volume = v; }
   get_volume(): number { return this.volume; }
@@ -112,6 +138,11 @@ export class Channel {
   private token = 0;
   constructor(private m: MixerImpl, readonly index: number) {}
 
+  /** this channel plays, queues, pauses or waits for the sound */
+  uses(s: Sound): boolean {
+    return this.cur?.sound === s || this.next?.sound === s || this.paused?.sound === s || this.paused?.nextSound === s || this.deferred?.sound === s
+      || this.deferred?.queue === s || this.decoding === s;
+  }
   /** the Sound that is playing (or paused) on this channel */
   get sound(): Sound | null { return this.cur?.sound ?? this.paused?.sound ?? null; }
   attach(): void {

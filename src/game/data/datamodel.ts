@@ -3,6 +3,7 @@
 import * as py from '../../runtime/py';
 import * as assets from '../../engine/assets';
 import * as text from '../../engine/textutil';
+import { clueMessage } from '../content/lupa_clues';
 import * as $self from './datamodel';
 const $d1: any = [];
 const $d2: any = [];
@@ -92,6 +93,8 @@ export class StageClue {
     return;
   }
   build_item_message(): any {
+    const custom = clueMessage(this.clue.id, this.note_item);
+    if (custom) return custom;
     let article, marked, message, visiting: any;
     if (((this.clue.id === "i509") || (this.clue.id === "i529"))) {
       if ((this.note_item.type === "HILL")) {

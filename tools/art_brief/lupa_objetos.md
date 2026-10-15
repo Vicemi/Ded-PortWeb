@@ -19,4 +19,4 @@ Tamaño: entre 40x40 y 70x70 px, vista 3/4 isométrica desde arriba-derecha, mis
 Después pedir la misma hoja con cada objeto "con un contorno amarillo brillante y un resplandor suave" (versión iluminada).
 
 ## Cómo se usan
-Dejar las imágenes en `tools/extra_images` con esos nombres (ids i600–i623). Falta enganchar los objetos nuevos en el código de la fase 2 (definición de cada objeto y lugares donde pueden esconderse en `phase2.ts`): eso se hace cuando lleguen las imágenes.
+Dejar las imágenes en `tools/extra_images` con esos nombres (ids i600–i623). Los objetos ya están enganchados en el juego (ids i600–i623): `python tools/make_objects.py <hoja.jpg>` los corta y les aplica el tono de los originales. Además pueden ser pistas reales del caso (textos en `src/game/content/lupa_clues.ts`).
