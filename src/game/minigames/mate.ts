@@ -128,7 +128,7 @@ export class MinigameMate extends ArcadeGame {
     return [px + 19 * Math.cos(a) + 46 * Math.sin(a), py + 19 * Math.sin(a) - 46 * Math.cos(a)];
   }
   paint(c: any, W: number, H: number): void {
-    if (!put(c, scaled('mate_bg', W, H), 0, 0)) this.paintWall(c, W, H);   // art if it exists, else the drawing by code
+    if (!put(c, scaled('mate_bg', W, H, 'cover'), 0, 0)) this.paintWall(c, W, H);   // art if it exists, else the drawing by code
     // shadow of the mate
     c.fillStyle = 'rgba(60,24,6,0.35)'; c.beginPath(); c.ellipse(CX, 262, 58, 9, 0, 0, 7); c.fill();
     this.paintMate(c);
@@ -225,11 +225,12 @@ export class MinigameMate extends ArcadeGame {
   }
   paintThermos(c: any): void {
     const a = this.tilt * 0.72, px = 98, py = 98;
-    // the arm that holds it
-    c.save(); c.strokeStyle = '#1b1410'; c.lineWidth = 3;
-    c.fillStyle = '#6b8f4e'; c.beginPath(); c.moveTo(-6, 128); c.lineTo(64, 90 + this.tilt * 8); c.lineTo(74, 118 + this.tilt * 8); c.lineTo(-6, 176); c.closePath(); c.fill(); c.stroke();
-    c.restore();
     const tc = scaled('mate_termo', 34, 102), pc = this.tilt > 0.6 ? scaled('mate_termo_pour', 110, 67) : null;
+    if (!tc) {   // the arm that holds the drawn thermos (the thermos art floats on its own: a green wedge and an orange oval over the picture looked wrong)
+      c.save(); c.strokeStyle = '#1b1410'; c.lineWidth = 3;
+      c.fillStyle = '#6b8f4e'; c.beginPath(); c.moveTo(-6, 128); c.lineTo(64, 90 + this.tilt * 8); c.lineTo(74, 118 + this.tilt * 8); c.lineTo(-6, 176); c.closePath(); c.fill(); c.stroke();
+      c.restore();
+    }
     if (pc) { const [sx, sy] = this.spout(); put(c, pc, sx - 84, sy - 22); }   // POUR art: tweak the offsets if the spout does not meet the stream
     else if (tc) { c.save(); c.translate(px, py); c.rotate(a); put(c, tc, -17, -52); c.restore(); }
     else {
@@ -245,6 +246,7 @@ export class MinigameMate extends ArcadeGame {
     c.fillStyle = 'rgba(255,255,255,0.7)'; c.fillRect(-13, -26, 4, 50);
     c.restore();
     }
+    if (tc) return;
     // the hand over it
     c.save(); c.translate(px, py); c.rotate(a); c.fillStyle = '#dba070'; c.strokeStyle = '#1b1410'; c.lineWidth = 3;
     c.beginPath(); c.ellipse(-8, 6, 14, 10, 0.2, 0, 7); c.fill(); c.stroke(); c.restore();

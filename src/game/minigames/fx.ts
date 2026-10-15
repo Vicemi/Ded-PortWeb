@@ -183,7 +183,7 @@ export class Particles {
       if (kd === 0) { c.beginPath(); c.arc(this.x[i], this.y[i], s * (0.5 + k * 0.5), 0, TAU); c.fill(); }
       else if (kd === 1 && cell(c, 'ui_sparkles', 4, i, this.x[i], this.y[i], s * 4.2 * (0.6 + k * 0.4), s * 4.2 * (0.6 + k * 0.4), this.rot[i])) { /* art */ }
       else if (kd === 1) { star(c, this.x[i], this.y[i], s * 1.7 * (0.6 + k * 0.4), this.col[i], null, this.rot[i]); }
-      else if (kd === 2 && cell(c, 'ui_confetti', 6, i, this.x[i], this.y[i], s * 3.2, s * 3.2 * (Math.abs(Math.cos(this.rot[i] * 1.3)) * 0.8 + 0.2), this.rot[i])) { /* art */ }
+      else if (kd === 2 && cell(c, 'ui_confetti', 6, i, this.x[i], this.y[i], s * 3.2, s * 3.2 * (Math.abs(Math.cos(this.rot[i] * 1.3)) * 0.8 + 0.2), this.rot[i], true)) { /* art: the confetti turns over, so its height is squashed on purpose */ }
       else if (kd === 2) {
         c.save(); c.translate(this.x[i], this.y[i]); c.rotate(this.rot[i]); c.scale(1, Math.abs(Math.cos(this.rot[i] * 1.3)) * 0.8 + 0.2);
         c.fillRect(-s, -s * 0.6, s * 2, s * 1.2); c.restore();

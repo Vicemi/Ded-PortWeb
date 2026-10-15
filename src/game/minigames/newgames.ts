@@ -13,9 +13,11 @@ import { drum, blip } from '../../engine/synth';
 import * as statcodes from '../data/statcodes';
 import { Fx, E, clamp01, heat, gtext, wrap, rr, sun, check, cross, drawFinale } from './fx';
 import { makeCandombe } from './candombe';
-import { scaled, put, frame, slice3 } from './mgart';
+import { scaled, put, frame, has, blit } from './mgart';
 
 const BX = 104, BY = 74, BW = 335, BH = 272;   // the inside of the board of the minigames (the witness stands over its right edge)
+// the Banderas card (mg_banderas_cardback / mg_banderas_frame are built at CARD_W x CARD_H by tools/build_minigame_art.py; the window of the frame is HOLE, 3:2 like the flags)
+const CARD_W = 137, CARD_H = 100, HOLE = [15, 14.5, 107, 71];
 const helpSeen = new Set<string>();             // the help is shown the first time
 
 /** the common part of the new minigames */
@@ -169,18 +171,20 @@ export class MinigameFlags extends NewMinigame {
     const GW = 307, GH = 184, GY = 40;
     const cw = Math.floor((GW - (cols - 1) * gap) / cols), ch = Math.floor((GH - (rows - 1) * gap) / rows);
     const x0 = Math.floor((BW - (cols * cw + (cols - 1) * gap)) / 2), y0 = GY + Math.floor((GH - (rows * ch + (rows - 1) * gap)) / 2);
-    this.cw = cw; this.ch = ch; this.gap = gap; this.names = names;
+    // a card keeps the aspect of its art (CARD_W : CARD_H) and sits centred in its cell of the grid; a touch anywhere in the cell (and half the gap) hits it
+    const kh = Math.min(ch, Math.floor(cw * CARD_H / CARD_W)), kw = Math.min(cw, Math.round(kh * CARD_W / CARD_H));
+    this.cellW = cw; this.cellH = ch; this.cw = kw; this.ch = kh; this.gap = gap; this.names = names;
     this.surface = new pygame.Surface([BW, BH], pygame.SRCALPHA, 32);
     this.view = new ItemImage(BX, BY, new assets.Image(this.surface));
     this.view.add_event_handler(ItemEvent.CLICK, (item, args) => this.clicked(args.x - BX, args.y - BY));
     this.layer.add(this.view);
     this.fx = new Fx();
     this.bg = this.makeBackground();
-    const back = this.cardCanvas(null, cw, ch), faces = {};
+    const back = this.cardCanvas(null, kw, kh), faces = {};
     this.cards = []; this.open = []; this.found = 0; this.total_pairs = Math.floor(deck.length / 2);
     deck.forEach((id, i) => {
-      faces[id] = faces[id] || this.cardCanvas(id, cw, ch);
-      this.cards.push({ i, flag: id, x: x0 + (i % cols) * (cw + gap), y: y0 + Math.floor(i / cols) * (ch + gap), back, face: faces[id], state: 0, from: 0, to: 0, ft: -1e9, fv: 0, h: 0, press: 0, sk: -1e9, glow: -1e9, bad: -1e9 });
+      faces[id] = faces[id] || this.cardCanvas(id, kw, kh);
+      this.cards.push({ i, flag: id, x: x0 + (i % cols) * (cw + gap) + Math.floor((cw - kw) / 2), y: y0 + Math.floor(i / cols) * (ch + gap) + Math.floor((ch - kh) / 2), back, face: faces[id], state: 0, from: 0, to: 0, ft: -1e9, fv: 0, h: 0, press: 0, sk: -1e9, glow: -1e9, bad: -1e9 });
     });
     this.clock = 0; this.playing = false; this.dealAt = 1e12; this.busy = false; this.backAt = 0; this.fire = null; this.finish = null;
     this.msg = ''; this.msgT = -1e9; this.msgUntil = 0; this.msgGold = false; this.errT = -1e9; this.hover = -1; this.mx = -1; this.my = -1; this.sig = -1;
@@ -194,7 +198,7 @@ export class MinigameFlags extends NewMinigame {
 
   // ---------------------------------------------------------------------------------------------------------------------------- pictures (made once)
   makeBackground(): any {
-    const art = scaled('banderas_bg', BW, BH);
+    const art = scaled('banderas_bg', BW, BH, 'cover');
     if (art) return art;
     const s = new pygame.Surface([BW, BH], pygame.SRCALPHA, 32), c = s.ctx;
     let g = c.createLinearGradient(0, 0, 0, BH); g.addColorStop(0, '#8d5d2c'); g.addColorStop(1, '#5b3716');
@@ -218,7 +222,7 @@ export class MinigameFlags extends NewMinigame {
   }
   /** the back (id = null) or the front of a card */
   cardCanvas(id: string | null, w: number, h: number): any {
-    const art = id === null ? scaled('banderas_cardback', w, h) : null;
+    const art = id === null ? scaled('banderas_cardback', w, h, 'cover') : null;
     if (art) return art;
     const s = new pygame.Surface([w, h], pygame.SRCALPHA, 32), c = s.ctx;
     if (id === null) {
@@ -231,23 +235,25 @@ export class MinigameFlags extends NewMinigame {
       sun(c, w / 2, h / 2, Math.min(w, h) * 0.3);
       rr(c, 4, 4, w - 8, h - 8, 3); c.lineWidth = 1.5; c.strokeStyle = 'rgba(255,255,255,0.55)'; c.stroke();
     } else {
+      const fa = has('banderas_frame');   // with the frame art the flag fills its window (3:2 like the flag); without it the flag is contained on a white card
+      const [hx, hy, hw, hh] = fa ? [HOLE[0] * w / CARD_W, HOLE[1] * h / CARD_H, HOLE[2] * w / CARD_W, HOLE[3] * h / CARD_H] : [2, 2, w - 4, h - 4];
       c.fillStyle = '#fff'; rr(c, 0, 0, w, h, 5); c.fill();
-      c.save(); rr(c, 2, 2, w - 4, h - 4, 3); c.clip();
+      c.save(); rr(c, hx, hy, hw, hh, fa ? 0 : 3); c.clip();
       c.imageSmoothingQuality = 'high';
-      c.drawImage(assets.load_image(`p0_flag_${id}.png`).surface.canvas, 2, 2, w - 4, h - 4);
+      blit(c, assets.load_image(`p0_flag_${id}.png`).surface.canvas, hx, hy, hw, hh, fa ? 'cover' : 'fit', 'banderas_flag');
       const g = c.createLinearGradient(0, 0, w, h); g.addColorStop(0, 'rgba(255,255,255,0.28)'); g.addColorStop(0.45, 'rgba(255,255,255,0)');
       c.fillStyle = g; c.fillRect(0, 0, w, h);
       c.restore();
     }
-    if (id !== null && put(c, scaled('banderas_frame', w, h), 0, 0)) return s.canvas;   // the frame art replaces the outline
+    if (id !== null && put(c, scaled('banderas_frame', w, h, 'cover'), 0, 0)) return s.canvas;   // the frame art replaces the outline
     rr(c, 1.5, 1.5, w - 3, h - 3, 5); c.lineWidth = 3; c.strokeStyle = '#1a140c'; c.stroke();
     return s.canvas;
   }
 
   // ---------------------------------------------------------------------------------------------------------------------------- play
   cardAt(x: number, y: number): number {
-    const g = this.gap / 2;
-    for (const k of this.cards) if (k.state === 0 && x >= k.x - g && x < k.x + this.cw + g && y >= k.y - g && y < k.y + this.ch + g) return k.i;
+    const gx = this.gap / 2 + (this.cellW - this.cw) / 2, gy = this.gap / 2 + (this.cellH - this.ch) / 2;   // the whole cell
+    for (const k of this.cards) if (k.state === 0 && x >= k.x - gx && x < k.x + this.cw + gx && y >= k.y - gy && y < k.y + this.ch + gy) return k.i;
     return -1;
   }
   clicked(x: number, y: number): any {
@@ -557,7 +563,7 @@ export class MinigameTrivia extends NewMinigame {
 
   // ---------------------------------------------------------------------------------------------------------------------------- painting
   makeBackground(): any {
-    const art = scaled('cartero_bg', BW, BH);
+    const art = scaled('cartero_bg', BW, BH, 'cover');
     if (art) return art;
     const s = new pygame.Surface([BW, BH], pygame.SRCALPHA, 32), c = s.ctx;
     const g = c.createLinearGradient(0, 0, 0, BH); g.addColorStop(0, '#f1e6c0'); g.addColorStop(1, '#e4d3a0');
@@ -635,7 +641,8 @@ export class MinigameTrivia extends NewMinigame {
     if (ek > 0) {
       c.save(); c.globalAlpha = ca; c.translate(cx, 0);
       c.fillStyle = 'rgba(40,20,0,0.28)'; rr(c, CX + 3, CY + 5, CW, CH, 8); c.fill();
-      if (!slice3(c, 'cartero_envelope', CX - 4, CY - 6, CW + 8, CH + 12, 46)) { rr(c, CX, CY, CW, CH, 8); c.fillStyle = '#fffaf0'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#3b2610'; c.stroke(); }
+      if (!put(c, scaled('cartero_envelope', CW + 8, CH + 12), CX - 4, CY - 6)) {   // built at this aspect (tools/build_minigame_art.py)
+        rr(c, CX, CY, CW, CH, 8); c.fillStyle = '#fffaf0'; c.fill(); c.lineWidth = 3; c.strokeStyle = '#3b2610'; c.stroke(); }
       // postmark and stamp
       c.save(); c.translate(CX + CW - 30, CY + 30); c.rotate(0.1);
       c.strokeStyle = 'rgba(80,60,40,0.35)'; c.lineWidth = 1.6; c.beginPath(); c.arc(-20, 4, 15, 0, Math.PI * 2); c.stroke();

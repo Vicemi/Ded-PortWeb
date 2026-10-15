@@ -9,7 +9,7 @@ import { ItemEvent, ItemImage, pygame } from '../../runtime/prelude';
 import * as assets from '../../engine/assets';
 import { mixer } from '../../engine/sounds';
 import { download } from '../../engine/net';
-import { src as artSrc, scaled, put, artStats } from './mgart';
+import { src as artSrc, scaled, put, artStats, aspect, note } from './mgart';
 import { assets_base } from '../../engine/assets';
 
 const BX = 104, BY = 74, BW = 335, BH = 272;   // the inside of the board of the minigames
@@ -749,7 +749,9 @@ export function makeCandombe(Base: any): any {
       const art = artSrc('candombe_bg');
       if (art) {   // the picture is the 600x450 screen: the board is the window BX, BY
         c.imageSmoothingEnabled = true;
-        c.drawImage(art, Math.round(BX * art.width / 600), Math.round(BY * art.height / 450), Math.round(BW * art.width / 600), Math.round(BH * art.height / 450), 0, 0, BW, BH);
+        const sw = Math.round(BW * art.width / 600), sh = Math.round(BH * art.height / 450);   // the window of the board: same scale on both axes (the art is 4:3 like the screen)
+        c.drawImage(art, Math.round(BX * art.width / 600), Math.round(BY * art.height / 450), sw, sh, 0, 0, BW, BH);
+        note('candombe_bg', 'candombe_bg', sw, sh, BW, BH);
         s.art = true;
         return s;
       }
@@ -808,10 +810,10 @@ export function makeCandombe(Base: any): any {
       this.text(c, LANE_NAME[lane], x, HIT_Y + 24, 8, 'rgba(255,255,255,0.8)', 'center', false);
     }
     crowd(c: any, ms: number, beat: number, pulse: number, excited: boolean): void {
-      const strip = scaled('candombe_crowd', 400, 60);   // seamless: two copies side by side scroll slowly, the heads bob on the beat
+      const tw = Math.round(60 * aspect('candombe_crowd')), strip = scaled('candombe_crowd', tw, 60);   // seamless: two copies side by side scroll slowly, the heads bob on the beat
       if (strip) {
-        const x = -(((ms * 0.012) % 400) + 400) % 400, y = BH - 60 + Math.round(pulse * (excited ? 3 : 1.5));
-        put(c, strip, Math.round(x), y); put(c, strip, Math.round(x) + 400, y);
+        const x = -(((ms * 0.012) % tw) + tw) % tw, y = BH - 60 + Math.round(pulse * (excited ? 3 : 1.5));
+        for (let px = Math.round(x); px < BW; px += tw) put(c, strip, px, y);
         return;
       }
       const N = 15, y0 = BH + 4;

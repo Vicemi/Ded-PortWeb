@@ -9,6 +9,7 @@ import type { Game } from '../src/engine/engine';
 import { lazy } from '../src/runtime/py';
 import * as newgames from '../src/game/minigames/newgames';
 import * as candombe from '../src/game/minigames/candombe';
+import * as mgfx from '../src/game/minigames/fx';
 import { mixer } from '../src/engine/sounds';
 import * as extra from '../src/game/minigames/extra';
 import * as achievements from '../src/game/content/achievements';
@@ -54,6 +55,7 @@ export interface Dev {
   /** image registry (register_image for fakes) and the optional minigame art helpers (artStats counts the images drawn) */
   assets: typeof assetsMod;
   mgart: typeof mgart;
+  mgfx: typeof mgfx;
   /** a generated game module by path, e.g. mod('game/stages/phase0').Phase0Stage */
   mod(path: string): any;
 }
@@ -77,7 +79,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
     else event.post({ type, pos: [x, y], button });
   };
   const dev: Dev = {
-    game, canvas, K, newgames, candombe, mixer, extra, achievements, twist, grace, py, safefs, autosave, inputguard, pygame, assets: assetsMod, mgart,
+    game, canvas, K, newgames, candombe, mixer, extra, achievements, twist, grace, py, safefs, autosave, inputguard, pygame, assets: assetsMod, mgart, mgfx,
     mod: (path) => lazy(path),
     go,
     move(x, y, frames = 3) { post(MOUSEMOTION, x, y); go(frames); },

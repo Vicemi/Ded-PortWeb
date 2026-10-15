@@ -4,7 +4,7 @@
 import { ArcadeGame, BW, BH, clamp, easeOut } from './arcade';
 import { registerWitnessArt } from './witnessart';
 import { blip } from '../../engine/synth';
-import { src, scaled, frame, crop, put } from './mgart';
+import { src, scaled, frame, crop, put, aspect } from './mgart';
 
 registerWitnessArt('corredora', 'corredora');
 
@@ -133,7 +133,7 @@ export class MinigameRambla extends ArcadeGame {
   paint(c: any, W: number, H: number): void {
     const d = this.d, t = this.t;
     // sky (art: the whole sky, sun and river in one picture)
-    const sa = put(c, scaled('rambla_sky', W, 208), 0, 0);
+    const sa = put(c, scaled('rambla_sky', W, 208, 'cover', 0.4), 0, 0);
     if (!sa) {
     const sk = c.createLinearGradient(0, 0, 0, 150); sk.addColorStop(0, '#3a2a6e'); sk.addColorStop(0.45, '#b84a78'); sk.addColorStop(0.8, '#ff9552'); sk.addColorStop(1, '#ffd48a');
     c.fillStyle = sk; c.fillRect(-10, -10, W + 20, 160);
@@ -147,8 +147,8 @@ export class MinigameRambla extends ArcadeGame {
     c.strokeStyle = 'rgba(60,30,60,0.55)'; c.lineWidth = 1.6;
     for (let i = 0; i < 3; i++) { const bx = ((i * 140 - d * 0.05 + 400) % (W + 40)) - 20, by = 50 + i * 16 + Math.sin(t * 2 + i) * 3, f = Math.sin(t * 9 + i * 2) * 3; c.beginPath(); c.moveTo(bx - 6, by + f); c.quadraticCurveTo(bx - 3, by - 3, bx, by); c.quadraticCurveTo(bx + 3, by - 3, bx + 6, by + f); c.stroke(); }
     // skyline (very slow)
-    const sl = scaled('rambla_skyline', 600, 110);
-    if (sl) { for (let x = -Math.floor((d * 0.06) % 600); x < W; x += 600) put(c, sl, x, 42); }
+    const slw = Math.round(110 * aspect('rambla_skyline')), sl = scaled('rambla_skyline', slw, 110);   // a tile: its width follows the art
+    if (sl) { for (let x = -Math.floor((d * 0.06) % slw); x < W; x += slw) put(c, sl, x, 42); }
     else {
     c.fillStyle = '#5b3a6c';
     const off = (d * 0.06) % SKY_PERIOD;
@@ -171,8 +171,8 @@ export class MinigameRambla extends ArcadeGame {
     for (let i = 0; i < 10; i++) { c.fillStyle = `rgba(255,236,170,${0.8 - i * 0.07})`; const w = 40 - i * 3 + Math.sin(t * 3 + i) * 6; c.fillRect(236 - w / 2, 150 + i * 4.5, w, 1.8); }
     }
     // the wall of the Rambla with its lamps (art: wall, pavement and grass in one strip)
-    const gt = scaled('rambla_ground', 470, 94);
-    if (gt) { for (let x = -Math.floor(d % 470); x < W; x += 470) put(c, gt, x, 178); }
+    const gtw = Math.round(94 * aspect('rambla_ground')), gt = scaled('rambla_ground', gtw, 94);
+    if (gt) { for (let x = -Math.floor(d % gtw); x < W; x += gtw) put(c, gt, x, 178); }
     else {
     c.fillStyle = '#a8927a'; c.fillRect(-10, 182, W + 20, 26); c.fillStyle = '#d4bf9e'; c.fillRect(-10, 178, W + 20, 8); c.fillStyle = 'rgba(60,30,20,0.35)'; c.fillRect(-10, 186, W + 20, 3);
     c.strokeStyle = 'rgba(60,40,30,0.4)'; c.lineWidth = 1.5; for (let x = -((d * 0.55) % 46); x < W + 46; x += 46) { c.beginPath(); c.moveTo(x, 189); c.lineTo(x, 208); c.stroke(); }

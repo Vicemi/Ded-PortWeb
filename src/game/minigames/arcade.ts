@@ -83,9 +83,9 @@ export class ArcadeGame extends NewMinigame {
     for (const p of this.parts) {
       const k = p.life / p.max;
       // optional art (mg_*.png sheets); the procedural drawing below stays when it is missing
-      if (p.art ? cell(c, p.art, 4, p.cell, p.x, p.y, p.size * 5, p.size * 5, p.life * 3, c.globalAlpha = Math.min(1, k * 1.5))
-        : p.kind === 'steam' ? cell(c, 'mate_steam', 4, p.cell, p.x, p.y, p.size * (1.8 - k) * 3.2, p.size * (1.8 - k) * 3.2, 0, c.globalAlpha = 0.7 * k)
-        : p.kind === 'star' && cell(c, 'ui_sparkles', 4, p.cell, p.x, p.y, p.size * 3.6, p.size * 3.6, p.life * 4, c.globalAlpha = Math.min(1, k * 1.6))) continue;
+      if (p.art ? (c.globalAlpha = Math.min(1, k * 1.5), cell(c, p.art, 4, p.cell, p.x, p.y, p.size * 5, p.size * 5, p.life * 3))
+        : p.kind === 'steam' ? (c.globalAlpha = 0.7 * k, cell(c, 'mate_steam', 4, p.cell, p.x, p.y, p.size * (1.8 - k) * 3.2, p.size * (1.8 - k) * 3.2, 0))
+        : p.kind === 'star' && (c.globalAlpha = Math.min(1, k * 1.6), cell(c, 'ui_sparkles', 4, p.cell, p.x, p.y, p.size * 3.6, p.size * 3.6, p.life * 4))) continue;
       if (p.kind === 'steam') {
         c.globalAlpha = 0.28 * k; c.fillStyle = p.color; c.beginPath(); c.arc(p.x, p.y, p.size * (1.8 - k), 0, 7); c.fill();
       } else if (p.kind === 'ring') {

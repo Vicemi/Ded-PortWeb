@@ -2,6 +2,11 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.1.4
+
+### Correcciones
+- **Minijuegos sin dibujos deformados**: las cartas de Banderas (dorso, marco y bandera), el sobre del Cartero, los fondos (pizarrón, cocina, cielo de la Rambla), el skyline, el suelo, el público del Candombe y todos los sprites mantienen ahora su proporción (se recortan o se ajustan, nunca se estiran). Además se quitó el borde verde del fondo de Mate y el brazo verde que tapaba el termo.
+
 ## 1.1.3
 
 ### Novedades
