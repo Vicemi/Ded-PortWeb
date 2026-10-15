@@ -7,6 +7,7 @@ import type { Game } from '../src/engine/engine';
 import { lazy } from '../src/runtime/py';
 import * as newgames from '../src/game/minigames/newgames';
 import * as achievements from '../src/game/content/achievements';
+import * as twist from '../src/game/content/twist';
 import * as py from '../src/runtime/py';
 import * as safefs from '../src/runtime/safefs';
 import * as autosave from '../src/game/autosave';
@@ -30,6 +31,7 @@ export interface Dev {
   /** the new minigames (hand-written) */
   newgames: typeof newgames;
   achievements: typeof achievements;
+  twist: typeof twist;
   /** the file layer under the saves (see tools/scenarios/save_safety.mjs) */
   py: typeof py;
   safefs: typeof safefs;
@@ -57,7 +59,7 @@ export async function start(assetBase: string, save: (name: string, buf: Buffer)
     else event.post({ type, pos: [x, y], button });
   };
   const dev: Dev = {
-    game, canvas, K, newgames, achievements, py, safefs, autosave,
+    game, canvas, K, newgames, achievements, twist, py, safefs, autosave,
     mod: (path) => lazy(path),
     go,
     move(x, y, frames = 3) { post(MOUSEMOTION, x, y); go(frames); },

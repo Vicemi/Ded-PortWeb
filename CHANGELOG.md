@@ -2,6 +2,16 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.0.6
+
+### Novedades
+- **¡Incriminado!**: en algunos casos (al azar, a partir del tercer caso) el sospechoso que atrapás resulta haber sido incriminado: los peritos analizan las huellas y descubren que son de **otro de tu lista**. Con el informe (la mascota y el deporte del verdadero culpable) tenés que **repasar las pistas** y elegirlo; si acertás, el caso se resuelve con él, y si no, se pierde.
+- **Los objetos de la lupa cuentan historias**: el mate, la XO, la guitarra, el libro, el llavero, la cámara, el reloj, la taza y la pelota pueden traer un nombre grabado o pegado de **otro sospechoso de la lista**. En un caso con incriminado es el verdadero culpable; en los demás, una pista falsa.
+- **4 medallas nuevas** (34 logros): Incriminado, Falso Criminal, Ojo Clínico y Nadie te Engaña.
+
+### Correcciones
+- Las descripciones de las medallas ya no se cortan: la pantalla de logros y la de fin de caso dan lugar a varias líneas.
+
 ## 1.0.5
 
 ### Novedades

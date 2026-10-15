@@ -29,6 +29,7 @@ export default async (dev) => {
   dev.click(120, 408, 60);         // LOGROS
   dev.go(80);
   dev.mouse && dev.mouse(60, 100);
+  if (process.env.ACH_LAST) { dev.mouse && dev.mouse(540, 200); dev.go(30); }
   dev.save('lg2_panel');
   dev.click(300, 420, 40);
   dev.go(60);

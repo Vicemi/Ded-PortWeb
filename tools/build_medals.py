@@ -16,6 +16,7 @@ SHEETS = {
     1: ['primer_caso', 'barrio', 'seccional', None, 'inspector', 'leyenda', None, 'viajero'],
     2: ['recorrido', 'diecinueve', 'uruguay', 'repetido', 'cinco_presos', 'diez_presos', 'todos_presos', 'victor'],
     4: ['mate', 'xo', 'musica', 'gaucho', 'paladar', 'ojo', 'retro', 'rarezas'],
+    5: ['incriminado', 'falso_criminal', 'ojo_clinico', 'tres_trampas'],
     3: ['aaron', 'fausto', 'vera', 'nana', 'rita', 'byte', 'puntos_5k', 'puntos_20k'],
 }
 

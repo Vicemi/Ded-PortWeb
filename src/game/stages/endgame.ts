@@ -25,6 +25,7 @@ const startscreen: any = py.lazy("game/stages/startscreen");
 import * as statcodes from '../data/statcodes';
 import * as text from '../../engine/textutil';
 import * as web from '../../runtime/web';
+import * as twist from '../content/twist';
 import * as $self from './endgame';
 
 export class EndReason {
@@ -210,7 +211,7 @@ export class EndGame {
       uy_medals = uy_medals + 1;
       this.won_uy_medal = true;
     }
-    this.new_achievements = content_extend.grantAchievements(character_progress, this.stage.game.datastore, case_);
+    this.new_achievements = (this.twist_news ?? []).concat(content_extend.grantAchievements(character_progress, this.stage.game.datastore, case_));
     // medals, score and the solved case are saved now (not when the score screens end): closing the page in between must not lose them
     this.stage.game.datastore.user_character_stage = null;
     this.stage.game.datastore.save_character("nc", true);
@@ -558,6 +559,10 @@ export class EndGame {
     this.stage.close_dialog(this.layer);
     if (py.eq(this.reason, EndReason.ARRIVED_WRONG_LOCATION)) {
       this.wrong_location_callback();
+    } else if (py.truthy(this.case_solved) && py.truthy(this.caught_thief) && twist.isPending(this)) {
+      // the arrested thief was framed: the final screen comes after the player picks the real culprit
+      this.layer.empty();
+      animations.wait(this.stage, 10, () => twist.showTwist(this, () => this.show_final_screen(false)));
     } else {
       this.show_final_screen(false);
     }

@@ -49,6 +49,11 @@ export const ACHIEVEMENTS: Ach[] = [
   { id: 'ojo', title: 'Ojo de Lince', desc: 'Resolviste un caso con la cámara, el telescopio, la lupa vieja o el llavero entre tus pistas.', glyph: 'O', tier: 1, check: never, solved: withObject('i614', 'i615', 'i617', 'i618') },
   { id: 'retro', title: 'Tecnología de Época', desc: 'Resolviste un caso con la radio, el reloj o el celular entre tus pistas.', glyph: 'R', tier: 1, check: never, solved: withObject('i619', 'i620', 'i621') },
   { id: 'rarezas', title: 'Coleccionista de Rarezas', desc: 'Resolviste un caso donde las 3 pistas eran objetos nuevos.', glyph: '3', tier: 2, check: never, solved: (c) => foundIds(c).filter((i) => /^i6\d\d$/.test(i)).length >= 3 },
+  // the twist cases (content/twist.ts): the arrested thief was framed
+  { id: 'incriminado', title: 'Incriminado', desc: 'Detuviste a alguien que resultó incriminado: el verdadero culpable seguía suelto.', glyph: '?', tier: 0, check: never, solved: (c) => c.twist_state >= 2 },
+  { id: 'falso_criminal', title: 'Falso Criminal', desc: 'Desenmascaraste al incriminado y atrapaste al verdadero culpable.', glyph: 'FC', tier: 1, check: never, solved: (c) => c.twist_state === 2 },
+  { id: 'ojo_clinico', title: 'Ojo Clínico', desc: 'Leíste el nombre del verdadero culpable en un objeto y lo atrapaste.', glyph: 'OC', tier: 2, check: never, solved: (c) => c.twist_state === 2 && !!c.twist_hint },
+  { id: 'tres_trampas', title: 'Nadie te Engaña', desc: 'Resolviste tres casos en los que habían incriminado a un inocente.', glyph: '3x', tier: 3, check: (p) => medalCount(p, 'ach_falso_criminal') >= 3 },
 ];
 
 const TIERS = [
@@ -131,9 +136,9 @@ export function achievementsLayer(merits: any): any {
   back.set_rollover_image(merits.back_rollover_image, merits.rollover_sound);
   back.add_event_handler(ItemEvent.CLICK, (item: any, args: any) => merits.logros_back_click(item, args));
   layer.add(back);
-  const name = merits.add_text_with_shadow(layer, 40, 346, font_18, '', [252, 193, 45], 520, 22, 2, 1, -1, 2);
-  const text = merits.add_text_with_shadow(layer, 40, 368, font_14, 'LOGROS ' + n + ' DE ' + total + '. Pasá el mouse o tocá una medalla para ver cómo se consigue.', [255, 240, 220], 520, 22, 2, 1, -1, 2);
-  const big = ACHIEVEMENTS.length > 24, cols = big ? 10 : 8, x0 = big ? 22 : 30, y0 = 84, dx = big ? 56 : 67, dy = big ? 80 : 86, k = big ? 0.8 : 1;
+  const name = merits.add_text_with_shadow(layer, 40, 316, font_18, '', [252, 193, 45], 520, 22, 2, 1, -1, 2);
+  const text = merits.add_text_with_shadow(layer, 40, 340, font_14, 'LOGROS ' + n + ' DE ' + total + '. Pasá el mouse o tocá una medalla para ver cómo se consigue.', [255, 240, 220], 520, 48, 2, 1, -1, 2);
+  const n30 = ACHIEVEMENTS.length, big = n30 > 24, cols = n30 > 30 ? 12 : big ? 10 : 8, x0 = n30 > 30 ? 18 : big ? 22 : 30, y0 = 84, dx = n30 > 30 ? 47 : big ? 56 : 67, dy = n30 > 30 ? 66 : big ? 80 : 86, k = n30 > 30 ? 0.7 : big ? 0.8 : 1;
   ACHIEVEMENTS.forEach((a, i) => {
     const got = have.has('ach_' + a.id), x = x0 + (i % cols) * dx, y = y0 + Math.floor(i / cols) * dy;
     const pic = k === 1 ? icon(a, got) : scaled(icon(a, got), k);
@@ -193,7 +198,7 @@ export function showAchievements(end: any): void {
     const y = 108 + i * 70;
     layer.add(new ItemImage(110, y - 4, icon(a, true)));
     layer.add(new ItemText(180, y + 2, end.font_16, 16, a.title.toUpperCase(), [255, 212, 12], null, 330, 20, 1, 1));
-    layer.add(new ItemText(180, y + 24, end.font_13_bold, 15, a.desc, [255, 255, 255], null, 330, 40, 1, 1));
+    layer.add(new ItemText(180, y + 24, end.font_13_bold, 13, a.desc, [255, 255, 255], null, 330, 44, 1, 1));
   });
   if (list.length > rows.length) layer.add(new ItemText(100, 390, end.font_13_bold, 15, '…y ' + (list.length - rows.length) + ' más en la pantalla de medallas.', [255, 255, 255], null, 400, 18, 2, 1));
 }

@@ -26,6 +26,7 @@ import { random } from '../../runtime/py';
 import { sys } from '../../runtime/py';
 import * as text from '../../engine/textutil';
 import * as content_lupa from '../content/lupa_objects';
+import * as twist from '../content/twist';
 import * as $self from './phase2';
 const $d1: any = [];
 
@@ -665,7 +666,7 @@ export class Phase2Content extends phase0.PhaseContent {
       box = new ItemImage(62, 198, image);
       py.m(dialog, "add", box);
       message = "Esto no parece ser una pista interesante...";
-      const found = content_lupa.objectJoke(item.get_type ? item.get_type() : "");
+      const found = twist.hintFor(item.get_type ? item.get_type() : "", this.game.datastore.user_character_progress.case) || content_lupa.objectJoke(item.get_type ? item.get_type() : "");
       if (found) message = found;
       message = text.to_upper(message);
       text_item = new ItemText(122, 239, font, 12, message, [0, 0, 0], null, 210, 30, 2, 2);

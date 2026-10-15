@@ -19,6 +19,7 @@ import * as stats from '../../runtime/stats';
 import { sys } from '../../runtime/py';
 import { time } from '../../runtime/py';
 import { uuid } from '../../runtime/py';
+import * as twist from '../content/twist';
 import * as $self from './serialization';
 
 export function save_character(datastore: any, c: any, cp: any, game: any, stage: any, check_save_in_development: any): any {
@@ -63,6 +64,7 @@ export function save_character(datastore: any, c: any, cp: any, game: any, stage
   } else {
     py.m(character_data, "append", ["cluesidentified", "0"]);
   }
+  py.m(character_data, "append", ["twist", cp.case.twist_real ? py.str(py.m(datastore.list_thieves, "index", cp.case.twist_real)) : "-1", py.str(cp.case.twist_state || 0), cp.case.twist_hint ? "1" : "0"]);
   thieves = ["thieves"];
   for (thief of py.iter(cp.case.list_thieves)) {
     py.m(thieves, "append", py.str(py.m(datastore.list_thieves, "index", thief)));
@@ -269,6 +271,7 @@ export function open_character(datastore: any, charinfo: any): any {
     list_dep_solved = [];
     list_target_cities = [];
     list_thieves = [];
+    let twist_line: any = null;
     list_sel_feat = [];
     list_posible_deps = [];
     list_wit_statements = [];
@@ -349,6 +352,8 @@ export function open_character(datastore: any, charinfo: any): any {
         } else {
           arrest_order_thief = py.getitem(datastore.list_thieves, thief_index);
         }
+      } else if ((type === "twist")) {
+        twist_line = line;
       } else if ((type === "thieves")) {
         for (t of py.iter(py.slice(line, 1, null))) {
           py.m(list_thieves, "append", py.getitem(datastore.list_thieves, py.int(t)));
@@ -606,6 +611,18 @@ export function open_character(datastore: any, charinfo: any): any {
         case_ = null;
       }
     }
+    if (case_ != null) {
+      // the twist of the case (saves of older versions have none)
+      case_.twist_state = 0; case_.twist_real = null; case_.twist_hint = false;
+      try {
+        if (twist_line != null) {
+          const ri = py.int(py.getitem(twist_line, 1));
+          case_.twist_real = ri >= 0 ? py.getitem(datastore.list_thieves, ri) : null;
+          case_.twist_state = case_.twist_real ? py.int(py.getitem(twist_line, 2)) : 0;
+          case_.twist_hint = py.getitem(twist_line, 3) === "1";
+        }
+      } catch ($err: any) { case_.twist_state = 0; case_.twist_real = null; }
+    }
     if ((case_ == null)) {
       stage = null;
     }
@@ -699,7 +716,7 @@ export class CaseGenerator {
     list_visited_witnesses = [];
     list_folder_witnesses = [];
     list_selected_features = [0, 0, 0, 0];
-    return new datamodel.Case(case_number, last_department_lair, last_department_visited, crime_location, stolen_object, time_limit, 0, [], false, thief, null, false, list_thieves, list_witnesses, list_witness_statements, list_visited_witnesses, list_folder_witnesses, list_departments, list_target_cities, list_posible_departments, thief_lair_set, list_clues, list_selected_features, null);
+    return twist.roll(new datamodel.Case(case_number, last_department_lair, last_department_visited, crime_location, stolen_object, time_limit, 0, [], false, thief, null, false, list_thieves, list_witnesses, list_witness_statements, list_visited_witnesses, list_folder_witnesses, list_departments, list_target_cities, list_posible_departments, thief_lair_set, list_clues, list_selected_features, null), this.datastore);
   }
   generate_thief_lair_set(): any {
     let thief_set: any;

@@ -14,3 +14,6 @@ Adjuntar como referencia de estilo la hoja de medallas que ya existe (`art_inbox
 | ojo | Ojo de Lince | cámara de fotos antigua con un telescopio y una lupa | plata |
 | retro | Tecnología de Época | radio a válvulas y reloj de bolsillo | plata |
 | rarezas | Coleccionista de Rarezas | vitrina o estrella dorada rodeada de 3 objetos pequeños | oro |
+
+## 4 medallas de la trampa "Incriminado"
+Hoja de 1 fila x 4 (fondo verde), guardar como `art_inbox/raw_medals_5.jpg`: incriminado (bronce: silueta con esposas y signo de pregunta), falso_criminal (plata: máscara partida mostrando otra cara), ojo_clinico (oro: ojo con lupa sobre una huella digital), tres_trampas (rojo especial: tres huellas digitales y una estrella).
