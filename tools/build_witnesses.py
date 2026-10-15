@@ -56,9 +56,16 @@ def card(face):
     frame = Image.fromarray(med.astype(np.uint8), 'RGBA')
     ww, wh = x1 - x0, y1 - y0
     fw, fh = face.size
-    bh = fh * 0.40
+    bh = fh * 0.36
     bw = bh * ww / wh
-    crop = face.crop((int((fw - bw) / 2), 0, int((fw + bw) / 2), int(bh)))
+    # the head is not always in the middle of the figure (a ponytail, a thermos under the arm): the centre of the skin of the top third
+    a = np.array(face)
+    top = a[:int(fh * 0.33)]
+    r, g, b = top[..., 0].astype(int), top[..., 1].astype(int), top[..., 2].astype(int)
+    skin = (top[..., 3] > 200) & (r > 150) & (g > 95) & (b > 60) & (r > g) & (g > b - 10) & (r - b > 35)
+    cx = float(np.where(skin)[1].mean()) if skin.any() else fw / 2
+    x0c = int(min(max(cx - bw / 2, 0), max(0, fw - bw)))
+    crop = face.crop((x0c, 0, int(x0c + bw), int(bh)))
     bg = Image.new('RGBA', frame.size, (0, 0, 0, 0))
     plate = Image.new('RGBA', (ww, wh), (205, 200, 215, 255))
     plate.alpha_composite(crop.resize((ww, wh), Image.LANCZOS))
@@ -85,11 +92,11 @@ def main():
     wid = sys.argv[1]
     tint = [int(v) for v in sys.argv[2].split(',')] if len(sys.argv) > 2 else [247, 216, 216]
     os.makedirs(OUT, exist_ok=True)
-    fig = shade(key(os.path.join(ROOT, 'art_inbox', 'witness_%s.png' % wid)))
+    fig = shade(key(os.path.join(ROOT, 'art_inbox', 'witness_%s.png' % wid), clear_big=2500))
     standing(fig).save(os.path.join(OUT, 'p1_minigame_%s.png' % wid))
     happy = os.path.join(ROOT, 'art_inbox', 'witness_%s_happy.png' % wid)
     if os.path.exists(happy):
-        standing(shade(key(happy))).save(os.path.join(OUT, 'p1_minigame_%s_happy.png' % wid))
+        standing(shade(key(happy, clear_big=2500))).save(os.path.join(OUT, 'p1_minigame_%s_happy.png' % wid))
     card(fig).save(os.path.join(OUT, 'p1_witness_%s.png' % wid))
     tinted_dialogue(tint).save(os.path.join(OUT, 'p1_minigame_flux_%s_dialogue1.png' % wid))
     print('built witness', wid)

@@ -271,7 +271,14 @@ export class MinigameRambla extends ArcadeGame {
       const i = this.air ? (this.squash < -0.12 ? 0 : 1) : 2;
       return put(c, frame('rambla_runner_jump', 3, i, 48, 64), x - 24, y - 64);
     }
-    return put(c, frame('rambla_runner', 5, Math.floor((this.phase % (Math.PI * 2)) / (Math.PI * 2) * 5), 48, 64), x - 24, y - 64);
+    // 5 drawn frames are too few for a smooth run: faster cycle, the next frame is blended in, and the body bobs with every stride
+    const u = ((this.phase * 1.9) % (Math.PI * 2)) / (Math.PI * 2) * 5, i0 = Math.floor(u) % 5, f = u - Math.floor(u), bob = -Math.abs(Math.sin(u * Math.PI)) * 2.2;
+    const a = frame('rambla_runner', 5, i0, 48, 64), b = frame('rambla_runner', 5, (i0 + 1) % 5, 48, 64);
+    if (!a || !b) return false;
+    const ga = c.globalAlpha;
+    put(c, a, x - 24, y - 64 + bob);
+    c.globalAlpha = ga * f; put(c, b, x - 24, y - 64 + bob); c.globalAlpha = ga;
+    return true;
   }
   paintRunner(c: any): void {
     const x = RX, y = GY - this.h, air = this.air, ph = this.phase;

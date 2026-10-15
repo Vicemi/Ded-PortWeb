@@ -19,9 +19,14 @@ function assetVersions() {
   return out;
 }
 
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const BUILD_ID = createHash('sha1').update(JSON.stringify(assetVersions()) + pkg.version).digest('hex').slice(0, 12);
+// dist/version.json (never cached): a page that runs an older build sees another id and clears its caches (src/engine/freshness.ts)
+const versionFile = { name: 'ded-version-file', hooks: { 'astro:build:done': ({ dir }) => { fs.writeFileSync(path.join(new URL(dir).pathname.replace(/^\/([A-Za-z]:)/, '$1'), 'version.json'), JSON.stringify({ id: BUILD_ID, version: pkg.version })); } } };
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://ded-portweb.vicemi.dev',
-  integrations: [react()],
-  vite: { define: { __ASSET_VERSIONS__: JSON.stringify(assetVersions()) } },
+  integrations: [react(), versionFile],
+  vite: { define: { __ASSET_VERSIONS__: JSON.stringify(assetVersions()), __BUILD_ID__: JSON.stringify(BUILD_ID), __APP_VERSION__: JSON.stringify(pkg.version) } },
 });

@@ -298,12 +298,18 @@ export class FxOverlay extends Fx {
   }
   /** moves the overlay above what was added to the layer after it */
   top(): void { const l = this.item.get_layer(); if (l) { l.remove(this.item); l.add(this.item); } }
-  /** items that jump with the shake */
+  /** items that jump with the shake (the offset is applied as a delta, so whatever else moves the item meanwhile is not undone) */
   shakeItems(items: any[]): void {
     this.restore();
-    this.shaken = items.map((it) => [it, it.get_left(), it.get_top()]);
+    this.shaken = items.map((it) => [it, 0, 0]);
+    this.wake();
   }
-  private restore(): void { for (const [it, l, t] of this.shaken) it.set_lefttop(l, t); }
+  /** lets an item go before something else moves it: its shake offset is taken off and it is not shaken any more */
+  release(item: any): void {
+    this.shaken = this.shaken.filter((s) => { if (s[0] !== item) return true; item.set_lefttop(item.get_left() - s[1], item.get_top() - s[2]); return false; });
+  }
+  shake(amp: number, secs = 0.35): void { super.shake(amp, secs); this.wake(); }
+  private restore(): void { for (const s of this.shaken) { s[0].set_lefttop(s[0].get_left() - s[1], s[0].get_top() - s[2]); s[1] = s[2] = 0; } this.shaken = []; }
   private wake(): void {
     if (this.running) return;
     this.running = true; this.last = pygame.time.get_ticks();
@@ -320,7 +326,7 @@ export class FxOverlay extends Fx {
     const was = this.busy;
     this.update(dt);
     if (this.custom) this.ct += dt;
-    if (this.shaken.length) for (const [it, l, t] of this.shaken) it.set_lefttop(l + Math.round(this.sx), t + Math.round(this.sy));
+    for (const s of this.shaken) { const nx = Math.round(this.sx), ny = Math.round(this.sy); s[0].set_lefttop(s[0].get_left() - s[1] + nx, s[0].get_top() - s[2] + ny); s[1] = nx; s[2] = ny; }
     if (this.busy || this.customLive) {
       const c = this.surface.ctx;
       c.clearRect(0, 0, 600, 450);

@@ -57,7 +57,8 @@ export default async (dev) => {
       for (let i = 0; i < 160; i++) { if (i % 10 === 0) { const k = [97, 115, 100, 102][(i / 10) % 4]; kdown(k); dev.go(1); kup(k); } dev.go(1); }
     },
     flags(m) {
-      for (let i = 0; i < 60 && !m.cards; i++) dev.go(5);   // the board is dealt a moment after the game opens
+      for (let i = 0; i < 8 && !Array.isArray(m.cards); i++) { dev.go(30); if (!Array.isArray(m.cards)) { dev.click(278, 305, 60); dev.click(274, 255, 60); dev.click(312, 388, 90); } }   // a dialog that is still open: click through it again   // the board is dealt a moment after the game opens
+      if (!Array.isArray(m.cards)) throw new Error("flags: no board, cards=" + typeof m.cards + " ctor=" + m.constructor?.name);
       const by = {};
       for (const c of m.cards) (by[c.flag] ||= []).push(c);
       for (const list of Object.values(by)) for (let i = 0; i + 1 < list.length; i += 2) {
@@ -66,7 +67,7 @@ export default async (dev) => {
       }
     },
   };
-  const classes = { mate: [dev.extra.MinigameMate, 'matero'], rambla: [dev.extra.MinigameRambla, 'corredora'], trivia: [dev.newgames.MinigameTrivia, 'cartero'], flags: [dev.newgames.MinigameFlags, 'maestra'], candombe: [dev.newgames.MinigameCandombe, 'tamborilero'] };
+  const classes = { flags: [dev.newgames.MinigameFlags, 'maestra'], mate: [dev.extra.MinigameMate, 'matero'], rambla: [dev.extra.MinigameRambla, 'corredora'], trivia: [dev.newgames.MinigameTrivia, 'cartero'], candombe: [dev.newgames.MinigameCandombe, 'tamborilero'] };
   const run = (name) => {
     const before = art.drawn, [Cls, id] = classes[name];
     const stg = dev.game.stage;

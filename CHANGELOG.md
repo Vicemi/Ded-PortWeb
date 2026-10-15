@@ -2,6 +2,20 @@
 
 La descripción de cada release de GitHub es la sección de su versión; la versión de escritorio la muestra al jugador cuando hay una actualización.
 
+## 1.1.2
+
+### Novedades
+- **Las novedades llegan siempre**: la versión web revisa al abrir si tu navegador tiene una copia vieja del juego o de las imágenes y, si es así, la limpia y recarga sola. La versión se ve en el botón de créditos (i).
+- Las partidas guardadas ven todo lo nuevo (ladrones, testigos y minijuegos, objetos, pistas, «Incriminado» y medallas) en los casos nuevos; el caso que tenías en curso sigue como estaba.
+
+### Correcciones
+- **Corredora y Matero**: la foto de la lista de testigos ahora encuadra la cara (antes salía cortada o descentrada).
+- **Rambla**: la corredora corre con una animación más fluida (ciclo más rápido, fotogramas mezclados y rebote en cada zancada) en vez de verse parada.
+- Arreglado un error raro al cerrar los minijuegos Mate y Rambla mientras se mantenía una tecla apretada.
+- **Albañil: una loza ya no queda quieta y congelada**: si tocabas una loza que no se podía mover (se sacude) y enseguida movías otras, la sacudida guardaba la posición vieja de la loza y, cuando esa loza sí se movía, el efecto la devolvía al lugar anterior y quedaba trabada a la vista. Ahora el efecto de sacudida suma y resta su desplazamiento sin pisar el movimiento, la loza se suelta del efecto antes de deslizarse y, como red de seguridad, si un deslizamiento no termina a los pocos segundos todas las lozas vuelven a su casillero. Lo mismo protege a las letras de la Bibliotecaria y a los números del Tendero. Las reglas y la dificultad no cambian.
+- **Albañil: botón REORDENAR (o tecla R)**: vuelve a mezclar el tablero con las mismas reglas y dificultad (el tiempo y el puntaje no se tocan), con un botón grande al costado de la foto que no tapa ninguna loza, para que nadie se quede trabado.
+- Nuevo escenario de pruebas con miles de acciones al azar (`puzzle_fuzz`).
+
 ## 1.1.1
 
 ### Novedades

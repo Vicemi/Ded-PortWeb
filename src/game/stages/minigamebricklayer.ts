@@ -5,6 +5,8 @@ import { ItemEvent } from '../../runtime/prelude';
 import { ItemImage } from '../../runtime/prelude';
 import { ItemText } from '../../runtime/prelude';
 import { Minigame } from './minigame';
+import { ItemRect } from '../../runtime/prelude';
+import { KEYDOWN } from '../../runtime/prelude';
 import { Rect } from '../../runtime/prelude';
 import * as animations from '../../engine/animations';
 import * as assets from '../../engine/assets';
@@ -23,6 +25,7 @@ export class MinigameBricklayer extends Minigame {
     this.drag_sound = assets.load_sound("p1_minigame_bricklayer_drag.ogg");
     this.fade_sound = assets.load_sound("fade.ogg");
     this.showing_missing_piece = false;
+    this.snap_key = null;
     this.move_duration = (py.mul(this.drag_sound.get_length(), 1000) * 0.75);
     bricklayer_image = assets.load_image("p1_minigame_bricklayer.png");
     this.witness_item = new ItemImage(428, 66, bricklayer_image, null);
@@ -172,6 +175,41 @@ export class MinigameBricklayer extends Minigame {
     help_item.set_rollover_image(rollover_image, this.rollover_sound);
     help_item.add_event_handler(ItemEvent.CLICK, py.bind(this, "help_click"));
     py.m(this.layer, "add", help_item);
+    // big touch target on the free strip under the photo (left of the board, does not overlap any piece); timer and score are untouched
+    this.reshuffle_item = new ItemRect(8, 250, 98, 40, this.font_14_bld, 0, "REORDENAR", [255, 244, 214], [183, 35, 35], [58, 12, 12], 1);
+    this.reshuffle_item.add_event_handler(ItemEvent.CLICK, py.bind(this, "reshuffle_click"));
+    py.m(this.layer, "add", this.reshuffle_item);
+    return null;
+  }
+  minigame_handle_event(e: any): any {
+    if (py.eq(e.type, KEYDOWN) && py.eq(e.key, pygame.K_r)) {
+      this.reshuffle_click(null, null);
+      return true;
+    }
+    return null;
+  }
+  /** deals the same board again with the same rules and difficulty (a fresh shuffle); never leaves a piece mid-slide */
+  reshuffle_click(item: any, args: any): any {
+    let piece, r, c: any;
+    if (py.truthy(this.minigame_solved) || py.truthy(this.showing_missing_piece)) {
+      return null;
+    }
+    for (piece of py.iter(this.puzzle_pieces)) {
+      animations.stop_move(piece);
+      if (this.fx) {
+        this.fx.release(piece);
+      }
+    }
+    this.grid = (() => { const $r: any[] = []; for (r of py.range(this.rows)) { $r.push(py.rangeList(this.cols).map(() => null)); } return $r; })();
+    this.shuffle();
+    for (r of py.range(this.rows)) {
+      for (c of py.range(this.cols)) {
+        this.set_piece_pos(r, c);
+      }
+    }
+    this.fx.burst(300, 200, 14, ["#e8e0d0", "#ffffff", "#c9bfa8"], { speed: 90, size: 2, life: 0.5, g: 30 });
+    this.drag_sound.play();
+    this.stage.render();
     return null;
   }
   set_up_game_background_items(): any {
@@ -372,12 +410,42 @@ export class MinigameBricklayer extends Minigame {
       piece.current_col = col;
       new_left = py.add(114, py.mul(col, piece.get_width()));
       new_top = py.add(87, py.mul(row, piece.get_height()));
+      if (this.fx) {
+        this.fx.release(piece);
+      }
       if (py.truthy(animated)) {
         animations.start_move(piece, new_left, new_top, this.move_duration);
         animations.wait_locked(this.stage, this.move_duration, null);
+        this.arm_snap_watchdog();
       } else {
+        animations.stop_move(piece);
         piece.set_left(new_left);
         piece.set_top(new_top);
+      }
+    }
+    return null;
+  }
+  /** safety net: if a slide is still unfinished a few seconds later (a lost timer), every piece is snapped to its cell */
+  arm_snap_watchdog(): any {
+    if (this.snap_key != null) {
+      animations.cancel_wait(this.stage, this.snap_key);
+    }
+    this.snap_key = animations.wait(this.stage, this.move_duration + 3000, py.bind(this, "snap_pieces"));
+    return null;
+  }
+  snap_pieces(): any {
+    let piece, row, col: any;
+    this.snap_key = null;
+    for (row of py.range(this.rows)) {
+      for (col of py.range(this.cols)) {
+        piece = py.getitem(py.getitem(this.grid, row), col);
+        if (piece != null && piece.get_layer() != null && piece.current_row === row && piece.current_col === col) {
+          animations.stop_move(piece);
+          if (this.fx) {
+            this.fx.release(piece);
+          }
+          piece.set_lefttop(114 + col * piece.get_width(), 87 + row * piece.get_height());
+        }
       }
     }
     return null;

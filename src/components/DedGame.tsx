@@ -3,6 +3,7 @@ import { startHost, type Controller } from '../game/host';
 import { mixer } from '../engine/sounds';
 import { K } from '../engine/pygame';
 import { musicCredits } from '../game/content/credit';
+import { ensureFresh, APP_VERSION } from '../engine/freshness';
 import { storageFailed } from '../runtime/py';
 import { isDesktop, restoreFromHost, startAutosave, toHost } from '../desktop';
 import { installUpdateUi } from '../desktop-update';
@@ -44,6 +45,7 @@ export default function DedGame() {
   const canFull = typeof document !== 'undefined' && (!!document.fullscreenEnabled || isDesktop());
 
   useEffect(() => {
+    void ensureFresh();
     restoreFromHost();
     if (isDesktop()) installUpdateUi();
     const ctl = startHost(canvasRef.current!, import.meta.env.BASE_URL.replace(/\/$/, '') + '/assets');
@@ -202,6 +204,7 @@ export default function DedGame() {
             <p>Un juego de <b>Trojan Chicken</b> para las laptops XO del programa Plan Ceibal / One Laptop per Child (actividad Sugar).</p>
             <p>Tu progreso se guarda en este navegador. Con 💾 puedes bajarlo a un archivo y con 📂 volver a cargarlo (por si cambias de equipo o se borran los datos del navegador).</p>
             <p>Edición actualizada recreada por <b><a href="https://vicemi.dev" target="_blank" rel="noreferrer">Vicemi Dev (vicemi.dev)</a></b>, con nuevos personajes, minijuegos, medallas, música y contenido adicional sobre el Uruguay actual. Incluye todos los recursos originales del juego.</p>
+            <p style={{ fontSize: '0.85em' }}>Versión {APP_VERSION}</p>
             {musicCredits().map((l, i) => <p key={i} style={{ fontSize: '0.85em' }}>{l}</p>)}
             <p style={{ fontSize: '0.85em' }}>Todos los personajes agregados en esta edición son ficticios y de parodia: sus nombres, historias y delitos son inventados y no se refieren a personas reales.</p>
             <button className="ded-close" onClick={() => setInfo(false)}>Cerrar</button>

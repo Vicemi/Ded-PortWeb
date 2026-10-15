@@ -116,7 +116,7 @@ export class ArcadeGame extends NewMinigame {
     return null;
   }
   /** the action input (mouse, touch or a key) is being held */
-  held(): boolean { return !!this.pointer || Object.values(this.keys).some(Boolean); }
+  held(): boolean { return !!this.pointer || Object.values(this.keys || {}).some(Boolean); }
   /** the board stops: nothing can stay pressed */
   stop_minigame(solved: any): any {
     const was = this.held();

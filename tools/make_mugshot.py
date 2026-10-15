@@ -21,7 +21,7 @@ SS = 3   # work at 3x and reduce: smooth edges like the original art
 FONT = 'C:/Windows/Fonts/arialbd.ttf'
 
 
-def key(path, crop=True, holes=False):
+def key(path, crop=True, holes=False, clear_big=0):
     """the green background becomes transparent (flood from the borders, so green inside the drawing stays); the result is cropped to the drawing
     (crop=False keeps the size of the picture: strips and sheets; holes=True also clears green enclosed by the drawing: picture frames). `path` may be an Image."""
     im = np.array((Image.open(path) if isinstance(path, str) else path).convert('RGB')).astype(int)
@@ -30,6 +30,10 @@ def key(path, crop=True, holes=False):
     lab, n = ndimage.label(bg)
     edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
     mask = bg if holes else np.isin(lab, list(edge))
+    if clear_big and not holes:   # a big pocket of background between an arm and the body is background; the small ones (lenses) get the glass tint below
+        for i, sl in enumerate(ndimage.find_objects(lab), 1):
+            if i not in edge and (lab[sl] == i).sum() > clear_big:
+                mask |= (lab == i)
     mask = ndimage.binary_dilation(mask, iterations=1)           # eat the fringe
     alpha = (~mask).astype(np.uint8) * 255
     # green spill on the remaining edge pixels
